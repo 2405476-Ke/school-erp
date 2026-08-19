@@ -87,28 +87,28 @@ function LedgerPanel({
   total: string;
 }) {
   return (
-    <div className="border border-dashed border-[#DCD6C4] rounded-sm bg-white">
+    <div className="border border-[#DCD6C4] rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
       {title && (
-        <div className="px-4 py-2 border-b border-dashed border-[#DCD6C4]">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans']">{title}</p>
+        <div className="px-6 py-4 border-b border-[#DCD6C4]">
+          <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold">{title}</p>
         </div>
       )}
-      <div className="divide-y divide-dashed divide-[#DCD6C4]">
+      <div className="divide-y divide-[#DCD6C4]">
         {rows.map((row, i) => (
-          <div key={i} className="flex items-center justify-between px-4 py-2">
+          <div key={i} className="flex items-center justify-between px-6 py-3 hover:bg-[#F8F6F1] transition-colors">
             <div>
-              <span className="text-sm font-['IBM_Plex_Sans'] text-[#16241D]">{row.label}</span>
-              {row.note && <span className="text-xs text-[#7A8078] ml-2 font-['IBM_Plex_Sans']">{row.note}</span>}
+              <span className="text-[13px] font-['IBM_Plex_Sans'] text-[#16241D]">{row.label}</span>
+              {row.note && <span className="text-[12px] text-[#7A8078] ml-3 font-['IBM_Plex_Sans']">{row.note}</span>}
             </div>
-            <span className={`font-['IBM_Plex_Mono'] text-sm font-medium ${row.type === "credit" ? "text-[#1F6F4A]" : row.type === "debit" ? "text-[#9C3B2E]" : "text-[#16241D]"}`}>
+            <span className={`font-['IBM_Plex_Mono'] text-[13px] font-semibold ${row.type === "credit" ? "text-[#1F6F4A]" : row.type === "debit" ? "text-[#9C3B2E]" : "text-[#16241D]"}`}>
               {row.amount}
             </span>
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between px-4 py-3 border-t border-[#DCD6C4] bg-[#F3EFE4]">
-        <span className="text-sm font-semibold font-['IBM_Plex_Sans'] text-[#16241D]">Running Balance</span>
-        <span className="font-['IBM_Plex_Mono'] text-base font-semibold text-[#16241D]">{total}</span>
+      <div className="flex items-center justify-between px-6 py-4 border-t border-[#DCD6C4] bg-gradient-to-r from-[#F8F6F1] to-[#F3EFE4]">
+        <span className="text-[13px] font-semibold font-['IBM_Plex_Sans'] text-[#16241D]">Running Balance</span>
+        <span className="font-['IBM_Plex_Mono'] text-lg font-bold text-[#1F6F4A]">{total}</span>
       </div>
     </div>
   );
@@ -126,17 +126,17 @@ function ApprovalStepper({ steps, currentStep }: {
         return (
           <div key={i} className="flex items-center flex-1 last:flex-none">
             <div className="flex flex-col items-center">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors
-                ${done ? "bg-[#1F6F4A] border-[#1F6F4A] text-white" : active ? "bg-white border-[#1F6F4A] text-[#1F6F4A]" : "bg-white border-[#DCD6C4] text-[#7A8078]"}`}>
-                {done ? <Check size={13} /> : i + 1}
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all shadow-sm
+                ${done ? "bg-[#1F6F4A] border-[#1F6F4A] text-white shadow-md" : active ? "bg-white border-[#1F6F4A] text-[#1F6F4A] ring-2 ring-[#1F6F4A] ring-offset-2" : "bg-white border-[#DCD6C4] text-[#7A8078]"}`}>
+                {done ? <Check size={16} /> : i + 1}
               </div>
-              <span className={`text-[10px] mt-1 font-['IBM_Plex_Sans'] whitespace-nowrap ${active ? "text-[#16241D] font-semibold" : "text-[#7A8078]"}`}>
+              <span className={`text-[11px] mt-2 font-['IBM_Plex_Sans'] whitespace-nowrap font-medium ${active ? "text-[#16241D]" : done ? "text-[#1F6F4A]" : "text-[#7A8078]"}`}>
                 {step.label}
               </span>
-              {step.owner && <span className="text-[9px] text-[#B5751F] font-['IBM_Plex_Sans']">{step.owner}</span>}
+              {step.owner && <span className="text-[10px] text-[#B5751F] font-['IBM_Plex_Sans'] font-semibold mt-0.5">{step.owner}</span>}
             </div>
             {i < steps.length - 1 && (
-              <div className={`flex-1 h-[1px] mx-1 ${done ? "bg-[#1F6F4A]" : "bg-[#DCD6C4]"}`} />
+              <div className={`flex-1 h-1 mx-2 rounded-full transition-colors ${done ? "bg-gradient-to-r from-[#1F6F4A] to-[#1F6F4A]" : active ? "bg-[#DCD6C4]" : "bg-[#DCD6C4]"}`} />
             )}
           </div>
         );
@@ -147,16 +147,16 @@ function ApprovalStepper({ steps, currentStep }: {
 
 function ValidationCallout({ type, message }: { type: "success" | "error" | "warning" | "info"; message: string }) {
   const map = {
-    success: { bg: "bg-[#E7F0EA]", border: "border-[#1F6F4A]", text: "text-[#1F6F4A]", Icon: CheckCircle },
-    error: { bg: "bg-[#F7E6E2]", border: "border-[#9C3B2E]", text: "text-[#9C3B2E]", Icon: XCircle },
-    warning: { bg: "bg-[#F5EAD6]", border: "border-[#B5751F]", text: "text-[#B5751F]", Icon: AlertTriangle },
-    info: { bg: "bg-[#EBE7DC]", border: "border-[#7A8078]", text: "text-[#7A8078]", Icon: AlertOctagon },
+    success: { bg: "bg-[#E7F0EA]", border: "border-l-4 border-[#1F6F4A]", text: "text-[#1F6F4A]", Icon: CheckCircle },
+    error: { bg: "bg-[#F7E6E2]", border: "border-l-4 border-[#9C3B2E]", text: "text-[#9C3B2E]", Icon: XCircle },
+    warning: { bg: "bg-[#F5EAD6]", border: "border-l-4 border-[#B5751F]", text: "text-[#B5751F]", Icon: AlertTriangle },
+    info: { bg: "bg-[#EBE7DC]", border: "border-l-4 border-[#7A8078]", text: "text-[#7A8078]", Icon: AlertOctagon },
   };
   const { bg, border, text, Icon } = map[type];
   return (
-    <div className={`flex items-start gap-3 px-4 py-3 ${bg} border-l-4 ${border} rounded-sm`}>
-      <Icon size={16} className={`${text} mt-0.5 flex-shrink-0`} />
-      <p className={`text-sm font-['IBM_Plex_Sans'] ${text}`}>{message}</p>
+    <div className={`flex items-start gap-4 px-5 py-4 ${bg} ${border} rounded-lg`}>
+      <Icon size={18} className={`${text} mt-0.5 flex-shrink-0`} />
+      <p className={`text-[13px] font-['IBM_Plex_Sans'] leading-relaxed ${text}`}>{message}</p>
     </div>
   );
 }
@@ -164,14 +164,14 @@ function ValidationCallout({ type, message }: { type: "success" | "error" | "war
 function RatingSelector({ selected, onChange }: { selected: number | null; onChange: (v: number) => void }) {
   const labels = ["", "Below", "Approaching", "Meeting", "Exceeding"];
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-3">
       {[1, 2, 3, 4].map((v) => (
         <button
           key={v}
           title={labels[v]}
           onClick={() => onChange(v)}
-          className={`w-8 h-8 rounded-full text-sm font-bold border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] focus:ring-offset-1
-            ${selected === v ? "bg-[#1F6F4A] border-[#1F6F4A] text-white" : "bg-white border-[#DCD6C4] text-[#7A8078] hover:border-[#1F6F4A] hover:text-[#1F6F4A]"}`}
+          className={`w-10 h-10 rounded-full text-sm font-bold border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] focus:ring-offset-2 shadow-sm
+            ${selected === v ? "bg-[#1F6F4A] border-[#1F6F4A] text-white shadow-md" : "bg-white border-[#DCD6C4] text-[#7A8078] hover:border-[#1F6F4A] hover:text-[#1F6F4A] hover:shadow-md"}`}
         >
           {v}
         </button>
@@ -3036,8 +3036,10 @@ export default function App() {
       <Sidebar current={currentPage} onNavigate={setCurrentPage} collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar />
-        <main className="flex-1 overflow-y-auto p-6">
-          {renderPage(currentPage, setCurrentPage)}
+        <main className="flex-1 overflow-y-auto bg-gradient-to-b from-[#F3EFE4] to-[#FDFBF7]">
+          <div className="p-8 max-w-7xl mx-auto">
+            {renderPage(currentPage, setCurrentPage)}
+          </div>
         </main>
       </div>
     </div>
