@@ -203,6 +203,25 @@ function PageHeader({ title, subtitle, badge }: { title: string; subtitle?: stri
   );
 }
 
+function Breadcrumbs({ items }: { items: { label: string; onClick?: () => void }[] }) {
+  return (
+    <div className="flex items-center gap-2 mb-6">
+      {items.map((item, i) => (
+        <div key={i} className="flex items-center gap-2">
+          {i > 0 && <ChevronRight size={14} className="text-[#DCD6C4]" />}
+          {item.onClick ? (
+            <button onClick={item.onClick} className="text-[12px] text-[#1F6F4A] hover:text-[#0d5135] font-['IBM_Plex_Sans'] font-medium transition-colors">
+              {item.label}
+            </button>
+          ) : (
+            <span className="text-[12px] text-[#7A8078] font-['IBM_Plex_Sans']">{item.label}</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Data Table ───────────────────────────────────────────────────────────────
 function DataTable({
   columns, rows, onRowClick
@@ -604,6 +623,7 @@ function TopBar() {
 function PrincipalDashboard() {
   return (
     <div>
+      <Breadcrumbs items={[{ label: "Home" }, { label: "Dashboard" }]} />
       <PageHeader title="Principal Dashboard" subtitle="St. Joseph's High School — Summary overview" badge="Term 2 · Week 6" />
       <div className="grid grid-cols-2 gap-4 mb-6 lg:grid-cols-4">
         <KPICard label="Total Enrolment" value="1,284" delta="+12 this term" deltaDir="up" />
@@ -690,6 +710,7 @@ function PrincipalDashboard() {
 function BursarDashboard() {
   return (
     <div>
+      <Breadcrumbs items={[{ label: "Home" }, { label: "Finance" }, { label: "Dashboard" }]} />
       <PageHeader title="Bursar Dashboard" subtitle="Finance overview — current term position" badge="Term 2 · Week 6" />
       <div className="grid grid-cols-2 gap-4 mb-6 lg:grid-cols-4">
         <KPICard label="Gross Fees Expected" value="KES 9,780,000" mono />

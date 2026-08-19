@@ -185,6 +185,7 @@ export function StudentProfile({ studentId }: StudentProfileProps) {
 
   return (
     <div>
+      <Breadcrumbs items={[{ label: "Students" }, { label: "Profiles" }, { label: studentName }]} />
       <PageHeader
         title={studentName}
         subtitle={overview.data ? `${overview.data.admission_number} · ${overview.data.current_class} Stream ${overview.data.current_stream}` : 'Loading...'}
@@ -727,10 +728,29 @@ function KPICard({ label, value, delta, deltaDir, mono }: KPICardProps) {
   );
 }
 
+function Breadcrumbs({ items }: { items: { label: string; onClick?: () => void }[] }) {
+  return (
+    <div className="flex items-center gap-2 mb-6">
+      {items.map((item, i) => (
+        <div key={i} className="flex items-center gap-2">
+          {i > 0 && <span className="text-[#DCD6C4]">›</span>}
+          {item.onClick ? (
+            <button onClick={item.onClick} className="text-[12px] text-[#1F6F4A] hover:text-[#0d5135] font-['IBM_Plex_Sans'] font-medium transition-colors">
+              {item.label}
+            </button>
+          ) : (
+            <span className="text-[12px] text-[#7A8078] font-['IBM_Plex_Sans']">{item.label}</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="mb-6">
-      <h1 className="text-3xl font-bold font-['Fraunces'] text-[#16241D] mb-1">
+      <h1 className="text-3xl font-bold font-['Playfair Display'] text-[#16241D] mb-1">
         {title}
       </h1>
       <p className="text-sm font-['IBM_Plex_Sans'] text-[#7A8078]">{subtitle}</p>
