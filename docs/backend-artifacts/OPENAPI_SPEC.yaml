@@ -1,0 +1,740 @@
+openapi: 3.1.0
+info:
+  title: Kenya School ERP - Finance & Accounting API
+  version: 1.0.0
+  description: >
+    Production-ready Finance and Accounting APIs for the Kenya School ERP.
+    Covers Core Accounting, Fees, Procurement, Payroll, M-Pesa Integration, and Reports.
+servers:
+  - url: https://api.schoolerp.ke/v1
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # ---------------- Auth ----------------
+    Token:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    # ---------------- Finance & Accounting ----------------
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          example: "1000"
+        name:
+          type: string
+          example: "Cash in Hand"
+        type:
+          type: string
+          enum: [ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE]
+        balance:
+          type: number
+          format: float
+          example: 50000.00
+    
+    JournalEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, POSTED, REVERSED]
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalLine'
+    
+    JournalLine:
+      type: object
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        debit:
+          type: number
+          format: float
+        credit:
+          type: number
+          format: float
+
+    # ---------------- Fees ----------------
+    FeeStructure:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        grade:
+          type: string
+        term:
+          type: integer
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              amount:
+                type: number
+                format: float
+              account_id:
+                type: string
+                format: uuid
+    
+    Receipt:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: float
+        payment_method:
+          type: string
+          enum: [MPESA, BANK_TRANSFER, CASH, CHEQUE]
+        reference:
+          type: string
+
+    # ---------------- Procurement ----------------
+    Requisition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        department:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, APPROVED_TIER1, APPROVED_BOM, REJECTED]
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+              quantity:
+                type: integer
+              estimated_unit_cost:
+                type: number
+                format: float
+
+    # ---------------- Payroll ----------------
+    PayrollRun:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        period:
+          type: string
+          example: "2023-10"
+        status:
+          type: string
+          enum: [DRAFT, PROCESSING, APPROVED, PAID]
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Could not validate credentials
+    ForbiddenError:
+      description: User lacks required permissions
+    NotFoundError:
+      description: Resource not found
+    ValidationError:
+      description: Invalid request parameters
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login for access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '400':
+          description: Incorrect email or password
+  
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      security: []
+      responses:
+        '200':
+          description: Refreshed token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Logout
+      responses:
+        '200':
+          description: Logged out successfully
+
+  /finance/accounts:
+    get:
+      tags: [Chart of Accounts]
+      summary: List chart of accounts
+      responses:
+        '200':
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+    post:
+      tags: [Chart of Accounts]
+      summary: Create an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        '201':
+          description: Account created
+
+  /finance/journals:
+    get:
+      tags: [Journals]
+      summary: List journals
+      parameters:
+        - name: period_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of journals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JournalEntry'
+    post:
+      tags: [Journals]
+      summary: Create draft journal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalEntry'
+      responses:
+        '201':
+          description: Journal created
+
+  /finance/journals/{id}/post:
+    post:
+      tags: [Journals]
+      summary: Post a journal entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successfully posted
+
+  /finance/journals/{id}/reverse:
+    post:
+      tags: [Journals]
+      summary: Reverse a posted journal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successfully reversed
+
+  /finance/periods:
+    get:
+      tags: [Financial Periods]
+      summary: List financial periods
+      responses:
+        '200':
+          description: List of periods
+    post:
+      tags: [Financial Periods]
+      summary: Close or reopen period
+      responses:
+        '200':
+          description: Period state updated
+
+  /finance/reports/trial-balance:
+    get:
+      tags: [Reports]
+      summary: Generate trial balance
+      parameters:
+        - name: period_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Trial balance generated
+  
+  /finance/reports/income-statement:
+    get:
+      tags: [Reports]
+      summary: Generate income statement
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Income statement generated
+
+  /finance/reports/balance-sheet:
+    get:
+      tags: [Reports]
+      summary: Generate balance sheet
+      parameters:
+        - name: as_at_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Balance sheet generated
+
+  /finance/reports/cash-flow:
+    get:
+      tags: [Reports]
+      summary: Generate cash flow statement
+      parameters:
+        - name: period_range
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cash flow generated
+
+  /finance/fees/structures:
+    get:
+      tags: [Fees]
+      summary: List fee structures
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Fees]
+      summary: Create fee structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeStructure'
+      responses:
+        '201':
+          description: Created
+
+  /finance/fees/billing-runs:
+    post:
+      tags: [Fees]
+      summary: Trigger billing run
+      responses:
+        '202':
+          description: Billing run started asynchronously
+
+  /finance/fees/students/{student_id}/statement:
+    get:
+      tags: [Fees]
+      summary: Get student fee statement
+      parameters:
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee statement returned
+
+  /finance/fees/students/{student_id}/clearance:
+    get:
+      tags: [Fees]
+      summary: Check student clearance
+      parameters:
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Clearance status returned
+
+  /finance/fees/receipts:
+    post:
+      tags: [Fees]
+      summary: Create receipt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Receipt'
+      responses:
+        '201':
+          description: Receipt created
+
+  /finance/fees/bursaries:
+    post:
+      tags: [Fees]
+      summary: Apply bursary
+      responses:
+        '201':
+          description: Bursary applied
+
+  /finance/fees/debtors:
+    get:
+      tags: [Fees]
+      summary: Get debtors aging report
+      responses:
+        '200':
+          description: Aging report returned
+
+  /finance/fees/unallocated:
+    get:
+      tags: [Fees]
+      summary: List unallocated payments
+      responses:
+        '200':
+          description: List of payments
+    post:
+      tags: [Fees]
+      summary: Allocate suspense payment
+      responses:
+        '200':
+          description: Allocated
+
+  /finance/mpesa/stk-push:
+    post:
+      tags: [M-Pesa]
+      summary: Initiate M-Pesa STK Push
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                  example: "254712345678"
+                amount:
+                  type: number
+                student_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: STK push initiated
+
+  /webhooks/mpesa/stk-callback:
+    post:
+      tags: [M-Pesa Webhooks]
+      summary: M-Pesa STK Callback
+      security: []
+      responses:
+        '200':
+          description: Acknowledged
+
+  /webhooks/mpesa/c2b-validation:
+    post:
+      tags: [M-Pesa Webhooks]
+      summary: M-Pesa C2B Validation
+      security: []
+      responses:
+        '200':
+          description: Acknowledged
+
+  /webhooks/mpesa/c2b-confirmation:
+    post:
+      tags: [M-Pesa Webhooks]
+      summary: M-Pesa C2B Confirmation
+      security: []
+      responses:
+        '200':
+          description: Acknowledged
+
+  /finance/banking/accounts:
+    get:
+      tags: [Banking]
+      summary: List bank accounts
+      responses:
+        '200':
+          description: OK
+
+  /finance/banking/reconcile:
+    post:
+      tags: [Banking]
+      summary: Reconcile bank statement
+      responses:
+        '200':
+          description: Reconciled
+
+  /finance/procurement/requisitions:
+    get:
+      tags: [Procurement]
+      summary: List requisitions
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Procurement]
+      summary: Create requisition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Requisition'
+      responses:
+        '201':
+          description: Created
+
+  /finance/procurement/purchase-orders:
+    get:
+      tags: [Procurement]
+      summary: List Purchase Orders (LPOs)
+      responses:
+        '200':
+          description: OK
+
+  /finance/procurement/grn:
+    post:
+      tags: [Procurement]
+      summary: Create Goods Received Note
+      responses:
+        '201':
+          description: Created
+
+  /finance/procurement/invoices:
+    post:
+      tags: [Procurement]
+      summary: Register Supplier Invoice (3-way match)
+      responses:
+        '201':
+          description: Created
+
+  /finance/ap/payments:
+    post:
+      tags: [Accounts Payable]
+      summary: Process AP Payment
+      responses:
+        '200':
+          description: Processed
+
+  /finance/ap/aging:
+    get:
+      tags: [Accounts Payable]
+      summary: AP Aging Report
+      responses:
+        '200':
+          description: OK
+
+  /finance/assets:
+    get:
+      tags: [Fixed Assets]
+      summary: List assets
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Fixed Assets]
+      summary: Register new asset
+      responses:
+        '201':
+          description: Created
+
+  /finance/assets/depreciation-run:
+    post:
+      tags: [Fixed Assets]
+      summary: Run depreciation
+      responses:
+        '200':
+          description: Depreciation calculated
+
+  /finance/budgets:
+    get:
+      tags: [Budgets]
+      summary: List budgets
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Budgets]
+      summary: Create budget
+      responses:
+        '201':
+          description: Created
+
+  /finance/budgets/{id}/variance:
+    get:
+      tags: [Budgets]
+      summary: Budget vs Actual variance report
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+
+  /finance/payroll/runs:
+    get:
+      tags: [Payroll]
+      summary: List payroll runs
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Payroll]
+      summary: Create payroll run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayrollRun'
+      responses:
+        '201':
+          description: Created
+
+  /finance/payroll/runs/{id}/payslips:
+    get:
+      tags: [Payroll]
+      summary: Generate payslips for run
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+
+  /finance/payroll/reports/paye-return:
+    get:
+      tags: [Payroll]
+      summary: Generate KRA P10 Paye Return
+      responses:
+        '200':
+          description: OK
+
+  /finance/cost-centers:
+    get:
+      tags: [Cost Centers]
+      summary: List cost centers
+      responses:
+        '200':
+          description: OK
+
+  /finance/petty-cash:
+    get:
+      tags: [Petty Cash]
+      summary: Petty cash fund management
+      responses:
+        '200':
+          description: OK
