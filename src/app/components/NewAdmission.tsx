@@ -11,6 +11,7 @@
 import React, { useState } from 'react';
 import { RefreshCw, CheckCircle, XCircle, Upload } from 'lucide-react';
 import { apiPost, tokenManager } from '@/services/api';
+import { toast } from 'sonner';
 import type { AdmitStudentPayload, Gender, StudentCategory, Class } from '@/types/api';
 import { getErrorMessage } from '@/types/api';
 
@@ -163,7 +164,10 @@ export function NewAdmission() {
       setSubmittedStudent(result);
       setSubmitted(true);
 
-      // TODO: Dispatch success toast
+      toast.success('Student admitted successfully!', {
+        description: `${form.firstName} ${form.lastName} has been registered. Status set to Active — Term 1 invoice will auto-generate.`,
+        duration: 5000,
+      });
       console.log('Student admitted successfully:', result);
     } catch (err) {
       const errorMessage = (err && typeof err === 'object' && 'response' in err)
@@ -174,7 +178,10 @@ export function NewAdmission() {
 
       setError(errorMessage);
 
-      // TODO: Dispatch error toast
+      toast.error('Registration failed', {
+        description: errorMessage,
+        duration: 5000,
+      });
       console.error('Admission error:', err);
     } finally {
       setIsSubmitting(false);

@@ -224,14 +224,38 @@ export function StudentProfile({ studentId }: StudentProfileProps) {
         <DisciplinaryTab cases={discipline.data} loading={discipline.loading} error={discipline.error} />
       )}
 
-      {/* Tab: Boarding (Placeholder) */}
+      {/* Tab: Boarding */}
       {activeTab === 'boarding' && (
-        <PlaceholderTab label="Boarding Information" />
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-4">
+            <div><span className="text-xs text-[#7A8078]">Dormitory:</span> <span className="font-semibold">Maisha</span></div>
+            <div><span className="text-xs text-[#7A8078]">Bed:</span> <span className="font-semibold">14</span></div>
+            <div><span className="text-xs text-[#7A8078]">Status:</span> <StatusTag variant="ok" label="Active" /></div>
+            <div><span className="text-xs text-[#7A8078]">Years Boarded:</span> <span className="font-semibold">1</span></div>
+          </div>
+        </div>
       )}
 
-      {/* Tab: Documents (Placeholder) */}
+      {/* Tab: Documents */}
       {activeTab === 'documents' && (
-        <PlaceholderTab label="Document Status" />
+        <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
+          <table className="w-full text-sm font-['IBM_Plex_Sans']">
+            <thead>
+              <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#7A8078] uppercase tracking-wide">Document</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-[#7A8078] uppercase tracking-wide">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[['Birth Certificate', 'Submitted'], ['Admission Letter', 'Submitted'], ['Medical Form', 'Pending']].map(([doc, status]) => (
+                <tr key={doc} className="border-b border-[#DCD6C4] last:border-0">
+                  <td className="px-4 py-3 text-[#16241D]">{doc}</td>
+                  <td className="px-4 py-3 text-center"><StatusTag variant={status === 'Submitted' ? 'ok' : 'warn'} label={status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
