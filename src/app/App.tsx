@@ -231,13 +231,13 @@ function DataTable({
   onRowClick?: (i: number) => void;
 }) {
   return (
-    <div className="border border-[#DCD6C4] rounded-sm overflow-hidden">
+    <div className="border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden bg-white">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm font-['IBM_Plex_Sans']">
           <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+            <tr className="border-b border-[#DCD6C4] bg-gradient-to-r from-[#F8F6F1] to-[#F3EFE4]">
               {columns.map((col, i) => (
-                <th key={i} className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold whitespace-nowrap">
+                <th key={i} className="px-6 py-3 text-left text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-semibold whitespace-nowrap">
                   {col}
                 </th>
               ))}
@@ -248,10 +248,10 @@ function DataTable({
               <tr
                 key={i}
                 onClick={() => onRowClick?.(i)}
-                className={`border-b border-[#DCD6C4] last:border-0 transition-colors ${onRowClick ? "cursor-pointer hover:bg-[#F8F6F1]" : ""}`}
+                className={`border-b border-[#DCD6C4] last:border-0 transition-all duration-150 ${onRowClick ? "cursor-pointer hover:bg-[#F8F6F1]" : "hover:bg-[#F8F6F1]"}`}
               >
                 {row.map((cell, j) => (
-                  <td key={j} className="px-4 py-3 text-[#16241D] align-top whitespace-nowrap">{cell}</td>
+                  <td key={j} className="px-6 py-4 text-[13px] text-[#16241D] align-top whitespace-nowrap">{cell}</td>
                 ))}
               </tr>
             ))}
@@ -632,8 +632,8 @@ function PrincipalDashboard() {
         <KPICard label="Open Requisitions" value="8" delta="2 pending Tier 2" deltaDir="neutral" />
       </div>
       <div className="grid grid-cols-1 gap-4 mb-6 lg:grid-cols-2">
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Pending Approvals</p>
+        <div className="bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
+          <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold mb-4">Pending Approvals</p>
           <div className="space-y-2">
             {[
               { id: "REQ-2025-0084", label: "Science Lab Reagents", amount: "KES 87,500", tier: "Tier 2", stat: "warn" as StatusVariant },
@@ -650,8 +650,8 @@ function PrincipalDashboard() {
             ))}
           </div>
         </div>
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Recent Alerts</p>
+        <div className="bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
+          <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold mb-4">Recent Alerts</p>
           <div className="space-y-2">
             {[
               { msg: "3 students unaccounted in Form 4 dorm — 21:15", type: "bad" as StatusVariant },
@@ -668,8 +668,8 @@ function PrincipalDashboard() {
         </div>
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Enrolment by Form</p>
+        <div className="bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
+          <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold mb-4">Enrolment by Form</p>
           {[
             { form: "Form 1", count: 348, cap: 360 },
             { form: "Form 2", count: 322, cap: 360 },
@@ -685,8 +685,8 @@ function PrincipalDashboard() {
             </div>
           ))}
         </div>
-        <div className="lg:col-span-2 bg-white border border-[#DCD6C4] rounded-sm p-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Fee Collection — Current Term</p>
+        <div className="lg:col-span-2 bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
+          <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold mb-4">Fee Collection — Current Term</p>
           {[
             { category: "Form 1 Boarders", collected: "KES 2,840,000", expected: "KES 3,600,000", pct: 78 },
             { category: "Form 2 Boarders", collected: "KES 2,610,000", expected: "KES 3,360,000", pct: 78 },
