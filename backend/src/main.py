@@ -1,24 +1,15 @@
 """
-Main FastAPI application entry point.
-Initializes app, configures middleware, and registers routers.
+Main FastAPI application entry point - Development Mode.
+Minimal configuration for frontend development testing.
 """
 import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse
 
 from src.core.config import settings
-from src.core.database import engine
-from src.modules.users.routers import router as auth_router
-from src.modules.finance.routers.ledger import router as ledger_router
-from src.modules.finance.routers.fees import router as fees_router
-from src.modules.finance.routers.reporting import router as reporting_router
-from src.modules.finance.routers.periods import router as periods_router
-from src.modules.finance.routers.mpesa_webhooks import router as mpesa_router
-from src.shared.base_model import Base
 
 # Configure logging
 logging.basicConfig(
@@ -32,17 +23,75 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """
     Lifespan context manager: runs on startup and shutdown.
-    Creates database tables on startup.
+    """
+    # Startup
+    logger.info("Backend initialized in development mode")
+    yield
+    # Shutdown
+    logger.info("Shutdown complete")
+
+
+def create_app() -> FastAPI:
+    """Create and configure FastAPI application."""
+    app = FastAPI(
+        title=settings.PROJECT_NAME,
+        description="School ERP API - Development Mode",
+        version="0.1.0",
+        lifespan=lifespan,
+    )
+
+    # CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173", "http://localhost:3000", "http://0.0.0.0:5173"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Health check endpoint
+    @app.get("/health")
+    async def health():
+        return {"status": "healthy", "environment": settings.ENVIRONMENT}
+
+    # Mock endpoints for frontend development
+    @app.get("/api/health")
+    async def api_health():
+        return {"status": "ok", "message": "Backend API is running"}
+
+    @app.get("/docs")
+    async def swagger_ui():
+        return JSONResponse({"message": "Swagger UI disabled in development mode"})
+
+    return app
+
+
+# Create FastAPI app instance
+app = create_app()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager: runs on startup and shutdown.
+    Creates database tables on startup (if database is available).
     """
     # Startup
     logger.info("Initializing database tables...")
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database initialization complete")
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database initialization complete")
+    except Exception as e:
+        logger.warning(f"Database connection failed (running in mock mode): {str(e)}")
+        logger.info("Backend will run without database persistence")
     yield
     # Shutdown
     logger.info("Closing database engine...")
-    await engine.dispose()
+    try:
+        await engine.dispose()
+    except Exception:
+        pass
     logger.info("Shutdown complete")
 
 

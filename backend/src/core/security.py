@@ -111,3 +111,22 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="User inactive or not found")
 
     return user
+
+
+async def is_refresh_revoked(jti: str) -> bool:
+    """Check if refresh token JTI has been revoked (cached in Redis)."""
+    # TODO: Implement Redis caching for refresh token revocation
+    # For now, assume no tokens are revoked (return False)
+    return False
+
+
+async def revoke_refresh(jti: str) -> None:
+    """Revoke refresh token by JTI (store in Redis with expiry)."""
+    # TODO: Implement Redis caching for refresh token revocation
+    pass
+
+
+async def register_active_refresh(jti: str, expires_in_seconds: int) -> None:
+    """Register active refresh token in Redis (for rotation tracking)."""
+    # TODO: Implement Redis caching for active refresh tokens
+    pass

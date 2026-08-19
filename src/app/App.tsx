@@ -34,13 +34,13 @@ type StatusVariant = "ok" | "warn" | "bad" | "neutral";
 
 function StatusTag({ variant, label }: { variant: StatusVariant; label: string }) {
   const styles: Record<StatusVariant, string> = {
-    ok: "bg-[#E7F0EA] text-[#1F6F4A]",
-    warn: "bg-[#F5EAD6] text-[#B5751F]",
-    bad: "bg-[#F7E6E2] text-[#9C3B2E]",
-    neutral: "bg-[#EBE7DC] text-[#7A8078]",
+    ok: "bg-[#E7F0EA] text-[#1F6F4A] border border-[#1F6F4A]/20",
+    warn: "bg-[#F5EAD6] text-[#B5751F] border border-[#B5751F]/20",
+    bad: "bg-[#F7E6E2] text-[#9C3B2E] border border-[#9C3B2E]/20",
+    neutral: "bg-[#EBE7DC] text-[#7A8078] border border-[#7A8078]/20",
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase rounded-[2px] font-['IBM_Plex_Sans'] ${styles[variant]}`}>
+    <span className={`inline-flex items-center px-3 py-1 text-[11px] font-semibold tracking-wider uppercase rounded-full font-['IBM_Plex_Sans'] transition-all ${styles[variant]}`}>
       {label}
     </span>
   );
@@ -48,13 +48,13 @@ function StatusTag({ variant, label }: { variant: StatusVariant; label: string }
 
 function PriorityTag({ level }: { level: "Critical" | "High" | "Medium" | "Low" }) {
   const map: Record<string, { cls: string }> = {
-    Critical: { cls: "bg-[#F7E6E2] text-[#9C3B2E]" },
-    High: { cls: "bg-[#F5EAD6] text-[#B5751F]" },
-    Medium: { cls: "bg-[#E7F0EA] text-[#1F6F4A]" },
-    Low: { cls: "bg-[#EBE7DC] text-[#7A8078]" },
+    Critical: { cls: "bg-[#F7E6E2] text-[#9C3B2E] border border-[#9C3B2E]/20" },
+    High: { cls: "bg-[#F5EAD6] text-[#B5751F] border border-[#B5751F]/20" },
+    Medium: { cls: "bg-[#E7F0EA] text-[#1F6F4A] border border-[#1F6F4A]/20" },
+    Low: { cls: "bg-[#EBE7DC] text-[#7A8078] border border-[#7A8078]/20" },
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase rounded-[2px] ${map[level].cls}`}>
+    <span className={`inline-flex items-center px-3 py-1 text-[11px] font-semibold tracking-wider uppercase rounded-full ${map[level].cls}`}>
       {level}
     </span>
   );
@@ -67,11 +67,13 @@ function KPICard({
 }) {
   const deltaColor = deltaDir === "up" ? "text-[#1F6F4A]" : deltaDir === "down" ? "text-[#9C3B2E]" : "text-[#7A8078]";
   return (
-    <div className="bg-white border border-[#DCD6C4] p-5 rounded-sm">
-      <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">{label}</p>
-      <p className={`text-3xl font-light text-[#16241D] leading-none mb-1 ${mono ? "font-['IBM_Plex_Mono']" : "font-['Fraunces']"}`}>{value}</p>
+    <div className="bg-white border border-[#DCD6C4] p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold mb-3">{label}</p>
+      <p className={`text-4xl font-light text-[#16241D] leading-tight mb-2 ${mono ? "font-['IBM_Plex_Mono']" : "font-['Playfair Display']"}`}>{value}</p>
       {delta && (
-        <p className={`text-xs font-['IBM_Plex_Sans'] ${deltaColor}`}>{deltaDir === "up" ? "↑" : deltaDir === "down" ? "↓" : ""} {delta}</p>
+        <p className={`text-[12px] font-['IBM_Plex_Sans'] font-medium ${deltaColor}`}>
+          {deltaDir === "up" ? "↑" : deltaDir === "down" ? "↓" : "→"} {delta}
+        </p>
       )}
     </div>
   );
@@ -181,14 +183,20 @@ function RatingSelector({ selected, onChange }: { selected: number | null; onCha
 // ─── Page Header ──────────────────────────────────────────────────────────────
 function PageHeader({ title, subtitle, badge }: { title: string; subtitle?: string; badge?: string }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
-      <div className="min-w-0">
-        <h1 className="font-['Fraunces'] text-2xl font-medium text-[#16241D] leading-tight">{title}</h1>
-        {subtitle && <p className="text-sm text-[#7A8078] mt-0.5 font-['IBM_Plex_Sans']">{subtitle}</p>}
+    <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8 pb-6 border-b border-[#DCD6C4]">
+      <div className="min-w-0 flex-1">
+        <h1 className="font-['Playfair Display'] text-3xl md:text-4xl font-bold text-[#16241D] leading-tight mb-2">{title}</h1>
+        {subtitle && (
+          <p className="text-[14px] text-[#7A8078] font-['IBM_Plex_Sans'] leading-relaxed">
+            {subtitle}
+          </p>
+        )}
       </div>
       <div className="flex items-center gap-3">
         {badge && (
-          <span className="text-[11px] uppercase tracking-widest px-3 py-1 bg-[#EBE7DC] text-[#7A8078] font-['IBM_Plex_Sans'] rounded-sm">{badge}</span>
+          <span className="text-[11px] uppercase tracking-[0.12em] px-4 py-2 bg-gradient-to-r from-[#E7F0EA] to-[#EBE7DC] text-[#1F6F4A] font-['IBM_Plex_Sans'] font-semibold rounded-full border border-[#1F6F4A]/20 whitespace-nowrap">
+            {badge}
+          </span>
         )}
       </div>
     </div>
@@ -386,73 +394,133 @@ function Sidebar({ current, onNavigate, collapsed, onToggle }: {
   collapsed: boolean;
   onToggle: () => void;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Filter nav items based on search
+  const filteredNav = NAV.map(section => ({
+    ...section,
+    items: section.items.filter(item =>
+      !searchQuery || item.label.toLowerCase().includes(searchQuery.toLowerCase()) || section.section.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })).filter(section => section.items.length > 0 || !searchQuery);
+
   return (
-    <aside className={`h-screen flex-shrink-0 flex flex-col bg-[#16241D] transition-all duration-200 ${collapsed ? "w-14" : "w-[230px]"} overflow-hidden`} style={{ borderRight: "1px solid #243320" }}>
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-[#243320]">
-        <div className="w-7 h-7 rounded-[2px] bg-[#1F6F4A] flex items-center justify-center flex-shrink-0">
-          <GraduationCap size={15} className="text-white" />
+    <aside className={`h-screen flex-shrink-0 flex flex-col bg-[#16241D] transition-all duration-300 ${collapsed ? "w-16" : "w-64"} overflow-hidden shadow-lg`} style={{ borderRight: "1px solid #243320" }}>
+      {/* Header with Logo */}
+      <div className="flex-shrink-0 border-b border-[#243320]">
+        <div className="flex items-center gap-3 px-5 py-5">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#1F6F4A] to-[#0d5135] flex items-center justify-center flex-shrink-0 shadow-md">
+            <GraduationCap size={18} className="text-white" />
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-[#E9E6DA] font-['Playfair Display'] font-semibold text-base leading-tight">Nambale</p>
+              <p className="text-[#7A8078] text-[10px] font-['IBM_Plex_Sans']">School ERP</p>
+            </div>
+          )}
+          <button onClick={onToggle} className="ml-auto text-[#7A8078] hover:text-[#E9E6DA] hover:bg-[#1A2A21] transition-all rounded-md p-1.5 focus:outline-none">
+            {collapsed ? <Menu size={16} /> : <X size={16} />}
+          </button>
         </div>
+
+        {/* Search Bar */}
         {!collapsed && (
-          <div>
-            <p className="text-[#E9E6DA] font-['Fraunces'] font-medium text-sm leading-tight">Nambale ERP</p>
-            <p className="text-[#7A8078] text-[10px] font-['IBM_Plex_Sans']">St. Joseph&apos;s H.S.</p>
+          <div className="px-4 pb-4">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#7A8078]" />
+              <input
+                type="text"
+                placeholder="Search modules..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#1A2A21] border border-[#243320] rounded-lg pl-9 pr-3 py-2 text-[12px] text-[#E9E6DA] placeholder-[#4A5C50] focus:border-[#1F6F4A] focus:outline-none transition-colors"
+              />
+            </div>
           </div>
         )}
-        <button onClick={onToggle} className="ml-auto text-[#7A8078] hover:text-[#E9E6DA] transition-colors focus:outline-none">
-          <Menu size={15} />
-        </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3 scrollbar-hide">
-        {NAV.map((section) => (
-          <div key={section.section} className="mb-1">
-            {!collapsed && (
-              <p className="px-4 pt-3 pb-1 text-[9px] uppercase tracking-[0.15em] text-[#4A5C50] font-['IBM_Plex_Sans'] font-semibold">
-                {section.section}
-              </p>
-            )}
-            {section.items.map((item) => {
-              const Icon = ICON_MAP[item.page] ?? FileText;
-              const active = current === item.page;
-              return (
-                <button
-                  key={item.page}
-                  onClick={() => onNavigate(item.page)}
-                  className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-all duration-150 relative group rounded-sm mx-2
-                    ${active
-                      ? "bg-[#1E2E25] text-[#E9E6DA] shadow-[inset_0_0_0_1px_rgba(181,117,31,0.2)]"
-                      : "text-[#8FA895] hover:bg-[#1A2A21] hover:text-[#E9E6DA]"
-                    }`}
-                >
-                  {active && <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#B5751F]" />}
-                  <Icon size={14} className="flex-shrink-0" />
-                  {!collapsed && (
-                    <span className="text-[12px] font-['IBM_Plex_Sans'] truncate">{item.label}</span>
-                  )}
-                </button>
-              );
-            })}
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4 px-2 scrollbar-thin scrollbar-thumb-[#243320] scrollbar-track-transparent">
+        {filteredNav.length === 0 && searchQuery ? (
+          <div className="text-center py-8">
+            <p className="text-[11px] text-[#7A8078] font-['IBM_Plex_Sans']">No modules found</p>
           </div>
-        ))}
+        ) : (
+          filteredNav.map((section) => (
+            <div key={section.section} className="mb-2">
+              {!collapsed && (
+                <p className="px-4 pt-4 pb-2 text-[10px] uppercase tracking-[0.12em] text-[#4A5C50] font-['IBM_Plex_Sans'] font-semibold opacity-75">
+                  {section.section}
+                </p>
+              )}
+              {section.items.map((item) => {
+                const Icon = ICON_MAP[item.page] ?? FileText;
+                const active = current === item.page;
+                return (
+                  <button
+                    key={item.page}
+                    onClick={() => onNavigate(item.page)}
+                    title={collapsed ? item.label : ""}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-150 relative rounded-lg ${
+                      active
+                        ? "bg-[#1E3A2C] text-[#1F6F4A] shadow-[inset_0_0_0_1px_rgba(31,111,74,0.3)]"
+                        : "text-[#8FA895] hover:bg-[#1A2A21] hover:text-[#E9E6DA]"
+                    }`}
+                  >
+                    {active && (
+                      <span className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#1F6F4A] to-[#0d5135] rounded-r-lg" />
+                    )}
+                    <Icon size={16} className="flex-shrink-0" />
+                    {!collapsed && (
+                      <span className="text-[13px] font-['IBM_Plex_Sans'] truncate flex-1">{item.label}</span>
+                    )}
+                    {!collapsed && active && (
+                      <ChevronRight size={14} className="flex-shrink-0 opacity-50" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))
+        )}
       </nav>
 
-      {/* Footer */}
+      {/* User Profile Footer */}
       {!collapsed && (
-        <div className="border-t border-[#243320] px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-[#1F6F4A] flex items-center justify-center">
-              <span className="text-[10px] font-bold text-white">PN</span>
+        <div className="border-t border-[#243320] px-4 py-4">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#1A2A21] transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1F6F4A] to-[#0d5135] flex items-center justify-center flex-shrink-0">
+              <span className="text-[11px] font-bold text-white">PN</span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-[#E9E6DA] font-['IBM_Plex_Sans'] truncate">P. Nambale</p>
-              <p className="text-[9px] text-[#4A5C50] font-['IBM_Plex_Sans']">Principal · Tier 3</p>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-[12px] text-[#E9E6DA] font-['IBM_Plex_Sans'] font-medium truncate">P. Nambale</p>
+              <p className="text-[10px] text-[#7A8078] font-['IBM_Plex_Sans']">Principal</p>
             </div>
-            <button className="text-[#4A5C50] hover:text-[#E9E6DA] transition-colors">
-              <LogOut size={13} />
-            </button>
-          </div>
+            <ChevronDown size={14} className="flex-shrink-0 text-[#7A8078]" />
+          </button>
+
+          {/* User Menu Dropdown */}
+          {showUserMenu && (
+            <div className="absolute bottom-20 left-4 right-4 bg-[#1A2A21] border border-[#243320] rounded-lg shadow-lg z-50">
+              <button className="w-full text-left px-4 py-2 text-[12px] text-[#E9E6DA] hover:bg-[#0F1F18] transition-colors font-['IBM_Plex_Sans'] border-b border-[#243320]">
+                👤 Profile Settings
+              </button>
+              <button className="w-full text-left px-4 py-2 text-[12px] text-[#E9E6DA] hover:bg-[#0F1F18] transition-colors font-['IBM_Plex_Sans'] border-b border-[#243320]">
+                🔐 Change Password
+              </button>
+              <button className="w-full text-left px-4 py-2 text-[12px] text-[#E9E6DA] hover:bg-[#0F1F18] transition-colors font-['IBM_Plex_Sans'] border-b border-[#243320]">
+                🔔 Notifications
+              </button>
+              <button className="w-full text-left px-4 py-2 text-[12px] text-[#9C3B2E] hover:bg-[#0F1F18] transition-colors font-['IBM_Plex_Sans']">
+                🚪 Logout
+              </button>
+            </div>
+          )}
         </div>
       )}
     </aside>
@@ -461,19 +529,71 @@ function Sidebar({ current, onNavigate, collapsed, onToggle }: {
 
 // ─── Top Bar ──────────────────────────────────────────────────────────────────
 function TopBar() {
+  const [showNotifications, setShowNotifications] = useState(false);
+
   return (
-    <div className="h-12 flex-shrink-0 flex items-center justify-end gap-3 px-6 bg-[#F3EFE4] border-b border-[#DCD6C4]">
-      <span className="text-[11px] text-[#7A8078] font-['IBM_Plex_Mono']">Term 2 · Week 6 · 2025</span>
-      <button className="inline-flex items-center gap-2 rounded-sm border border-[#DCD6C4] bg-white px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#7A8078] font-['IBM_Plex_Sans'] hover:border-[#1F6F4A] hover:text-[#16241D] transition-colors">
-        <RefreshCw size={12} />
-        Sync
-      </button>
-      <button className="relative text-[#7A8078] hover:text-[#16241D] transition-colors focus:outline-none">
-        <Bell size={16} />
-        <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#9C3B2E] text-white text-[8px] font-bold rounded-full flex items-center justify-center">3</span>
-      </button>
-      <div className="w-6 h-6 rounded-full bg-[#1F6F4A] flex items-center justify-center">
-        <span className="text-[9px] font-bold text-white">PN</span>
+    <div className="h-16 flex-shrink-0 flex items-center justify-between gap-4 px-8 bg-gradient-to-r from-[#F3EFE4] to-[#FDFBF7] border-b border-[#DCD6C4] shadow-sm">
+      {/* Left: Breadcrumb or context */}
+      <div className="flex items-center gap-2">
+        <span className="text-[12px] text-[#7A8078] font-['IBM_Plex_Mono']">📅 Term 2</span>
+        <span className="text-[11px] text-[#DCD6C4]">•</span>
+        <span className="text-[12px] text-[#7A8078] font-['IBM_Plex_Mono']">Week 6 · 2025</span>
+      </div>
+
+      {/* Right: Actions */}
+      <div className="flex items-center gap-4">
+        {/* Sync Button */}
+        <button className="inline-flex items-center gap-2 rounded-lg border border-[#DCD6C4] bg-white px-4 py-2 text-[11px] font-semibold tracking-wide text-[#16241D] font-['IBM_Plex_Sans'] hover:bg-[#1F6F4A] hover:text-white hover:border-[#1F6F4A] transition-all duration-200">
+          <RefreshCw size={14} />
+          Sync
+        </button>
+
+        {/* Notifications */}
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative text-[#7A8078] hover:text-[#1F6F4A] hover:bg-[#EBE7DC] transition-all rounded-lg p-2 focus:outline-none"
+          >
+            <Bell size={18} />
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-[#9C3B2E] to-[#7a2a1f] text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-md">3</span>
+          </button>
+
+          {/* Notifications Dropdown */}
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 bg-white border border-[#DCD6C4] rounded-lg shadow-xl z-50">
+              <div className="px-5 py-3 border-b border-[#DCD6C4]">
+                <p className="text-[12px] font-semibold text-[#16241D] font-['IBM_Plex_Sans']">Notifications</p>
+              </div>
+              <div className="divide-y divide-[#DCD6C4]">
+                {[
+                  { icon: "🚨", text: "3 students unaccounted in Form 4 — 21:15", time: "5 min ago", type: "critical" },
+                  { icon: "⚠️", text: "M-Pesa funds in suspense awaiting allocation", time: "1 hour ago", type: "warning" },
+                  { icon: "✅", text: "Payroll run completed successfully (74 staff)", time: "3 hours ago", type: "success" },
+                ].map((notif, i) => (
+                  <div key={i} className="px-5 py-3 hover:bg-[#F8F6F1] transition-colors cursor-pointer">
+                    <div className="flex gap-3">
+                      <span className="text-lg">{notif.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] text-[#16241D] font-['IBM_Plex_Sans']">{notif.text}</p>
+                        <p className="text-[10px] text-[#7A8078] font-['IBM_Plex_Sans'] mt-1">{notif.time}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="px-5 py-3 border-t border-[#DCD6C4]">
+                <button className="w-full text-center text-[11px] text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">
+                  View All
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* User Profile Avatar */}
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1F6F4A] to-[#0d5135] flex items-center justify-center shadow-md cursor-pointer hover:shadow-lg transition-shadow">
+          <span className="text-[11px] font-bold text-white">PN</span>
+        </div>
       </div>
     </div>
   );
