@@ -329,6 +329,7 @@ const NAV: NavSection[] = [
       { label: "LPO Register", page: "lpo-register" },
       { label: "GRN Entry", page: "grn-entry" },
         { label: "3-Way Match Auth", page: "three-way-match" },
+        { label: "Accounts Payable Aging", page: "ap-aging-report" },
       { label: "Stores / Inventory", page: "stores" },
       { label: "Stocktake Reconciliation", page: "stocktake" },
     ],
@@ -8800,6 +8801,7 @@ function renderPage(page: NavPage, onNavigate: (p: NavPage) => void): React.Reac
     case "lpo-register": return <LPORegister />;
     case "grn-entry": return <GRNEntry />;
     case "three-way-match": return <ThreeWayMatch />;
+    case "ap-aging-report": return <APAgingReport />;
     case "stores": return <StockIssuance />;
     case "stocktake": return <StocktakeReconciliation />;
     case "staff-directory": return <StaffDirectory />;
@@ -10316,6 +10318,102 @@ function BursaryCreditNote() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+
+// ─── Accounts Payable Aging Report (BR-PRO-007) ─────────────
+
+function useAPAgingData() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    // Simulating backend logic for AP Aging (BR-PRO-007)
+    // await apiGet('/finance/procurement/ap-aging-report')
+    setTimeout(() => {
+      setData({
+        summary: {
+          current: 125000,
+          "1_30_days": 45000,
+          "31_60_days": 12000,
+          "61_90_days": 0,
+          over_90_days: 8500,
+          total: 190500
+        },
+        details: [
+          { supplier: "Stationery World", invoice: "INV-102", balance: 45000, days: 15, bucket: "1_30_days" },
+          { supplier: "ChemLab Inc.", invoice: "INV-994", balance: 12000, days: 42, bucket: "31_60_days" },
+          { supplier: "Office Supplies Ltd", invoice: "INV-71", balance: 8500, days: 112, bucket: "over_90_days" },
+          { supplier: "Textbook Centre", invoice: "INV-442", balance: 125000, days: 0, bucket: "current" },
+        ]
+      });
+      setLoading(false);
+    }, 800);
+  }, []);
+
+  return { data, loading };
+}
+
+function APAgingReport() {
+  const agingData = useAPAgingData();
+  const summary = agingData.data?.summary;
+  const details = agingData.data?.details;
+
+  return (
+    <div>
+      <PageHeader title="Accounts Payable Aging" subtitle="Supplier debt tracking across 30/60/90 days (BR-PRO-007)" />
+      
+      {agingData.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center text-[#7A8078] text-sm font-['IBM_Plex_Sans']">
+          Calculating aging periods...
+        </div>
+      ) : summary && (
+        <>
+          <div className="grid grid-cols-6 gap-0 border border-[#DCD6C4] rounded-sm bg-white mb-6">
+            <div className="p-4 border-r border-[#DCD6C4] text-center">
+              <p className="text-[10px] uppercase font-bold text-[#7A8078] mb-1">Current</p>
+              <p className="font-['IBM_Plex_Mono'] font-bold text-[#1F6F4A]">KES {summary.current.toLocaleString()}</p>
+            </div>
+            <div className="p-4 border-r border-[#DCD6C4] text-center">
+              <p className="text-[10px] uppercase font-bold text-[#7A8078] mb-1">1 - 30 Days</p>
+              <p className="font-['IBM_Plex_Mono'] font-bold text-[#16241D]">KES {summary["1_30_days"].toLocaleString()}</p>
+            </div>
+            <div className="p-4 border-r border-[#DCD6C4] text-center">
+              <p className="text-[10px] uppercase font-bold text-[#7A8078] mb-1">31 - 60 Days</p>
+              <p className="font-['IBM_Plex_Mono'] font-bold text-[#b48600]">KES {summary["31_60_days"].toLocaleString()}</p>
+            </div>
+            <div className="p-4 border-r border-[#DCD6C4] text-center">
+              <p className="text-[10px] uppercase font-bold text-[#7A8078] mb-1">61 - 90 Days</p>
+              <p className="font-['IBM_Plex_Mono'] font-bold text-[#d45b00]">KES {summary["61_90_days"].toLocaleString()}</p>
+            </div>
+            <div className="p-4 border-r border-[#DCD6C4] text-center bg-[#F7E6E2]">
+              <p className="text-[10px] uppercase font-bold text-[#9C3B2E] mb-1">Over 90 Days</p>
+              <p className="font-['IBM_Plex_Mono'] font-bold text-[#9C3B2E]">KES {summary.over_90_days.toLocaleString()}</p>
+            </div>
+            <div className="p-4 text-center bg-[#F9F8F6]">
+              <p className="text-[10px] uppercase font-bold text-[#16241D] mb-1">Total Outstanding</p>
+              <p className="font-['IBM_Plex_Mono'] font-bold text-[#16241D] text-lg">KES {summary.total.toLocaleString()}</p>
+            </div>
+          </div>
+          
+          <div className="bg-white border border-[#DCD6C4] rounded-sm p-0">
+            <DataTable
+              columns={["Supplier", "Invoice No.", "Balance", "Days Overdue", "Bucket", "Action"]}
+              rows={details?.map((inv: any) => [
+                <span className="font-bold text-[#16241D]">{inv.supplier}</span>,
+                <span className="font-['IBM_Plex_Mono'] text-xs">{inv.invoice}</span>,
+                <span className="font-['IBM_Plex_Mono'] text-[#9C3B2E]">KES {inv.balance.toLocaleString()}</span>,
+                <span className="font-['IBM_Plex_Mono'] text-[#7A8078]">{inv.days}</span>,
+                <span className="text-[10px] uppercase font-bold bg-[#F9F8F6] border border-[#DCD6C4] px-2 py-0.5 rounded-sm">{inv.bucket.replace(/_/g, ' ')}</span>,
+                <button className="text-[10px] uppercase font-bold text-[#1F6F4A] border border-[#1F6F4A] px-2 py-1 rounded-sm hover:bg-[#E4F3EB]">Settle</button>
+              ]) || []}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

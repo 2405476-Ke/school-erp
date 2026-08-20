@@ -212,3 +212,69 @@ class ProcurementService:
             "message": "3-Way Match verified successfully. Account Payable is now flagged for payment.",
             "invoice_id": invoice.id
         }
+
+    async def get_ap_aging_report(self, school_id: UUID) -> dict:
+        """
+        Generates Accounts Payable Aging Report (30/60/90 days) (BR-PRO-007)
+        """
+        from datetime import date
+        
+        # Get all approved but unpaid/partially paid invoices
+        query = select(SupplierInvoice).where(
+            SupplierInvoice.school_id == school_id,
+            SupplierInvoice.approved_for_payment == True,
+            SupplierInvoice.invoice_amount > SupplierInvoice.amount_paid
+        ).options(selectinload(SupplierInvoice.lpo))
+        
+        result = await self.db.execute(query)
+        invoices = result.scalars().all()
+        
+        today = date.today()
+        
+        aging_buckets = {
+            "current": 0.0,
+            "1_30_days": 0.0,
+            "31_60_days": 0.0,
+            "61_90_days": 0.0,
+            "over_90_days": 0.0,
+            "total": 0.0
+        }
+        
+        details = []
+        
+        for inv in invoices:
+            balance = float(inv.invoice_amount - inv.amount_paid)
+            aging_buckets["total"] += balance
+            
+            # Default to created_at if due_date is missing
+            reference_date = inv.due_date if inv.due_date else inv.created_at.date()
+            days_overdue = (today - reference_date).days
+            
+            bucket_name = "current"
+            if days_overdue <= 0:
+                aging_buckets["current"] += balance
+            elif 1 <= days_overdue <= 30:
+                aging_buckets["1_30_days"] += balance
+                bucket_name = "1_30_days"
+            elif 31 <= days_overdue <= 60:
+                aging_buckets["31_60_days"] += balance
+                bucket_name = "31_60_days"
+            elif 61 <= days_overdue <= 90:
+                aging_buckets["61_90_days"] += balance
+                bucket_name = "61_90_days"
+            else:
+                aging_buckets["over_90_days"] += balance
+                bucket_name = "over_90_days"
+                
+            details.append({
+                "invoice_number": inv.invoice_number,
+                "lpo_number": inv.lpo.lpo_number if inv.lpo else "N/A",
+                "balance": balance,
+                "days_overdue": max(0, days_overdue),
+                "bucket": bucket_name
+            })
+            
+        return {
+            "summary": aging_buckets,
+            "details": details
+        }

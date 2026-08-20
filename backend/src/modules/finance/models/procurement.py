@@ -2,7 +2,7 @@
 from uuid import UUID
 from decimal import Decimal
 from typing import List, Optional
-from sqlalchemy import String, Numeric, Text, ForeignKey, Enum, Boolean
+from sqlalchemy import String, Numeric, Date, Text, ForeignKey, Enum, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from enum import Enum as PyEnum
@@ -141,6 +141,10 @@ class SupplierInvoice(AuditableBase, TenantMixin):
         PG_UUID(as_uuid=True), ForeignKey("local_purchase_orders.id"), nullable=False
     )
     invoice_amount: Mapped[Decimal] = mapped_column(Numeric(15, 4), nullable=False)
+    amount_paid: Mapped[Decimal] = mapped_column(Numeric(15, 4), default=Decimal("0.0000"), nullable=False)
+    
+    invoice_date: Mapped[Optional[Date]] = mapped_column(Date, nullable=True)
+    due_date: Mapped[Optional[Date]] = mapped_column(Date, nullable=True)
     
     # 3-Way Match Status
     is_three_way_matched: Mapped[bool] = mapped_column(default=False, nullable=False)
