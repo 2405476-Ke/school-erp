@@ -300,6 +300,7 @@ const NAV: NavSection[] = [
     section: "Academics",
     items: [
       { label: "Timetable Builder", page: "timetable" },
+        { label: "Syllabus Tracker", page: "syllabus" },
       { label: "CBC Assessment Entry", page: "cbc-assessment" },
       { label: "8-4-4 Mark Entry", page: "844-marks" },
       { label: "HOD Mark Review", page: "hod-review" },
@@ -8686,6 +8687,7 @@ function renderPage(page: NavPage, onNavigate: (p: NavPage) => void): React.Reac
     case "student-profile": return <StudentProfile />;
     case "transfers": return <TransferRequest />;
     case "timetable": return <TimetableBuilder />;
+      case "syllabus": return <SyllabusTracker />;
     case "cbc-assessment": return <CBCAssessment />;
     case "844-marks": return <MarksEntry844 />;
     case "hod-review": return <HODMarkReview />;
@@ -8763,6 +8765,174 @@ export default function App() {
           </div>
         </main>
       </div>
+    </div>
+  );
+}
+
+
+
+// ─── Syllabus Tracker Component ──────────────────────────────────────
+
+function useSyllabusProgress(streamId: string | undefined, subjectId: string | undefined) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchProgress = async () => {
+    if (!streamId || !subjectId) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiGet<any>(`/syllabus/progress?stream_id=${streamId}&subject_id=${subjectId}`);
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch syllabus progress');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProgress();
+  }, [streamId, subjectId]);
+
+  return { data, loading, error, refetch: fetchProgress };
+}
+
+function SyllabusTracker() {
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
+  const [isToggling, setIsToggling] = useState<string | null>(null);
+  const [toggleError, setToggleError] = useState<string | null>(null);
+
+  // Reusing existing hooks to get dropdown data
+  const classes = useTimetableClasses();
+  // using 8-4-4 for now to populate subjects, or we can make it generic
+  const subjects = useTimetableSubjects("8-4-4"); 
+  const progress = useSyllabusProgress(selectedClassId, selectedSubjectId);
+
+  const handleToggle = async (topicId: string, currentStatus: boolean) => {
+    try {
+      setIsToggling(topicId);
+      setToggleError(null);
+      
+      const termId = "00000000-0000-0000-0000-000000000000";
+      const schoolId = "00000000-0000-0000-0000-000000000000";
+      
+      await apiPost('/syllabus/coverage/toggle', {
+        school_id: schoolId,
+        stream_id: selectedClassId,
+        subject_id: selectedSubjectId,
+        topic_id: topicId,
+        is_completed: !currentStatus
+      });
+      
+      await progress.refetch();
+    } catch (err) {
+      setToggleError(err instanceof Error ? err.message : 'Failed to update topic');
+    } finally {
+      setIsToggling(null);
+    }
+  };
+
+  return (
+    <div>
+      <PageHeader title="Syllabus Tracker" subtitle="Real-time KICD syllabus coverage for teachers and HODs" />
+
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Class / Stream</label>
+          <select 
+            value={selectedClassId}
+            onChange={(e) => setSelectedClassId(e.target.value)}
+            className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+          >
+            <option value="">Select a class...</option>
+            {classes.data?.map((c: any) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Subject</label>
+          <select 
+            value={selectedSubjectId}
+            onChange={(e) => setSelectedSubjectId(e.target.value)}
+            className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+          >
+            <option value="">Select a subject...</option>
+            {subjects.data?.map((s: any) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {(classes.error || subjects.error || progress.error || toggleError) && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-6">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {classes.error || subjects.error || progress.error || toggleError}</p>
+        </div>
+      )}
+
+      {selectedClassId && selectedSubjectId && (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-6">
+          {progress.loading && !progress.data ? (
+            <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans'] text-center py-8">Loading syllabus...</p>
+          ) : progress.data && (
+            <>
+              {/* Progress Bar */}
+              <div className="mb-8">
+                <div className="flex justify-between items-end mb-2">
+                  <h3 className="font-semibold font-['IBM_Plex_Sans'] text-lg">Coverage Progress</h3>
+                  <span className="text-2xl font-bold font-['IBM_Plex_Mono'] text-[#1F6F4A]">{progress.data.percentage}%</span>
+                </div>
+                <div className="w-full bg-[#EBE7DC] rounded-sm h-4 overflow-hidden">
+                  <div 
+                    className="h-full bg-[#1F6F4A] transition-all duration-500 ease-out"
+                    style={{ width: `${progress.data.percentage}%` }}
+                  />
+                </div>
+                <p className="text-xs text-[#7A8078] mt-2 font-['IBM_Plex_Sans']">
+                  {progress.data.completed_topics} out of {progress.data.total_topics} topics completed
+                </p>
+              </div>
+
+              {/* Topics List */}
+              <div className="space-y-3">
+                <h3 className="font-semibold font-['IBM_Plex_Sans'] text-md mb-4 border-b border-[#DCD6C4] pb-2">KICD Master Syllabus Topics</h3>
+                {progress.data.topics?.map((topic: any) => (
+                  <div key={topic.id} className={`flex items-center gap-4 p-4 border rounded-sm transition-colors ${topic.is_completed ? 'bg-[#F3EFE4] border-[#DCD6C4]' : 'bg-white border-[#DCD6C4] hover:border-[#1F6F4A]'}`}>
+                    <button
+                      onClick={() => handleToggle(topic.id, topic.is_completed)}
+                      disabled={isToggling === topic.id}
+                      className={`w-6 h-6 rounded flex items-center justify-center shrink-0 transition-colors ${
+                        topic.is_completed 
+                          ? 'bg-[#1F6F4A] text-white' 
+                          : 'bg-white border-2 border-[#DCD6C4]'
+                      } ${isToggling === topic.id ? 'opacity-50 cursor-wait' : ''}`}
+                    >
+                      {topic.is_completed && (
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                    <div>
+                      <h4 className={`font-semibold font-['IBM_Plex_Sans'] ${topic.is_completed ? 'text-[#7A8078] line-through' : 'text-[#16241D]'}`}>
+                        Topic {topic.topic_number}: {topic.title}
+                      </h4>
+                      {topic.description && (
+                        <p className="text-sm text-[#7A8078] mt-1">{topic.description}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
