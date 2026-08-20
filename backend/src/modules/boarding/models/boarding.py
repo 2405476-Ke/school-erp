@@ -367,3 +367,34 @@ class DisciplinaryAction(AuditableBase, TenantMixin):
 
 # Forward references for cross-module imports
 Student = None
+
+
+class SickbayAdmission(AuditableBase, TenantMixin):
+    """
+    Clinic/Nurse flags a student as admitted to sickbay (BR-BRD-004).
+    This automatically removes the student from the expected dormitory roll call
+    during muster checks, providing cross-department visibility.
+    
+    Attributes:
+        school_id: Tenant identifier
+        student_id: FK to Student (the admitted student)
+        admitted_by_staff_id: FK to Staff (Nurse who admitted)
+        admitted_at: Timestamp when student was admitted
+        diagnosis_notes: Clinical notes / reason for admission
+        expected_discharge_date: Estimated discharge date (nullable)
+        discharged_at: Actual discharge timestamp (null = still admitted)
+        is_active: True while student is currently in sickbay
+    """
+    __tablename__ = "sickbay_admissions"
+
+    student_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("students.id"), nullable=False, index=True
+    )
+    admitted_by_staff_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), nullable=False
+    )
+    admitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    diagnosis_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    expected_discharge_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    discharged_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, index=True)

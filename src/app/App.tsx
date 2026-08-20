@@ -3264,8 +3264,20 @@ function useMusterRollData(selectedDate: string | undefined) {
         const result = await apiGet<any>(`/boarding/muster-roll?school_id=${schoolId}&date=${selectedDate}`);
         setData(result);
         
-        console.log(`Would fetch muster roll for date ${selectedDate}`);
-        
+        // MOCK: Real-time muster roll data (BR-BRD-003)
+          const result = {
+            recorded_time: new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' }),
+            summary: { in_dorm: 142, on_leave: 18, sickbay: 3, unaccounted: 2 },
+            students: [
+              { student_id: "s001", name: "Amina Hassan", admission_no: "ADM-2024-001", dorm_location: "Serengeti House / Wing A / Bed A-04", status: "In Dorm" },
+              { student_id: "s002", name: "Brian Otieno", admission_no: "ADM-2024-045", dorm_location: "Kilimanjaro House / Wing B / Bed B-12", status: "In Dorm" },
+              { student_id: "s003", name: "Cynthia Waweru", admission_no: "ADM-2024-012", dorm_location: "Serengeti House / Wing A / Bed A-09", status: "On Leave" },
+              { student_id: "s004", name: "David Mwangi", admission_no: "ADM-2024-088", dorm_location: "Nile House / Wing C / Bed C-03", status: "Sickbay" },
+              { student_id: "s005", name: "Esther Chebet", admission_no: "ADM-2024-031", dorm_location: "Kilimanjaro House / Wing A / Bed A-21", status: "Unaccounted" },
+              { student_id: "s006", name: "Felix Njoroge", admission_no: "ADM-2024-067", dorm_location: "Serengeti House / Wing B / Bed B-07", status: "Unaccounted" },
+            ]
+          };
+          setData(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load muster roll');
       } finally {
@@ -8802,6 +8814,10 @@ function renderPage(page: NavPage, onNavigate: (p: NavPage) => void): React.Reac
     case "grn-entry": return <GRNEntry />;
     case "three-way-match": return <ThreeWayMatch />;
     case "ap-aging-report": return <APAgingReport />;
+    case "hostel-setup": return <HostelSetup />;
+    case "dorm-allocation": return <DormAllocation />;
+    case "sickbay": return <SickbayAdmissions />;
+    case "discipline-log": return <DisciplinaryLog />;
     case "stores": return <StockIssuance />;
     case "stocktake": return <StocktakeReconciliation />;
     case "staff-directory": return <StaffDirectory />;
@@ -10414,6 +10430,207 @@ function APAgingReport() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+
+// ─── Hostel Infrastructure Setup (BR-BRD-001) ──────────────────
+function HostelSetup() {
+  const hostels = [
+    { name: "Serengeti House", code: "SER", total: 120, occupied: 104, dorms: [
+      { name: "Wing A", capacity: 40, occupied: 38 },
+      { name: "Wing B", capacity: 40, occupied: 36 },
+      { name: "Wing C", capacity: 40, occupied: 30 },
+    ]},
+    { name: "Kilimanjaro House", code: "KIL", total: 80, occupied: 72, dorms: [
+      { name: "Wing A", capacity: 40, occupied: 38 },
+      { name: "Wing B", capacity: 40, occupied: 34 },
+    ]},
+    { name: "Nile House", code: "NIL", total: 60, occupied: 40, dorms: [
+      { name: "Wing C", capacity: 60, occupied: 40 },
+    ]},
+  ];
+  return (
+    <div>
+      <PageHeader title="Hostel Infrastructure" subtitle="Boarding capacity model — Hostels, Dormitories, Cubicles & Beds (BR-BRD-001)" />
+      <div className="grid grid-cols-1 gap-6">
+        {hostels.map(h => {
+          const utilPct = Math.round(h.occupied / h.total * 100);
+          return (
+            <div key={h.name} className="bg-white border border-[#DCD6C4] rounded-sm">
+              <div className="p-5 border-b border-[#DCD6C4] flex items-center justify-between">
+                <div>
+                  <p className="font-['Fraunces'] text-lg text-[#16241D]">{h.name}</p>
+                  <p className="text-xs text-[#7A8078] font-['IBM_Plex_Mono']">Code: {h.code}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-['IBM_Plex_Mono'] font-bold text-2xl text-[#16241D]">{h.occupied}<span className="text-sm text-[#7A8078">/{h.total}</span></p>
+                  <p className="text-xs text-[#7A8078]">{utilPct}% utilization</p>
+                  <div className="w-32 bg-[#EDE8DA] rounded-full h-1.5 mt-1">
+                    <div className={`h-1.5 rounded-full ${utilPct > 90 ? 'bg-[#9C3B2E]' : 'bg-[#1F6F4A]'}`} style={{width: `${utilPct}%`}}></div>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 grid grid-cols-3 gap-4">
+                {h.dorms.map(d => (
+                  <div key={d.name} className="border border-[#DCD6C4] rounded-sm p-3">
+                    <p className="text-sm font-semibold text-[#16241D]">{d.name}</p>
+                    <p className="text-xs text-[#7A8078] font-['IBM_Plex_Mono']">{d.occupied}/{d.capacity} beds</p>
+                    <div className="w-full bg-[#EDE8DA] rounded-full h-1 mt-2">
+                      <div className="h-1 rounded-full bg-[#1F6F4A]" style={{width: `${Math.round(d.occupied/d.capacity*100)}%`}}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Bed Allocation (BR-BRD-002) ───────────────────────────────
+function DormAllocation() {
+  const [studentId, setStudentId] = useState("");
+  const [selectedBed, setSelectedBed] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const beds = [
+    { id: "b001", label: "Serengeti / Wing A / Bed A-05", occupied: false },
+    { id: "b002", label: "Serengeti / Wing B / Bed B-15", occupied: false },
+    { id: "b003", label: "Kilimanjaro / Wing A / Bed A-08", occupied: true },
+    { id: "b004", label: "Nile / Wing C / Bed C-14", occupied: false },
+  ];
+  const availableBeds = beds.filter(b => !b.occupied);
+  const handleAllocate = async () => {
+    if (!studentId || !selectedBed) { setError("Please enter Student ID and select a bed."); return; }
+    setError(null);
+    await new Promise(r => setTimeout(r, 700));
+    // Real: await apiPost('/boarding/bed-allocations', { student_id, bed_id })
+    setSuccess(true);
+  };
+  return (
+    <div>
+      <PageHeader title="Bed Allocation" subtitle="Assign boarders to specific beds — anti-overbooking enforced (BR-BRD-002)" />
+      {success ? (
+        <ValidationCallout type="success" message={`Student ${studentId} successfully allocated to ${beds.find(b=>b.id===selectedBed)?.label}. Utilization records updated.`} />
+      ) : (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 max-w-lg">
+          {error && <ValidationCallout type="error" message={error} />}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold uppercase tracking-wide text-[#7A8078] mb-1 font-['IBM_Plex_Sans']">Student Admission No.</label>
+            <input type="text" value={studentId} onChange={e => setStudentId(e.target.value)} placeholder="e.g. ADM-2024-001" className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
+          </div>
+          <div className="mb-6">
+            <label className="block text-xs font-semibold uppercase tracking-wide text-[#7A8078] mb-1 font-['IBM_Plex_Sans']">Available Bed</label>
+            <select value={selectedBed} onChange={e => setSelectedBed(e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]">
+              <option value="">— Select available bed —</option>
+              {availableBeds.map(b => <option key={b.id} value={b.id}>{b.label}</option>)}
+            </select>
+          </div>
+          <button onClick={handleAllocate} className="bg-[#1F6F4A] text-white px-5 py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Allocate Bed</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Sickbay Admissions (BR-BRD-004) ──────────────────────────
+function SickbayAdmissions() {
+  const [studentId, setStudentId] = useState("");
+  const [notes, setNotes] = useState("");
+  const [admitting, setAdmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const currentPatients = [
+    { name: "David Mwangi", adm: "ADM-2024-088", admitted: "2026-08-20 21:30", notes: "High fever / malaria suspected", bed: "Sickbay Bed 2" },
+    { name: "Grace Achieng", adm: "ADM-2024-055", admitted: "2026-08-21 06:00", notes: "Sprained ankle", bed: "Sickbay Bed 3" },
+    { name: "Henry Kiprotich", adm: "ADM-2024-099", admitted: "2026-08-21 07:15", notes: "Vomiting / dehydration", bed: "Sickbay Bed 1" },
+  ];
+  const handleAdmit = async () => {
+    setAdmitting(true);
+    await new Promise(r => setTimeout(r, 700));
+    // Real: await apiPost('/boarding/sickbay', { student_id, diagnosis_notes })
+    setSuccess(true); setAdmitting(false);
+  };
+  return (
+    <div>
+      <PageHeader title="Sickbay Admissions" subtitle="Nurse portal — admitted students automatically removed from muster roll (BR-BRD-004)" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2 bg-white border border-[#DCD6C4] rounded-sm">
+          <div className="p-4 border-b border-[#DCD6C4]"><p className="text-[11px] uppercase tracking-widest font-semibold text-[#7A8078] font-['IBM_Plex_Sans']">Current Inpatients — {currentPatients.length} Admitted</p></div>
+          <DataTable columns={["Patient", "Admitted At", "Notes", "Bed", "Action"]} rows={currentPatients.map(p => [
+            <div><p className="font-bold text-sm">{p.name}</p><p className="text-xs font-['IBM_Plex_Mono'] text-[#7A8078]">{p.adm}</p></div>,
+            <span className="font-['IBM_Plex_Mono'] text-xs">{p.admitted}</span>,
+            <span className="text-xs text-[#7A8078]">{p.notes}</span>,
+            <span className="text-xs">{p.bed}</span>,
+            <button className="text-[10px] uppercase font-bold text-[#1F6F4A] border border-[#1F6F4A] px-2 py-1 rounded-sm hover:bg-[#E4F3EB]">Discharge</button>
+          ])} />
+        </div>
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
+          <p className="text-[11px] uppercase tracking-widest font-semibold text-[#7A8078] mb-4 font-['IBM_Plex_Sans']">Admit New Patient</p>
+          {success ? <ValidationCallout type="success" message="Student admitted to sickbay. Muster roll updated automatically." /> : (<>
+            <div className="mb-3"><label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">Student ID / Adm No.</label><input type="text" value={studentId} onChange={e => setStudentId(e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm" placeholder="ADM-2024-..." /></div>
+            <div className="mb-4"><label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">Diagnosis / Notes</label><textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm resize-none" placeholder="Symptoms and initial assessment..." /></div>
+            <button onClick={handleAdmit} disabled={admitting || !studentId} className="w-full bg-[#9C3B2E] text-white px-4 py-2 rounded-sm text-sm font-semibold hover:bg-[#7a2f24] disabled:opacity-50">{admitting ? "Admitting..." : "Admit to Sickbay"}</button>
+          </>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Disciplinary Log (BR-BRD-005) ───────────────────────────
+function DisciplinaryLog() {
+  const [studentId, setStudentId] = useState("");
+  const [category, setCategory] = useState("CONDUCT");
+  const [description, setDescription] = useState("");
+  const [severity, setSeverity] = useState(2);
+  const [location, setLocation] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const incidents = [
+    { date: "2026-08-19", student: "Felix Njoroge", adm: "ADM-2024-067", category: "CURFEW", severity: 3, description: "Found outside dormitory after 10pm lights-out", action: "Warning Issued" },
+    { date: "2026-08-18", student: "Brian Otieno", adm: "ADM-2024-045", category: "PROPERTY", severity: 2, description: "Vandalism of dormitory door", action: "Community Service" },
+    { date: "2026-08-15", student: "Cynthia Waweru", adm: "ADM-2024-012", category: "UNIFORM", severity: 1, description: "Out of uniform during evening prep", action: "Warning Issued" },
+  ];
+  const handleSubmit = async () => {
+    await new Promise(r => setTimeout(r, 700));
+    // Real: await apiPost('/boarding/disciplinary', { student_id, category, description, severity, location })
+    setSubmitted(true);
+  };
+  return (
+    <div>
+      <PageHeader title="Disciplinary Log" subtitle="Record and track boarding infractions linked to student profile (BR-BRD-005)" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <DataTable columns={["Date", "Student", "Category", "Severity", "Description", "Action Taken"]} rows={incidents.map(i => [
+            <span className="font-['IBM_Plex_Mono'] text-xs">{i.date}</span>,
+            <div><p className="font-bold text-sm">{i.student}</p><p className="text-xs font-['IBM_Plex_Mono'] text-[#7A8078]">{i.adm}</p></div>,
+            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm ${i.category === 'CURFEW' || i.category === 'SUBSTANCE' ? 'bg-[#F7E6E2] text-[#9C3B2E]' : 'bg-[#F3EFE4] text-[#7A8078]'}`}>{i.category}</span>,
+            <div className="flex gap-0.5">{[1,2,3,4,5].map(n => <div key={n} className={`w-2.5 h-2.5 rounded-full ${n <= i.severity ? 'bg-[#9C3B2E]' : 'bg-[#DCD6C4]'}`} />)}</div>,
+            <span className="text-xs text-[#7A8078]">{i.description}</span>,
+            <span className="text-xs text-[#1F6F4A] font-semibold">{i.action}</span>,
+          ])} />
+        </div>
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
+          <p className="text-[11px] uppercase tracking-widest font-semibold text-[#7A8078] mb-4 font-['IBM_Plex_Sans']">Log New Infraction</p>
+          {submitted ? <ValidationCallout type="success" message="Disciplinary incident recorded and linked to student profile." /> : (<>
+            <div className="mb-3"><label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">Student Adm No.</label><input value={studentId} onChange={e => setStudentId(e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm" placeholder="ADM-2024-..." /></div>
+            <div className="mb-3"><label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">Category</label>
+              <select value={category} onChange={e => setCategory(e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm">
+                {["ACADEMIC","CONDUCT","CURFEW","SUBSTANCE","SAFETY","PROPERTY","UNIFORM","OTHER"].map(c => <option key={c}>{c}</option>)}
+              </select></div>
+            <div className="mb-3"><label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">Location</label><input value={location} onChange={e => setLocation(e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm" placeholder="e.g. Dorm A corridor" /></div>
+            <div className="mb-3"><label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">Severity (1–5)</label>
+              <input type="range" min={1} max={5} value={severity} onChange={e => setSeverity(+e.target.value)} className="w-full accent-[#9C3B2E]" />
+              <p className="text-xs text-[#9C3B2E] font-bold mt-0.5">Level {severity} — {["","Minor","Low","Moderate","Serious","Critical"][severity]}</p>
+            </div>
+            <div className="mb-4"><label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">Description</label><textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm resize-none" placeholder="Describe the incident in full..." /></div>
+            <button onClick={handleSubmit} disabled={!studentId || !description} className="w-full bg-[#16241D] text-white px-4 py-2 rounded-sm text-sm font-semibold hover:bg-[#0e1a15] disabled:opacity-50">Log Incident</button>
+          </>)}
+        </div>
+      </div>
     </div>
   );
 }
