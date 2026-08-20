@@ -141,6 +141,10 @@ def create_app() -> FastAPI:
         }
 
     # Register routers
+    from src.modules.settings.routers import router as settings_router
+    from src.modules.dashboard.routers import router as dashboard_router
+    app.include_router(settings_router, prefix=settings.API_V1_STR)
+    app.include_router(dashboard_router, prefix=settings.API_V1_STR)
     app.include_router(auth_router, prefix=settings.API_V1_STR)
     app.include_router(ledger_router, prefix=settings.API_V1_STR)
     app.include_router(fees_router, prefix=settings.API_V1_STR)
@@ -165,3 +169,4 @@ if __name__ == "__main__":
         reload=settings.DEBUG,
         log_level="debug" if settings.DEBUG else "info",
     )
+

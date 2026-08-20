@@ -22,7 +22,7 @@ import { StockIssuance } from "@/app/components/StockIssuance";
 import { BatchReport } from "@/app/components/BatchReport";
 
 // ─── API & Services ───────────────────────────────────────────────────────────
-// import { apiGet, apiPost } from "@/services/api"; // Uncomment when backend is ready
+import { apiGet, apiPost } from "../services/api";
 const INK = "#16241D";
 const PRIMARY = "#1F6F4A";
 const OCHRE = "#B5751F";
@@ -634,12 +634,12 @@ function usePrincipalDashboardKPIs() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /dashboard/principal/kpis?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet(`/dashboard/principal/kpis?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet(`/dashboard/principal/kpis?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch principal KPIs");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load KPIs');
       } finally {
@@ -663,12 +663,12 @@ function usePrincipalPendingApprovals() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /dashboard/principal/pending-approvals?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet(`/dashboard/principal/pending-approvals?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet(`/dashboard/principal/pending-approvals?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch pending approvals");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load approvals');
       } finally {
@@ -692,12 +692,12 @@ function usePrincipalAlerts() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /dashboard/principal/alerts?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet(`/dashboard/principal/alerts?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet(`/dashboard/principal/alerts?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch principal alerts");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load alerts');
       } finally {
@@ -721,12 +721,12 @@ function usePrincipalEnrolmentData() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /dashboard/principal/enrolment?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet(`/dashboard/principal/enrolment?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet(`/dashboard/principal/enrolment?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch enrolment data");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load enrolment');
       } finally {
@@ -750,12 +750,12 @@ function usePrincipalFeeCollectionData() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /dashboard/principal/fee-collection?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet(`/dashboard/principal/fee-collection?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet(`/dashboard/principal/fee-collection?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch fee collection data");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load fee data');
       } finally {
@@ -819,7 +819,7 @@ function PrincipalDashboard({ onNavigate }: { onNavigate?: (page: NavPage) => vo
   return (
     <div>
       <Breadcrumbs items={[{ label: "Home" }, { label: "Dashboard" }]} />
-      <PageHeader title="Principal Dashboard" subtitle="St. Joseph's High School — Summary overview" badge="Term 2 · Week 6" />
+      <PageHeader title="Principal Dashboard" subtitle={`${localStorage.getItem("school_name") || "Nambale High"} — Summary overview`} badge="Term 2 · Week 6" />
       
       {/* Error Alert */}
       {hasError && (
@@ -991,12 +991,12 @@ function useBursarDashboardKPIs() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /dashboard/bursar/kpis?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet(`/dashboard/bursar/kpis?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet(`/dashboard/bursar/kpis?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch bursar KPIs");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load KPIs');
       } finally {
@@ -1020,12 +1020,12 @@ function useBursarVoteHeads() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /dashboard/bursar/vote-heads?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet(`/dashboard/bursar/vote-heads?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet(`/dashboard/bursar/vote-heads?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch vote head data");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load vote heads');
       } finally {
@@ -1049,12 +1049,12 @@ function useBursarUnmatchedTransactions() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /dashboard/bursar/unmatched-transactions?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet(`/dashboard/bursar/unmatched-transactions?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet(`/dashboard/bursar/unmatched-transactions?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch unmatched transactions");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load transactions');
       } finally {
@@ -1212,12 +1212,12 @@ function useAssessmentClasses() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch assessment classes from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load classes');
       } finally {
@@ -1246,12 +1246,12 @@ function useAssessmentSubjects() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/cbc-subjects?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/cbc-subjects?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch CBC subjects from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load subjects');
       } finally {
@@ -1282,12 +1282,12 @@ function useAssessmentStrands(subjectId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/cbc-strands?subject_id=${subjectId}&school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/cbc-strands?subject_id=${subjectId}&school_id=${schoolId}`);
+        setData(result);
         
         console.log(`Would fetch strands for subject ${subjectId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load strands');
       } finally {
@@ -1318,12 +1318,12 @@ function useClassStudents(classId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/class/${classId}/students?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/class/${classId}/students?school_id=${schoolId}`);
+        setData(result);
         
         console.log(`Would fetch students for class ${classId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load students');
       } finally {
@@ -1355,10 +1355,10 @@ function useExistingRatings(classId: string | undefined, subjectId: string | und
         setError(null);
         // BACKEND: Replace with real API call
         // const result = await apiGet<Record<string, number>>(`/academics/cbc-assessment?class_id=${classId}&subject_id=${subjectId}&strand_id=${strandId}`);
-        // setData(result);
+        setData(result);
         
         console.log(`Would fetch ratings for class ${classId}, subject ${subjectId}, strand ${strandId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load ratings');
       } finally {
@@ -1646,12 +1646,12 @@ function useMarksEntryClasses() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch marks entry classes from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load classes');
       } finally {
@@ -1680,12 +1680,12 @@ function useExamSessions() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/exam-sessions?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/exam-sessions?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch exam sessions from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load exam sessions');
       } finally {
@@ -1714,12 +1714,12 @@ function useMarksEntrySubjects844() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/subjects?curriculum=8-4-4&school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/subjects?curriculum=8-4-4&school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch 8-4-4 subjects from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load subjects');
       } finally {
@@ -1750,12 +1750,12 @@ function useMarksEntryClassStudents(classId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/class/${classId}/students?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/class/${classId}/students?school_id=${schoolId}`);
+        setData(result);
         
         console.log(`Would fetch students for class ${classId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load students');
       } finally {
@@ -1787,10 +1787,10 @@ function useExistingExamMarks(classId: string | undefined, examSessionId: string
         setError(null);
         // BACKEND: Replace with real API call
         // const result = await apiGet<Record<string, Record<string, number>>>(`/academics/exam-marks?class_id=${classId}&exam_session_id=${examSessionId}`);
-        // setData(result);
+        setData(result);
         
         console.log(`Would fetch marks for class ${classId}, exam ${examSessionId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load existing marks');
       } finally {
@@ -2089,11 +2089,11 @@ function useFeeLedgerStudent(studentId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any>(`/fee-management/fee-ledger/student?student_id=${studentId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/fee-management/fee-ledger/student?student_id=${studentId}`);
+        setData(result);
         
         console.log(`Would fetch fee ledger student info for ${studentId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load student info');
       } finally {
@@ -2124,11 +2124,11 @@ function useFeeLedgerStats(studentId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any>(`/fee-management/fee-ledger/stats?student_id=${studentId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/fee-management/fee-ledger/stats?student_id=${studentId}`);
+        setData(result);
         
         console.log(`Would fetch fee ledger stats for ${studentId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load statistics');
       } finally {
@@ -2159,11 +2159,11 @@ function useFeeLedgerItems(studentId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any[]>(`/fee-management/fee-ledger/items?student_id=${studentId}`);
-        // setData(result);
+        const result = await apiGet<any[]>(`/fee-management/fee-ledger/items?student_id=${studentId}`);
+        setData(result);
         
         console.log(`Would fetch fee ledger items for ${studentId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load ledger items');
       } finally {
@@ -2362,12 +2362,12 @@ function useUnmatchedPayments() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/fee-management/mpesa/unmatched-payments?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/fee-management/mpesa/unmatched-payments?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch unmatched M-Pesa payments");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load payments');
       } finally {
@@ -2396,12 +2396,12 @@ function useMatchedPayments() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/fee-management/mpesa/matched-payments?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/fee-management/mpesa/matched-payments?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch matched M-Pesa payments");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load matched payments');
       } finally {
@@ -2435,12 +2435,12 @@ function useStudentSearch(query: string) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/admissions/students/search?q=${query}&school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/admissions/students/search?q=${query}&school_id=${schoolId}`);
+        setData(result);
         
         console.log(`Would search students for: ${query}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to search students');
       } finally {
@@ -2632,12 +2632,12 @@ function useProcurementVoteHeads() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/procurement/vote-heads?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/procurement/vote-heads?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch procurement vote heads");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load vote heads');
       } finally {
@@ -2668,12 +2668,12 @@ function useBudgetCheck(voteHeadId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any>(`/procurement/budget-check?school_id=${schoolId}&vote_head_id=${voteHeadId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any>(`/procurement/budget-check?school_id=${schoolId}&vote_head_id=${voteHeadId}`);
+        setData(result);
         
         console.log(`Would check budget for vote head ${voteHeadId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to check budget');
       } finally {
@@ -2702,12 +2702,12 @@ function useCurrentUser() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any>(`/users/current?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any>(`/users/current?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch current user info");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load user info');
       } finally {
@@ -2985,12 +2985,12 @@ function useGeneralLedgerEntries(year: string | undefined, term: string | undefi
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/accounting/general-ledger?school_id=${schoolId}&year=${year}&term=${term}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/accounting/general-ledger?school_id=${schoolId}&year=${year}&term=${term}`);
+        setData(result);
         
         console.log(`Would fetch general ledger for year ${year}, term ${term}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load general ledger');
       } finally {
@@ -3019,12 +3019,12 @@ function useAccountingPeriods() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any>(`/accounting/periods?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any>(`/accounting/periods?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch accounting periods");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load periods');
       } finally {
@@ -3210,12 +3210,12 @@ function useMusterRollData(selectedDate: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any>(`/boarding/muster-roll?school_id=${schoolId}&date=${selectedDate}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any>(`/boarding/muster-roll?school_id=${schoolId}&date=${selectedDate}`);
+        setData(result);
         
         console.log(`Would fetch muster roll for date ${selectedDate}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load muster roll');
       } finally {
@@ -3396,12 +3396,12 @@ function useStaffDirectory(searchQuery: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/staff/directory?school_id=${schoolId}&search=${searchQuery || ''}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/staff/directory?school_id=${schoolId}&search=${searchQuery || ''}`);
+        setData(result);
         
         console.log(`Would fetch staff directory with search: "${searchQuery || ''}"`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load staff directory');
       } finally {
@@ -3487,7 +3487,7 @@ function usePayrollRunData(period: string | undefined) {
         setLoading(true);
         setError(null);
         console.log(`Would fetch payroll data for period ${period}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load payroll data');
       } finally {
@@ -3677,16 +3677,16 @@ function useAuditLog(module: string | undefined, searchQuery: string | undefined
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
         // const params = new URLSearchParams();
         // if (module && module !== 'all') params.append('module', module);
         // if (searchQuery) params.append('search', searchQuery);
         // params.append('limit', '100');
         // const result = await apiGet<any[]>(`/audit-log?school_id=${schoolId}&${params.toString()}`)
-        // setData(result);
+        setData(result);
         
         console.log(`Would fetch audit log for module=${module}, search=${searchQuery}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load audit log');
       } finally {
@@ -3801,12 +3801,12 @@ function useNemisValidation() {
       setLoading(true);
       setError(null);
       // BACKEND: Replace with real API call
-      // const schoolId = tokenManager.getSchoolId();
+      const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
       // const result = await apiPost<any>('/nemis/validate', { school_id: schoolId });
       // setValidationData(result);
 
       console.log("Would validate NEMIS records");
-      setError("Backend API not yet implemented");
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to validate NEMIS records');
     } finally {
@@ -3828,12 +3828,12 @@ function useNemisFlaggedRecords() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/nemis/flagged-records?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/nemis/flagged-records?school_id=${schoolId}`);
+        setData(result);
 
         console.log("Would fetch flagged NEMIS records");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load flagged records');
       } finally {
@@ -3856,7 +3856,7 @@ function useNemisExport() {
       setLoading(true);
       setError(null);
       // BACKEND: Replace with real API call
-      // const schoolId = tokenManager.getSchoolId();
+      const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
       // const result = await apiPost<{ file_url: string }>('/nemis/export', { school_id: schoolId });
       // window.location.href = result.file_url;
 
@@ -3971,11 +3971,11 @@ function useParentStudentInfo() {
         setError(null);
         // BACKEND: Replace with real API call
         // const parentId = tokenManager.getParentId(); // or from context
-        // const result = await apiGet<any>(`/parents/student-info?parent_id=${parentId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/parents/student-info?parent_id=${parentId}`);
+        setData(result);
         
         console.log("Would fetch parent student info");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load student info');
       } finally {
@@ -4001,11 +4001,11 @@ function useParentFeeStatement() {
         setError(null);
         // BACKEND: Replace with real API call
         // const studentId = tokenManager.getSelectedStudentId();
-        // const result = await apiGet<any>(`/parents/fee-statement?student_id=${studentId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/parents/fee-statement?student_id=${studentId}`);
+        setData(result);
         
         console.log("Would fetch fee statement");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load fee statement');
       } finally {
@@ -4031,11 +4031,11 @@ function useParentPaymentHistory() {
         setError(null);
         // BACKEND: Replace with real API call
         // const studentId = tokenManager.getSelectedStudentId();
-        // const result = await apiGet<any[]>(`/parents/payment-history?student_id=${studentId}`);
-        // setData(result);
+        const result = await apiGet<any[]>(`/parents/payment-history?student_id=${studentId}`);
+        setData(result);
         
         console.log("Would fetch payment history");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load payment history');
       } finally {
@@ -4061,11 +4061,11 @@ function useParentAcademicReport() {
         setError(null);
         // BACKEND: Replace with real API call
         // const studentId = tokenManager.getSelectedStudentId();
-        // const result = await apiGet<any>(`/parents/academic-report?student_id=${studentId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/parents/academic-report?student_id=${studentId}`);
+        setData(result);
         
         console.log("Would fetch academic report");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load academic report');
       } finally {
@@ -4091,11 +4091,11 @@ function useParentNotifications() {
         setError(null);
         // BACKEND: Replace with real API call
         // const parentId = tokenManager.getParentId();
-        // const result = await apiGet<any[]>(`/parents/notifications?parent_id=${parentId}&limit=10`);
-        // setData(result);
+        const result = await apiGet<any[]>(`/parents/notifications?parent_id=${parentId}&limit=10`);
+        setData(result);
         
         console.log("Would fetch parent notifications");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load notifications');
       } finally {
@@ -4120,12 +4120,12 @@ function useSchoolContactInfo() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any>(`/school/contact-info?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any>(`/school/contact-info?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch school contact info");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load contact info');
       } finally {
@@ -4388,12 +4388,12 @@ function useHODClasses() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch HOD classes from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load classes');
       } finally {
@@ -4422,12 +4422,12 @@ function useHODExamSessions() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/exam-sessions?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/exam-sessions?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch HOD exam sessions from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load exam sessions');
       } finally {
@@ -4458,11 +4458,11 @@ function useMarksForHODReview(classId: string | undefined, examSessionId: string
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any[]>(`/academics/marks-for-review?class_id=${classId}&exam_session_id=${examSessionId}`);
-        // setData(result);
+        const result = await apiGet<any[]>(`/academics/marks-for-review?class_id=${classId}&exam_session_id=${examSessionId}`);
+        setData(result);
         
         console.log(`Would fetch marks for HOD review: class ${classId}, exam ${examSessionId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load marks');
       } finally {
@@ -4493,11 +4493,11 @@ function useClassHODInfo(classId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any>(`/academics/class/${classId}/hod-info`);
-        // setData(result);
+        const result = await apiGet<any>(`/academics/class/${classId}/hod-info`);
+        setData(result);
         
         console.log(`Would fetch HOD info for class ${classId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load HOD info');
       } finally {
@@ -4528,11 +4528,11 @@ function useMarksLockStatus(classId: string | undefined, examSessionId: string |
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any>(`/academics/marks-lock-status?class_id=${classId}&exam_session_id=${examSessionId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/academics/marks-lock-status?class_id=${classId}&exam_session_id=${examSessionId}`);
+        setData(result);
         
         console.log(`Would fetch marks lock status: class ${classId}, exam ${examSessionId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load lock status');
       } finally {
@@ -4789,12 +4789,12 @@ function useLPORegister() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/procurement/lpo-register?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/procurement/lpo-register?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch LPO register");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load LPO register');
       } finally {
@@ -4861,12 +4861,12 @@ function useStoresInventory() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/stores/inventory?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/stores/inventory?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch stores inventory");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load inventory');
       } finally {
@@ -4948,12 +4948,12 @@ function useVisitorLog() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/gate/visitor-log?school_id=${schoolId}&date=${today}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/gate/visitor-log?school_id=${schoolId}&date=${today}`);
+        setData(result);
         
         console.log("Would fetch visitor log");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load visitor log');
       } finally {
@@ -4976,7 +4976,7 @@ function useSignInVisitor() {
       setLoading(true);
       setError(null);
       // BACKEND: Replace with real API call
-      // const schoolId = tokenManager.getSchoolId();
+      const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
       // await apiPost('/gate/sign-in-visitor', { 
       //   ...visitorData, 
       //   school_id: schoolId,
@@ -5128,11 +5128,11 @@ function useGRNLPOItems() {
         setError(null);
         // BACKEND: Replace with real API call
         // const lpoId = selectedLPO;
-        // const result = await apiGet<any>(`/procurement/lpo-items?lpo_id=${lpoId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/procurement/lpo-items?lpo_id=${lpoId}`);
+        setData(result);
         
         console.log("Would fetch GRN LPO items");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load LPO items');
       } finally {
@@ -5354,12 +5354,12 @@ function useStocktakeItems() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/stores/stocktake-items?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/stores/stocktake-items?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch stocktake items");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load stocktake items');
       } finally {
@@ -5382,7 +5382,7 @@ function usePostAdjustments() {
       setLoading(true);
       setError(null);
       // BACKEND: Replace with real API call
-      // const schoolId = tokenManager.getSchoolId();
+      const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
       // await apiPost('/stores/post-adjustments', { 
       //   ...adjustments, 
       //   school_id: schoolId,
@@ -5511,11 +5511,11 @@ function useThreeWayMatchData() {
         setError(null);
         // BACKEND: Replace with real API call
         // const lpoId = selectedLPO;
-        // const result = await apiGet<any[]>(`/procurement/three-way-match?lpo_id=${lpoId}`);
-        // setData(result);
+        const result = await apiGet<any[]>(`/procurement/three-way-match?lpo_id=${lpoId}`);
+        setData(result);
         
         console.log("Would fetch 3-way match data");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load match data');
       } finally {
@@ -5669,12 +5669,12 @@ function useTimetableClasses() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch timetable classes from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load classes');
       } finally {
@@ -5703,12 +5703,12 @@ function useTimetableSubjects(curriculum: "CBC" | "8-4-4") {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/subjects?curriculum=${curriculum}&school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/subjects?curriculum=${curriculum}&school_id=${schoolId}`);
+        setData(result);
         
         console.log(`Would fetch subjects for curriculum: ${curriculum}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load subjects');
       } finally {
@@ -5737,12 +5737,12 @@ function useTimetableStructure() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
         // const result = await apiGet<{ days: string[], periods: string[] }>(`/academics/timetable-structure?school_id=${schoolId}`);
-        // setData(result);
+        setData(result);
         
         console.log("Would fetch timetable structure from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load timetable structure');
       } finally {
@@ -5773,11 +5773,11 @@ function useTimetableData(classId: string | undefined, curriculum: "CBC" | "8-4-
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any>(`/academics/timetable?class_id=${classId}&curriculum=${curriculum}`);
-        // setData(result);
+        const result = await apiGet<any>(`/academics/timetable?class_id=${classId}&curriculum=${curriculum}`);
+        setData(result);
         
         console.log(`Would fetch timetable for class ${classId}, curriculum ${curriculum}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load timetable');
       } finally {
@@ -6057,12 +6057,12 @@ function useReportCardStudents() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/admissions/students?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/admissions/students?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch report card students from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load students');
       } finally {
@@ -6091,12 +6091,12 @@ function useReportCardExamSessions() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/exam-sessions?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/exam-sessions?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch report card exam sessions from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load exam sessions');
       } finally {
@@ -6125,12 +6125,12 @@ function useSchoolInfo() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any>(`/settings/school-info?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any>(`/settings/school-info?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch school info from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load school info');
       } finally {
@@ -6161,11 +6161,11 @@ function useReportCardData(studentId: string | undefined, examSessionId: string 
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any>(`/academics/report-card?student_id=${studentId}&exam_session_id=${examSessionId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/academics/report-card?student_id=${studentId}&exam_session_id=${examSessionId}`);
+        setData(result);
         
         console.log(`Would fetch report card: student ${studentId}, exam ${examSessionId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load report card');
       } finally {
@@ -6194,12 +6194,12 @@ function usePrincipalInfo() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any>(`/settings/principal-info?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any>(`/settings/principal-info?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch principal info from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load principal info');
       } finally {
@@ -6447,12 +6447,12 @@ function useKCSECandidates() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/academics/kcse-candidates?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/academics/kcse-candidates?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch KCSE candidates from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load candidates');
       } finally {
@@ -6482,10 +6482,10 @@ function useValidateKCSECandidates() {
       setError(null);
       // BACKEND: Replace with real API call
       // const result = await apiPost<any>('/academics/validate-kcse-candidates', { candidate_ids: candidateIds });
-      // setData(result);
+      setData(result);
       
       console.log(`Would validate ${candidateIds.length} KCSE candidates`);
-      setError("Backend API not yet implemented");
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Validation failed');
       setData(null);
@@ -6513,10 +6513,10 @@ function useGenerateKNECExport() {
       setError(null);
       // BACKEND: Replace with real API call
       // const result = await apiPost<any>('/academics/generate-kcse-export', { candidate_ids: candidateIds });
-      // setData(result);
+      setData(result);
       
       console.log(`Would generate KNEC export for ${candidateIds.length} candidates`);
-      setError("Backend API not yet implemented");
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Export generation failed');
       setData(null);
@@ -6793,12 +6793,12 @@ function useFeeStructureYears() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/fee-management/fee-years?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/fee-management/fee-years?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch fee structure years from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load years');
       } finally {
@@ -6827,12 +6827,12 @@ function useFeeCategories() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/fee-management/fee-categories?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/fee-management/fee-categories?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch fee categories from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load categories');
       } finally {
@@ -6863,12 +6863,12 @@ function useFeeStructure(year: string | undefined, term: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/fee-management/fee-structure?school_id=${schoolId}&year=${year}&term=${term}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/fee-management/fee-structure?school_id=${schoolId}&year=${year}&term=${term}`);
+        setData(result);
         
         console.log(`Would fetch fee structure for year ${year}, term ${term}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load fee structure');
       } finally {
@@ -6897,12 +6897,12 @@ function useFeeGradeColumns() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/fee-management/grade-columns?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/fee-management/grade-columns?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch fee grade columns from backend");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load grade columns');
       } finally {
@@ -6982,7 +6982,7 @@ function FeeStructureConfiguration() {
       }
 
       // BACKEND: Replace with real API call
-      // const schoolId = tokenManager.getSchoolId();
+      const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
       // await apiPost('/fee-management/fee-structure', {
       //   school_id: schoolId,
       //   year: selectedYear,
@@ -7183,12 +7183,12 @@ function useOpenPeriods() {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/accounting/periods?status=open&school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/accounting/periods?status=open&school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch open periods for closing");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load periods');
       } finally {
@@ -7219,12 +7219,12 @@ function usePeriodClosingSummary(periodId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any>(`/accounting/periods/${periodId}/closing-summary?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any>(`/accounting/periods/${periodId}/closing-summary?school_id=${schoolId}`);
+        setData(result);
         
         console.log(`Would fetch closing summary for period ${periodId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load period details');
       } finally {
@@ -7435,12 +7435,12 @@ function useCapitationTrackingData(year: string | undefined, term: string | unde
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any>(`/accounting/capitation?school_id=${schoolId}&year=${year}&term=${term}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any>(`/accounting/capitation?school_id=${schoolId}&year=${year}&term=${term}`);
+        setData(result);
         
         console.log(`Would fetch capitation tracking for year ${year}, term ${term}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load capitation data');
       } finally {
@@ -7576,12 +7576,12 @@ function useBusRoutes() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /transport/bus-routes?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/transport/bus-routes?school_id=${schoolId}`);
-        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/transport/bus-routes?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch bus routes");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load bus routes');
       } finally {
@@ -7603,7 +7603,7 @@ function useSaveRouteAssignments() {
       setLoading(true);
       setError(null);
       // BACKEND: POST /transport/save-assignments
-      // const schoolId = tokenManager.getSchoolId();
+      const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
       // await apiPost('/transport/save-assignments', { ...assignments, school_id: schoolId });
       
       console.log("Would save route assignments", assignments);
@@ -7762,12 +7762,12 @@ function useStudentDetailsForTransfer(studentId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any>(`/admissions/students/${studentId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/admissions/students/${studentId}`);
+        setData(result);
         
         // Placeholder until backend ready
         console.log(`Would fetch student details for: ${studentId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load student details');
       } finally {
@@ -7798,12 +7798,12 @@ function useTransferRequirements(studentId: string | undefined) {
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        // const result = await apiGet<any>(`/admissions/transfers/requirements?student_id=${studentId}`);
-        // setData(result);
+        const result = await apiGet<any>(`/admissions/transfers/requirements?student_id=${studentId}`);
+        setData(result);
         
         // Placeholder until backend ready
         console.log(`Would fetch transfer requirements for: ${studentId}`);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load transfer requirements');
       } finally {
@@ -8104,11 +8104,12 @@ function useLeavePassQueue() {
         setLoading(true);
         setError(null);
         // BACKEND: GET /students/leave-pass-queue?school_id={schoolId}
-        // const schoolId = tokenManager.getSchoolId();
-        // const result = await apiGet<any[]>(`/students/leave-pass-queue?school_id=${schoolId}`);\n        // setData(result);
+        const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
+        const result = await apiGet<any[]>(`/students/leave-pass-queue?school_id=${schoolId}`);
+        setData(result);
         
         console.log("Would fetch leave pass queue");
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load queue');
       } finally {
@@ -8219,7 +8220,7 @@ function useSubmitLeaveRequest() {
       setLoading(true);
       setError(null);
       // BACKEND: POST /staff/leave-requests
-      // const schoolId = tokenManager.getSchoolId();
+      const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
       // await apiPost('/staff/leave-requests', { ...leaveData, school_id: schoolId });
       
       console.log("Would submit leave request", leaveData);
@@ -8355,11 +8356,11 @@ function useDigitalPayslip(employeeId: string | undefined, period: string | unde
         setLoading(true);
         setError(null);
         // BACKEND: GET /payroll/payslip/{employeeId}?period={period}
-        // const result = await apiGet<any>(`/payroll/payslip/${employeeId}?period=${period}`);
-        // setData(result);
+        const result = await apiGet<any>(`/payroll/payslip/${employeeId}?period=${period}`);
+        setData(result);
         
         console.log("Would fetch payslip", employeeId, period);
-        setError("Backend API not yet implemented");
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load payslip');
       } finally {
@@ -8516,7 +8517,7 @@ function useGenerateKRAReports() {
       setLoading(true);
       setError(null);
       // BACKEND: POST /payroll/kra-reports
-      // const schoolId = tokenManager.getSchoolId();
+      const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
       // const result = await apiPost('/payroll/kra-reports', { 
       //   school_id: schoolId,
       //   period,
@@ -8724,3 +8725,4 @@ export default function App() {
     </div>
   );
 }
+
