@@ -668,7 +668,10 @@ function usePrincipalPendingApprovals() {
         setError(null);
         // BACKEND: GET /dashboard/principal/pending-approvals?school_id={schoolId}
         const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
-        const result = await apiGet(`/dashboard/principal/pending-approvals?school_id=${schoolId}`);
+        const result = [
+            { id: "pr-002", type: "requisition", title: "Science Lab Equipment", entity: "Science Dept", time: "2 hours ago", requires: "Tier 2 Approval" },
+            { id: "lv-114", type: "leave", title: "Compassionate Leave", entity: "John Ouma (TSC: 4455)", time: "1 day ago", requires: "Principal Auth" }
+          ];
         setData(result);
         
         console.log("Would fetch pending approvals");
@@ -1073,10 +1076,23 @@ function useBursarUnmatchedTransactions() {
 
 // ─── Bursar Dashboard Component ────────────────────────────────────────────
 
+
+function useBursarPendingApprovals() {
+  const [data, setData] = useState<any[] | null>(null);
+  useEffect(() => {
+    // MOCK: BR-PRO-003 Tier 1 Approvals Queue
+    setData([
+      { id: "pr-003", type: "requisition", title: "Sports Equipment", entity: "PE Dept", amount: "KES 45,000", requires: "Tier 1 Approval (Bursar)" },
+    ]);
+  }, []);
+  return { data, loading: false, error: null };
+}
+
 function BursarDashboard({ onNavigate }: { onNavigate?: (page: NavPage) => void }) {
   const kpisData = useBursarDashboardKPIs();
   const voteHeadsData = useBursarVoteHeads();
   const transactionsData = useBursarUnmatchedTransactions();
+  const approvalsData = useBursarPendingApprovals();
 
   const displayKpis = kpisData.data || {
     grossFees: { value: "—", label: "Gross Fees Expected" },
@@ -1128,6 +1144,29 @@ function BursarDashboard({ onNavigate }: { onNavigate?: (page: NavPage) => void 
           rows={displayVoteHeadData}
           total="KES 7,164,200"
         />
+
+        
+        {/* Pending Requisitions (Tier 1) */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm flex flex-col h-[300px]">
+          <div className="p-4 border-b border-[#DCD6C4] flex justify-between items-center">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold">Pending Requisitions (Tier 1)</p>
+          </div>
+          <div className="p-0 overflow-y-auto flex-1">
+            {approvalsData.data?.map((req: any) => (
+              <div key={req.id} className="p-4 border-b border-[#DCD6C4] hover:bg-[#F9F8F6] cursor-pointer" onClick={() => onNavigate && onNavigate("purchase-req")}>
+                <div className="flex justify-between items-start mb-1">
+                  <p className="text-sm font-semibold text-[#16241D]">{req.title}</p>
+                  <span className="text-[10px] uppercase font-bold text-[#9C3B2E] bg-[#F7E6E2] px-2 py-0.5 rounded-sm">{req.requires}</span>
+                </div>
+                <div className="flex justify-between text-xs text-[#7A8078]">
+                  <p>{req.entity}</p>
+                  <p className="font-['IBM_Plex_Mono'] font-bold text-[#1F6F4A]">{req.amount}</p>
+                </div>
+              </div>
+            ))}
+            {approvalsData.data?.length === 0 && <div className="p-4 text-xs text-[#7A8078]">No pending requisitions.</div>}
+          </div>
+        </div>
 
         {/* Unmatched M-Pesa Transactions */}
         <div className="bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
@@ -2673,7 +2712,12 @@ function useBudgetCheck(voteHeadId: string | undefined) {
         setError(null);
         // BACKEND: Replace with real API call
         const schoolId = "default"; // Mock tokenManager.getSchoolId() for now
-        const result = await apiGet<any>(`/procurement/budget-check?school_id=${schoolId}&vote_head_id=${voteHeadId}`);
+        // MOCK: Providing a strict KES 150,000 budget to test BR-PRO-002
+        const result = {
+          total_budget: 200000,
+          committed_amount: 50000,
+          remaining_budget: 150000
+        };
         setData(result);
         
         console.log(`Would check budget for vote head ${voteHeadId}`);
@@ -9135,7 +9179,7 @@ function ExamScheduler() {
       )}
 
       {selectedExamId && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           
           {/* Add New Slot Form */}
           <div className="lg:col-span-1 bg-white border border-[#DCD6C4] rounded-sm p-4 h-fit">
@@ -9641,7 +9685,7 @@ function CostCentersConfig() {
     <div>
       <PageHeader title="Cost Centers Configuration" subtitle="Track departmental profitability (e.g. Boarding, Farm, Transport)" />
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-1 bg-white border border-[#DCD6C4] rounded-sm p-6 h-min">
           <h3 className="font-semibold text-[#16241D] mb-4">Add New Cost Center</h3>
           <div className="space-y-4">
