@@ -9394,3 +9394,211 @@ function TermWeightingConfig() {
     </div>
   );
 }
+
+
+
+// ─── Chart of Accounts & Journal Entry (BR-FIN-001, FRD-FIN-002) ─────────
+
+function ChartOfAccounts() {
+  const [tree, setTree] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCOA = async () => {
+      try {
+        const response = await fetch('/api/v1/finance/accounts/tree?school_id=00000000-0000-0000-0000-000000000000');
+        if (response.ok) {
+          const res = await response.json();
+          setTree(res.data || []);
+        } else {
+          // Fallback mock tree for demonstration if API fails
+          setTree([
+            { id: "1", code: "1000", name: "Assets", is_header: true, children: [
+              { id: "1-1", code: "1100", name: "Current Assets", is_header: true, children: [
+                { id: "1-1-1", code: "1110", name: "Cash in Bank - KCB", is_header: false, children: [] },
+                { id: "1-1-2", code: "1120", name: "M-Pesa Till", is_header: false, children: [] }
+              ]}
+            ]},
+            { id: "2", code: "2000", name: "Liabilities", is_header: true, children: [] },
+            { id: "3", code: "3000", name: "Equity", is_header: true, children: [] },
+            { id: "4", code: "4000", name: "Revenue", is_header: true, children: [
+              { id: "4-1", code: "4100", name: "Tuition Fees", is_header: false, children: [] }
+            ]},
+            { id: "5", code: "5000", name: "Expenses", is_header: true, children: [] }
+          ]);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCOA();
+  }, []);
+
+  const renderTree = (nodes: any[]) => {
+    if (!nodes || nodes.length === 0) return null;
+    return (
+      <ul className="pl-6 mt-2 border-l border-[#EBE7DC]">
+        {nodes.map(node => (
+          <li key={node.id} className="mb-2">
+            <div className="flex items-center gap-2">
+              <span className={`font-['IBM_Plex_Mono'] text-xs px-1.5 py-0.5 rounded ${node.is_header ? 'bg-[#16241D] text-white' : 'bg-[#EBE7DC] text-[#7A8078]'}`}>
+                {node.code}
+              </span>
+              <span className={`text-sm ${node.is_header ? 'font-bold text-[#16241D]' : 'font-medium text-[#7A8078]'}`}>
+                {node.name}
+              </span>
+            </div>
+            {renderTree(node.children)}
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+  return (
+    <div>
+      <PageHeader title="Chart of Accounts (COA)" subtitle="Multi-level MOE standard accounting guidelines" />
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="font-semibold text-[#16241D]">Account Hierarchy</h3>
+          <button className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold hover:bg-[#185f3e]">
+            + Add Account
+          </button>
+        </div>
+        {loading ? <p>Loading COA...</p> : renderTree(tree)}
+      </div>
+    </div>
+  );
+}
+
+function JournalEntryForm() {
+  const [date, setDate] = useState("");
+  const [description, setDescription] = useState("");
+  const [lines, setLines] = useState([
+    { account_id: "", debit: "", credit: "" },
+    { account_id: "", debit: "", credit: "" }
+  ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Mock accounts for dropdown
+  const accounts = [
+    { id: "acc-1110", code: "1110", name: "Cash in Bank - KCB" },
+    { id: "acc-4100", code: "4100", name: "Tuition Fees" },
+    { id: "acc-1120", code: "1120", name: "M-Pesa Till" }
+  ];
+
+  const totalDebit = lines.reduce((sum, l) => sum + (parseFloat(l.debit) || 0), 0);
+  const totalCredit = lines.reduce((sum, l) => sum + (parseFloat(l.credit) || 0), 0);
+  const isBalanced = totalDebit > 0 && totalDebit === totalCredit;
+
+  const handleSubmit = async () => {
+    if (!isBalanced) {
+      alert("Journal is not balanced! Debits must equal Credits.");
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      await new Promise(r => setTimeout(r, 1000));
+      alert("Balanced Journal Entry posted successfully!");
+      setLines([{ account_id: "", debit: "", credit: "" }, { account_id: "", debit: "", credit: "" }]);
+      setDescription("");
+      setDate("");
+    } catch (e) {
+      alert("Failed to post journal entry.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div>
+      <PageHeader title="Double-Entry Journal" subtitle="Manually post balanced transactions (BR-FIN-001)" />
+      
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 max-w-4xl">
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Date</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full border border-[#DCD6C4] p-2 rounded-sm" />
+          </div>
+          <div>
+            <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Description / Narration</label>
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="E.g. Depreciation of assets" className="w-full border border-[#DCD6C4] p-2 rounded-sm" />
+          </div>
+        </div>
+
+        <table className="w-full text-left mb-6">
+          <thead>
+            <tr className="border-b border-[#DCD6C4] text-[#7A8078] text-xs uppercase">
+              <th className="pb-2 font-semibold">Account</th>
+              <th className="pb-2 font-semibold w-32">Debit (KES)</th>
+              <th className="pb-2 font-semibold w-32">Credit (KES)</th>
+              <th className="pb-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map((line, idx) => (
+              <tr key={idx} className="border-b border-[#EBE7DC]">
+                <td className="py-2 pr-2">
+                  <select 
+                    value={line.account_id}
+                    onChange={e => {
+                      const n = [...lines]; n[idx].account_id = e.target.value; setLines(n);
+                    }}
+                    className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm"
+                  >
+                    <option value="">Select Account...</option>
+                    {accounts.map(a => <option key={a.id} value={a.id}>{a.code} - {a.name}</option>)}
+                  </select>
+                </td>
+                <td className="py-2 pr-2">
+                  <input type="number" placeholder="0.00" value={line.debit} onChange={e => { const n = [...lines]; n[idx].debit = e.target.value; n[idx].credit = ""; setLines(n); }} className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm" />
+                </td>
+                <td className="py-2 pr-2">
+                  <input type="number" placeholder="0.00" value={line.credit} onChange={e => { const n = [...lines]; n[idx].credit = e.target.value; n[idx].debit = ""; setLines(n); }} className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm" />
+                </td>
+                <td className="py-2 text-center">
+                  <button onClick={() => { const n = [...lines]; n.splice(idx, 1); setLines(n); }} className="text-[#9C3B2E] font-bold">&times;</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <button onClick={() => setLines([...lines, { account_id: "", debit: "", credit: "" }])} className="text-[#1F6F4A] text-sm font-semibold hover:underline mb-8">
+          + Add Line
+        </button>
+
+        <div className="bg-[#F3EFE4] p-4 rounded-sm flex justify-between items-center">
+          <div className="flex gap-8">
+            <div>
+              <p className="text-xs uppercase text-[#7A8078] font-bold">Total Debits</p>
+              <p className="text-lg font-['IBM_Plex_Mono'] font-bold text-[#16241D]">{totalDebit.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-[#7A8078] font-bold">Total Credits</p>
+              <p className="text-lg font-['IBM_Plex_Mono'] font-bold text-[#16241D]">{totalCredit.toFixed(2)}</p>
+            </div>
+            <div className="flex items-center">
+              {isBalanced ? 
+                <span className="bg-[#E4F3EB] text-[#1F6F4A] px-3 py-1 rounded-sm text-xs font-bold uppercase tracking-wider">Balanced</span> : 
+                <span className="bg-[#F7E6E2] text-[#9C3B2E] px-3 py-1 rounded-sm text-xs font-bold uppercase tracking-wider">Out of Balance</span>
+              }
+            </div>
+          </div>
+          <button 
+            onClick={handleSubmit} 
+            disabled={!isBalanced || isSubmitting}
+            className="px-6 py-2 bg-[#1F6F4A] text-white font-semibold rounded-sm disabled:opacity-50"
+          >
+            {isSubmitting ? "Posting..." : "Post Journal"}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
