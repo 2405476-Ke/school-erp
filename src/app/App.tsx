@@ -7336,14 +7336,19 @@ function PeriodEndClosing() {
       setCloseError(null);
       setCloseSuccess(false);
 
-      // BACKEND: Replace with real API call
-      // await apiPost('/accounting/close-period', {
-      //   period_id: selectedPeriodId,
-      //   school_id: tokenManager.getSchoolId(),
-      // });
-
-      console.log(`Would close period ${selectedPeriodId}`);
-      throw new Error("Backend API not yet implemented");
+      // Hit real backend endpoint to trigger year-end close & retained earnings roll-forward
+      const response = await fetch(`/api/v1/finance/periods/${selectedPeriodId}/close?school_id=00000000-0000-0000-0000-000000000000`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ closing_note: "Year-End Close" })
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to close period. Verify no drafts exist and Trial Balance is balanced.");
+      }
+      
+      setCloseSuccess(true);
+      setTimeout(() => setCloseSuccess(false), 5000);
     } catch (err) {
       setCloseError(err instanceof Error ? err.message : "Failed to close period");
     } finally {

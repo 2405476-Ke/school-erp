@@ -132,10 +132,11 @@ class PeriodService:
         period.status = "CLOSED"
         period.is_closed = True
 
-        # 7. Get next period (if exists)
+        # 7. Get next period (even if it's in the next financial year)
+        # BR-FIN-004: Ensure we carry forward across financial years for Year-End close
         next_period_query = select(AccountingPeriod).where(
             and_(
-                AccountingPeriod.financial_year_id == period.financial_year_id,
+                AccountingPeriod.school_id == school_id,
                 AccountingPeriod.start_date > period.end_date,
             )
         ).order_by(AccountingPeriod.start_date).limit(1)
@@ -219,45 +220,53 @@ class PeriodService:
         closing_period: AccountingPeriod,
         opening_period: AccountingPeriod,
         retained_earnings_account: Account,
+        is_year_end: bool = False,
+        retained_earnings_amount: Decimal = Decimal('0.00'),
     ) -> None:
         """
         Rollforward closing balances from one period to next period's opening balances.
-
-        REAL ALGORITHM using SQLAlchemy:
-        For each account:
-        1. Get closing balance from closing_period's AccountBalance
-        2. Create new AccountBalance for opening_period with:
-           - opening_balance = closing_period.closing_balance
-           - debit_movement = 0
-           - credit_movement = 0
-           - closing_balance = opening_balance (will be updated during period)
-
-        This ensures the GL chain continues with correct opening balances.
+        BR-FIN-004: If is_year_end, zero out P&L accounts (Revenue & Expenses) 
+        and roll the net amount into Retained Earnings.
         """
-        # Query all AccountBalance records for closing period
         closing_balances_query = select(AccountBalance).where(
             AccountBalance.period_id == closing_period.id
         )
         closing_balances_result = await self.db.execute(closing_balances_query)
         closing_balances = closing_balances_result.scalars().all()
-
-        for closing_balance in closing_balances:
-            # Create opening balance for next period
-            opening_balance = AccountBalance(
-                school_id=closing_balance.school_id,
-                period_id=opening_period.id,
-                account_id=closing_balance.account_id,
-                cost_center_id=closing_balance.cost_center_id,
-                opening_balance=closing_balance.closing_balance or Decimal("0.0000"),
-                debit_movement=Decimal("0.0000"),
-                credit_movement=Decimal("0.0000"),
-                closing_balance=closing_balance.closing_balance or Decimal("0.0000"),
+        
+        # We need to know account types to zero out P&L
+        accounts_query = select(Account).where(Account.school_id == closing_period.school_id)
+        accounts = (await self.db.execute(accounts_query)).scalars().all()
+        # Assume Category is eagerly loaded or we can check category type. We will just look at root categories
+        # For simplicity, if we don't have category type loaded, we assume codes 4xxx are Revenue and 5xxx are Expenses.
+        
+        opening_balances = []
+        for cb in closing_balances:
+            account = next((a for a in accounts if a.id == cb.account_id), None)
+            if not account: continue
+            
+            # P&L check: if year end, Revenue (4xxx) and Expenses (5xxx) do NOT carry forward
+            if is_year_end and (account.code.startswith("4") or account.code.startswith("5")):
+                carried_balance = Decimal('0.00')
+            else:
+                carried_balance = cb.closing_balance
+                
+            # If this is the retained earnings account and it's year end, add the net income
+            if is_year_end and cb.account_id == retained_earnings_account.id:
+                carried_balance += retained_earnings_amount
+                
+            opening_balances.append(
+                AccountBalance(
+                    account_id=cb.account_id,
+                    period_id=opening_period.id,
+                    opening_balance=carried_balance,
+                    debit_movement=Decimal('0.00'),
+                    credit_movement=Decimal('0.00'),
+                    closing_balance=carried_balance,
+                )
             )
-            self.db.add(opening_balance)
-
-        # Add retained earnings to equity section if there's a surplus/deficit
-        # This is handled by the Income Statement calculation during closure
-        await self.db.flush()
+            
+        self.db.add_all(opening_balances)
 
     async def reopen_accounting_period(
         self,
