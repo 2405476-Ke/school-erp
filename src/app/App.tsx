@@ -9929,3 +9929,203 @@ function FixedAssetsRegister() {
   );
 }
 
+
+
+
+// ─── Termly Billing & Fee Structures (BR-FIN-002, BR-REC-001) ─────────
+
+function TermlyBillingManager() {
+  const [activeTab, setActiveTab] = useState<"structure" | "billing">("structure");
+  
+  // Structure Config State
+  const [targetClass, setTargetClass] = useState("Form 1");
+  const [boardingType, setBoardingType] = useState("BOARDING");
+  const [voteHeads, setVoteHeads] = useState([
+    { id: "vh1", name: "Tuition", amount: 15000 },
+    { id: "vh2", name: "Boarding & Lodging", amount: 20000 },
+    { id: "vh3", name: "RMI (Maintenance)", amount: 3000 },
+    { id: "vh4", name: "Activity Fee", amount: 1500 }
+  ]);
+
+  // Billing Engine State
+  const [isBilling, setIsBilling] = useState(false);
+  const [billingResult, setBillingResult] = useState<any>(null);
+
+  const handleSaveStructure = () => {
+    const total = voteHeads.reduce((sum, vh) => sum + vh.amount, 0);
+    alert(`Fee Structure Saved!\nCategory: ${targetClass} - ${boardingType}\nTotal Termly Fee: KES ${total.toLocaleString()}\n(BR-FIN-002 enforced)`);
+  };
+
+  const handleRunBilling = () => {
+    setIsBilling(true);
+    setBillingResult(null);
+    // Simulate real backend termly billing hit
+    setTimeout(() => {
+      setIsBilling(false);
+      setBillingResult({
+        invoices: 485,
+        totalBilled: 14550000.00,
+        errors: 0
+      });
+    }, 1500);
+  };
+
+  return (
+    <div>
+      <PageHeader title="Termly Billing & Fee Structures" subtitle="Automated Invoicing & Category-Mapped Fees (BR-FIN-002, BR-REC-001)" />
+      
+      <div className="flex gap-4 mb-6 border-b border-[#DCD6C4]">
+        <button 
+          onClick={() => setActiveTab("structure")}
+          className={`py-2 px-4 font-semibold text-sm border-b-2 ${activeTab === "structure" ? "border-[#1F6F4A] text-[#1F6F4A]" : "border-transparent text-[#7A8078]"}`}
+        >
+          1. Configure Fee Structures
+        </button>
+        <button 
+          onClick={() => setActiveTab("billing")}
+          className={`py-2 px-4 font-semibold text-sm border-b-2 ${activeTab === "billing" ? "border-[#1F6F4A] text-[#1F6F4A]" : "border-transparent text-[#7A8078]"}`}
+        >
+          2. Run Automated Billing
+        </button>
+      </div>
+
+      {activeTab === "structure" && (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 max-w-4xl">
+          <h3 className="font-semibold text-[#16241D] mb-4">Map Fees to Student Categories</h3>
+          
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Class Level</label>
+              <select value={targetClass} onChange={e => setTargetClass(e.target.value)} className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm">
+                <option value="Form 1">Form 1</option>
+                <option value="Form 2">Form 2</option>
+                <option value="Form 3">Form 3</option>
+                <option value="Form 4">Form 4</option>
+                <option value="ALL">All Classes</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Boarding Status</label>
+              <select value={boardingType} onChange={e => setBoardingType(e.target.value)} className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm">
+                <option value="BOARDING">Boarder</option>
+                <option value="DAY">Day Scholar</option>
+                <option value="ALL">All Students</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="border border-[#EBE7DC] rounded-sm">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="bg-[#F9F8F6] border-b border-[#EBE7DC] text-[#7A8078] text-xs uppercase">
+                  <th className="py-2 px-4 font-semibold">Vote Head</th>
+                  <th className="py-2 px-4 font-semibold text-right">Amount (KES)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {voteHeads.map((vh, idx) => (
+                  <tr key={vh.id} className="border-b border-[#EBE7DC]">
+                    <td className="py-3 px-4 text-[#16241D] font-semibold">{vh.name}</td>
+                    <td className="py-3 px-4 text-right">
+                      <input 
+                        type="number" 
+                        value={vh.amount} 
+                        onChange={e => {
+                          const newVhs = [...voteHeads];
+                          newVhs[idx].amount = Number(e.target.value);
+                          setVoteHeads(newVhs);
+                        }}
+                        className="border border-[#DCD6C4] rounded-sm p-1 text-right font-['IBM_Plex_Mono'] w-32"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-[#F9F8F6]">
+                  <td className="py-3 px-4 font-bold text-[#16241D]">Total Termly Fee</td>
+                  <td className="py-3 px-4 text-right font-['IBM_Plex_Mono'] font-bold text-[#1F6F4A]">
+                    KES {voteHeads.reduce((sum, vh) => sum + vh.amount, 0).toLocaleString()}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          
+          <button onClick={handleSaveStructure} className="mt-6 px-6 py-2 bg-[#1F6F4A] text-white font-semibold rounded-sm text-sm hover:bg-[#185f3e]">
+            Save Fee Structure
+          </button>
+        </div>
+      )}
+
+      {activeTab === "billing" && (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 max-w-2xl">
+          <div className="bg-[#E4F3EB] border border-[#1F6F4A] rounded-sm p-4 mb-6">
+            <h3 className="text-[#1F6F4A] font-bold text-sm mb-1">Automated Invoice Generation (BR-REC-001)</h3>
+            <p className="text-xs text-[#1F6F4A]">The billing engine will scan all active students, match their exact profile (Class Level, Boarding Status, Curriculum) against the configured fee structures, and instantly generate individual double-entry fee invoices.</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Academic Year</label>
+              <select className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm">
+                <option>2026/2027</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Term</label>
+              <select className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm">
+                <option>Term 1</option>
+                <option>Term 2</option>
+                <option>Term 3</option>
+              </select>
+            </div>
+          </div>
+
+          {!billingResult ? (
+            <button 
+              onClick={handleRunBilling}
+              disabled={isBilling}
+              className="w-full py-3 bg-[#1F6F4A] text-white font-bold rounded-sm text-sm flex items-center justify-center gap-2 hover:bg-[#185f3e] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isBilling ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Generating Invoices...
+                </>
+              ) : (
+                "Run Automated Termly Billing"
+              )}
+            </button>
+          ) : (
+            <div className="border border-[#1F6F4A] rounded-sm p-6 text-center">
+              <CheckCircle className="w-12 h-12 text-[#1F6F4A] mx-auto mb-2" />
+              <h3 className="text-lg font-bold text-[#16241D] mb-4">Billing Cycle Complete</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-[#F9F8F6] p-3 rounded-sm">
+                  <p className="text-xs text-[#7A8078] uppercase font-bold">Invoices Created</p>
+                  <p className="text-xl font-bold text-[#16241D]">{billingResult.invoices}</p>
+                </div>
+                <div className="bg-[#F9F8F6] p-3 rounded-sm">
+                  <p className="text-xs text-[#7A8078] uppercase font-bold">Total Billed</p>
+                  <p className="text-xl font-bold font-['IBM_Plex_Mono'] text-[#1F6F4A]">KES {billingResult.totalBilled.toLocaleString()}</p>
+                </div>
+                <div className="bg-[#F9F8F6] p-3 rounded-sm">
+                  <p className="text-xs text-[#7A8078] uppercase font-bold">Errors/Skips</p>
+                  <p className="text-xl font-bold text-[#16241D]">{billingResult.errors}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setBillingResult(null)}
+                className="mt-6 px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-semibold hover:bg-[#F9F8F6]"
+              >
+                Start New Cycle
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+

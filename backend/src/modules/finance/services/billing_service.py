@@ -120,19 +120,21 @@ class BillingService:
                 curriculum_type = student.curriculum_type if student.curriculum_type else "8-4-4"
 
                 # Find matching FeeStructure
+                class_level = getattr(student, "current_class", getattr(student, "class_level", "ALL"))
                 fee_structure = await self.fee_structure_repo.get_for_term(
                     school_id,
                     academic_year_id,
                     term_id,
                     boarding_type,
                     curriculum_type,
+                    class_level,
                 )
 
                 if not fee_structure:
                     errors.append({
                         "student_id": str(student.id),
                         "admission_number": student.admission_number,
-                        "reason": f"No fee structure found for {boarding_type}/{curriculum_type}",
+                        "reason": f"No fee structure found for {boarding_type}/{curriculum_type}/{class_level}",
                     })
                     continue
 

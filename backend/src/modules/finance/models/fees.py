@@ -107,6 +107,9 @@ class FeeStructure(AuditableBase, TenantMixin):
     curriculum_type: Mapped[str] = mapped_column(
         String(20), nullable=False, index=True
     )  # 8-4-4, CBC, or ALL
+    class_level: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="ALL", index=True
+    )  # Form 1, Form 4, Grade 7, or ALL
     
     total_amount: Mapped[Decimal] = mapped_column(
         Numeric(15, 4), default=Decimal("0.0000"), nullable=False
@@ -127,7 +130,7 @@ class FeeStructure(AuditableBase, TenantMixin):
 
     __table_args__ = (
         UniqueConstraint(
-            "school_id", "academic_year_id", "term_id", "boarding_type", "curriculum_type",
+            "school_id", "academic_year_id", "term_id", "boarding_type", "curriculum_type", "class_level",
             name="uq_fee_structure_unique"
         ),
         CheckConstraint("boarding_type IN ('DAY', 'BOARDING', 'ALL')", name="ck_boarding_type"),
