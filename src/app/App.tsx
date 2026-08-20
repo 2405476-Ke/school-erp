@@ -5833,15 +5833,28 @@ function TimetableBuilder() {
       setSaveSuccess(false);
 
       // BACKEND: Submit timetable data
-      // const payload = {
-      //   class_id: selectedClassId,
-      //   curriculum: curriculumTab,
-      //   grid: timetableGrid,
-      // };
-      // await apiPost('/academics/timetable', payload);
-      
-      // For now, just show success
-      setSaveSuccess(true);
+        const termId = "00000000-0000-0000-0000-000000000000"; // Mock current term ID
+        const schoolId = "00000000-0000-0000-0000-000000000000"; // Mock school ID
+        
+        // Map the Record<string, string> grid into the array backend expects
+        const allocations = Object.entries(timetableGrid).map(([key, subject]) => {
+          const [pIdx, dIdx] = key.split('-');
+          return {
+            period_number: parseInt(pIdx) + 1,
+            day_of_week: parseInt(dIdx) + 1,
+            subject_name: subject
+          };
+        });
+
+        const payload = {
+          school_id: schoolId,
+          term_id: termId,
+          stream_id: selectedClassId,
+          allocations: allocations,
+        };
+        await apiPost('/timetable/manual-save', payload);
+        
+        setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to save timetable';

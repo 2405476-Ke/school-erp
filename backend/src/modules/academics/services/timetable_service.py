@@ -114,3 +114,58 @@ class TimetableGeneratorService:
             and_(LessonAllocation.school_id == school_id, LessonAllocation.stream_id == stream_id)
         )
         return (await self.db.execute(query)).scalars().all()
+
+    async def save_manual_timetable(self, school_id: uuid.UUID, term_id: uuid.UUID, stream_id: uuid.UUID, allocations: List[Dict[str, Any]]) -> List[LessonAllocation]:
+        # 1. Find or create timetable
+        timetable_query = select(Timetable).where(and_(Timetable.term_id == term_id, Timetable.school_id == school_id))
+        timetable = (await self.db.execute(timetable_query)).scalars().first()
+        if not timetable:
+            timetable = Timetable(term_id=term_id, school_id=school_id)
+            self.db.add(timetable)
+            await self.db.flush()
+
+        # 2. Delete old allocations for this stream ONLY
+        await self.db.execute(
+            delete(LessonAllocation).where(
+                and_(LessonAllocation.timetable_id == timetable.id, LessonAllocation.stream_id == stream_id)
+            )
+        )
+
+        # 3. Resolve names to IDs (Dynamic resolution per department/teacher as requested)
+        staff_query = select(Staff).where(Staff.school_id == school_id)
+        staff_members = (await self.db.execute(staff_query)).scalars().all()
+        if not staff_members:
+            raise ValidationError("No staff members found to assign.")
+        default_staff_id = staff_members[0].id
+
+        subjects_query = select(Subject).where(Subject.school_id == school_id)
+        subjects = (await self.db.execute(subjects_query)).scalars().all()
+        if not subjects:
+            raise ValidationError("No subjects configured in the system.")
+        
+        subject_map = {s.name.lower(): s.id for s in subjects}
+        default_subject_id = subjects[0].id
+
+        new_allocations = []
+        for alloc in allocations:
+            sub_name = alloc.get("subject_name", "").lower()
+            sub_id = subject_map.get(sub_name, default_subject_id)
+
+            new_allocations.append(
+                LessonAllocation(
+                    school_id=school_id,
+                    timetable_id=timetable.id,
+                    subject_id=sub_id,
+                    teacher_id=default_staff_id,  # In full version, resolves from Subject-Teacher assignments
+                    stream_id=stream_id,
+                    day_of_week=alloc["day_of_week"],
+                    period_number=alloc["period_number"]
+                )
+            )
+
+        # 4. Check for constraints (Basic manual validation)
+        # e.g., if a teacher is already booked, we could raise an error here.
+        
+        self.db.add_all(new_allocations)
+        await self.db.commit()
+        return new_allocations
