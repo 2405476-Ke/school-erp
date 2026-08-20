@@ -9607,3 +9607,189 @@ function JournalEntryForm() {
   );
 }
 
+
+
+
+// ─── Cost Centers & Financial Statements (BR-FIN-001, FRD-FIN-006, FRD-FIN-007) ─────────
+
+function CostCentersConfig() {
+  const [costCenters, setCostCenters] = useState([
+    { id: "cc-1", code: "BRD", name: "Boarding Department", description: "All boarding and hostel costs", active: true },
+    { id: "cc-2", code: "FRM", name: "School Farm", description: "Agricultural project revenues & expenses", active: true },
+    { id: "cc-3", code: "TRN", name: "Transport", description: "Bus maintenance and fuel", active: true }
+  ]);
+  const [newCode, setNewCode] = useState("");
+  const [newName, setNewName] = useState("");
+
+  const handleAdd = () => {
+    if (!newCode || !newName) return;
+    setCostCenters([...costCenters, { 
+      id: `cc-${Date.now()}`, 
+      code: newCode.toUpperCase(), 
+      name: newName, 
+      description: "", 
+      active: true 
+    }]);
+    setNewCode("");
+    setNewName("");
+    alert("Cost Center configured successfully! (BR-FIN-007)");
+  };
+
+  return (
+    <div>
+      <PageHeader title="Cost Centers Configuration" subtitle="Track departmental profitability (e.g. Boarding, Farm, Transport)" />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 bg-white border border-[#DCD6C4] rounded-sm p-6 h-min">
+          <h3 className="font-semibold text-[#16241D] mb-4">Add New Cost Center</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Code (e.g. BRD)</label>
+              <input type="text" value={newCode} onChange={e => setNewCode(e.target.value)} className="w-full border border-[#DCD6C4] p-2 rounded-sm" />
+            </div>
+            <div>
+              <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Department Name</label>
+              <input type="text" value={newName} onChange={e => setNewName(e.target.value)} className="w-full border border-[#DCD6C4] p-2 rounded-sm" />
+            </div>
+            <button onClick={handleAdd} className="w-full py-2 bg-[#1F6F4A] text-white font-semibold rounded-sm">
+              Save Cost Center
+            </button>
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 bg-white border border-[#DCD6C4] rounded-sm p-6">
+          <h3 className="font-semibold text-[#16241D] mb-4">Active Cost Centers</h3>
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-[#DCD6C4] text-[#7A8078] text-xs uppercase">
+                <th className="pb-2 font-semibold">Code</th>
+                <th className="pb-2 font-semibold">Name</th>
+                <th className="pb-2 font-semibold">Description</th>
+                <th className="pb-2 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {costCenters.map(cc => (
+                <tr key={cc.id} className="border-b border-[#EBE7DC]">
+                  <td className="py-3 font-['IBM_Plex_Mono'] font-semibold">{cc.code}</td>
+                  <td className="py-3">{cc.name}</td>
+                  <td className="py-3 text-[#7A8078]">{cc.description}</td>
+                  <td className="py-3">
+                    <span className="bg-[#E4F3EB] text-[#1F6F4A] px-2 py-1 rounded text-xs font-bold">ACTIVE</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FinancialStatements() {
+  const [statementType, setStatementType] = useState<"TB" | "IS" | "BS">("IS");
+  const [costCenter, setCostCenter] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchStatement = () => {
+    setIsLoading(true);
+    setTimeout(() => setIsLoading(false), 800); // simulate real-time < 1 min generation
+  };
+
+  useEffect(() => {
+    fetchStatement();
+  }, [statementType, costCenter]);
+
+  return (
+    <div>
+      <PageHeader title="Real-Time Financial Statements" subtitle="Trial Balance, Income Statement, and Balance Sheet (BR-FIN-001)" />
+      
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 mb-6">
+        <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex-1">
+            <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Statement Type</label>
+            <div className="flex border border-[#DCD6C4] rounded-sm overflow-hidden">
+              <button 
+                onClick={() => setStatementType("TB")}
+                className={`flex-1 py-2 text-sm font-semibold ${statementType === "TB" ? "bg-[#16241D] text-white" : "bg-[#F9F8F6] text-[#7A8078]"}`}
+              >
+                Trial Balance
+              </button>
+              <button 
+                onClick={() => setStatementType("IS")}
+                className={`flex-1 py-2 text-sm font-semibold border-l border-r border-[#DCD6C4] ${statementType === "IS" ? "bg-[#16241D] text-white" : "bg-[#F9F8F6] text-[#7A8078]"}`}
+              >
+                Income Statement (P&L)
+              </button>
+              <button 
+                onClick={() => setStatementType("BS")}
+                className={`flex-1 py-2 text-sm font-semibold ${statementType === "BS" ? "bg-[#16241D] text-white" : "bg-[#F9F8F6] text-[#7A8078]"}`}
+              >
+                Balance Sheet
+              </button>
+            </div>
+          </div>
+          <div className="w-64">
+            <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Filter by Cost Center (Optional)</label>
+            <select value={costCenter} onChange={e => setCostCenter(e.target.value)} className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm">
+              <option value="">Consolidated (All)</option>
+              <option value="BRD">Boarding Department</option>
+              <option value="FRM">School Farm</option>
+              <option value="TRN">Transport</option>
+            </select>
+          </div>
+          <button onClick={fetchStatement} className="py-2 px-6 bg-[#1F6F4A] text-white font-semibold rounded-sm text-sm h-[38px]">
+            Generate
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 min-h-[400px]">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <p className="text-[#7A8078] font-semibold animate-pulse">Calculating statement in real-time...</p>
+          </div>
+        ) : (
+          <div>
+            <div className="text-center mb-8 border-b border-[#EBE7DC] pb-6">
+              <h2 className="text-xl font-bold text-[#16241D]">
+                {statementType === "TB" && "Trial Balance"}
+                {statementType === "IS" && "Income Statement"}
+                {statementType === "BS" && "Balance Sheet"}
+              </h2>
+              <p className="text-sm text-[#7A8078] mt-1">As of {new Date().toLocaleDateString()}</p>
+              {costCenter && <p className="text-xs font-bold text-[#1F6F4A] mt-2 uppercase">Filtered by Cost Center: {costCenter}</p>}
+            </div>
+
+            {/* Mock Display based on type */}
+            {statementType === "IS" && (
+              <div className="max-w-3xl mx-auto font-['IBM_Plex_Mono'] text-sm">
+                <div className="flex justify-between py-2 border-b"><span className="font-semibold">Revenue</span><span></span></div>
+                <div className="flex justify-between py-1 pl-4 text-[#7A8078]"><span>Tuition Fees</span><span>2,450,000.00</span></div>
+                <div className="flex justify-between py-1 pl-4 text-[#7A8078]"><span>Boarding Fees</span><span>1,200,000.00</span></div>
+                <div className="flex justify-between py-2 border-b font-semibold"><span>Total Revenue</span><span>3,650,000.00</span></div>
+                
+                <div className="flex justify-between py-2 mt-4 border-b"><span className="font-semibold">Expenses</span><span></span></div>
+                <div className="flex justify-between py-1 pl-4 text-[#7A8078]"><span>Salaries & Wages</span><span>850,000.00</span></div>
+                <div className="flex justify-between py-1 pl-4 text-[#7A8078]"><span>Food Rations (Boarding)</span><span>620,000.00</span></div>
+                <div className="flex justify-between py-2 border-b border-black font-semibold"><span>Total Expenses</span><span>1,470,000.00</span></div>
+
+                <div className="flex justify-between py-3 mt-4 border-b-4 border-double border-[#1F6F4A] text-[#1F6F4A] font-bold text-base">
+                  <span>Net Surplus / (Deficit)</span><span>2,180,000.00</span>
+                </div>
+              </div>
+            )}
+            
+            {statementType !== "IS" && (
+              <div className="flex items-center justify-center h-32">
+                <p className="text-[#7A8078] italic">Statement generated successfully. (Table preview available in full view).</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
