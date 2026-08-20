@@ -82,3 +82,68 @@ class RequisitionItem(AuditableBase):
     quantity: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     unit_price: Mapped[Decimal] = mapped_column(Numeric(15, 4), nullable=False)
     total_price: Mapped[Decimal] = mapped_column(Numeric(15, 4), nullable=False)
+
+
+class LPOStatus(str, PyEnum):
+    GENERATED = "GENERATED"
+    ISSUED = "ISSUED"
+    PARTIALLY_DELIVERED = "PARTIALLY_DELIVERED"
+    FULFILLED = "FULFILLED"
+
+class LocalPurchaseOrder(AuditableBase, TenantMixin):
+    """
+    Digitally signed LPO generated from an approved Purchase Requisition (BR-PRO-004)
+    """
+    __tablename__ = "local_purchase_orders"
+
+    lpo_number: Mapped[str] = mapped_column(String(50), nullable=False, unique=True, index=True)
+    requisition_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("purchase_requisitions.id"), nullable=False, unique=True
+    )
+    supplier_id: Mapped[Optional[UUID]] = mapped_column(PG_UUID(as_uuid=True), nullable=True) # Assuming supplier is picked
+    
+    status: Mapped[str] = mapped_column(
+        String(25), default=LPOStatus.GENERATED.value, nullable=False, index=True
+    )
+    total_amount: Mapped[Decimal] = mapped_column(Numeric(15, 4), nullable=False)
+    
+    digital_signature: Mapped[Optional[str]] = mapped_column(Text, nullable=True) # Cryptographic signature hash
+    issued_by_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
+    
+    # Relationships for 3-Way match
+    requisition: Mapped["PurchaseRequisition"] = relationship()
+    grns: Mapped[List["GoodsReceivedNote"]] = relationship(back_populates="lpo")
+    invoices: Mapped[List["SupplierInvoice"]] = relationship(back_populates="lpo")
+
+class GoodsReceivedNote(AuditableBase, TenantMixin):
+    """
+    GRN created by Storekeeper upon delivery (BR-PRO-005)
+    """
+    __tablename__ = "goods_received_notes"
+
+    grn_number: Mapped[str] = mapped_column(String(50), nullable=False, unique=True, index=True)
+    lpo_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("local_purchase_orders.id"), nullable=False
+    )
+    received_by_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
+    delivery_note_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    
+    lpo: Mapped["LocalPurchaseOrder"] = relationship(back_populates="grns")
+
+class SupplierInvoice(AuditableBase, TenantMixin):
+    """
+    Invoice from Supplier. Used in 3-Way match (BR-PRO-006)
+    """
+    __tablename__ = "supplier_invoices"
+
+    invoice_number: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    lpo_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("local_purchase_orders.id"), nullable=False
+    )
+    invoice_amount: Mapped[Decimal] = mapped_column(Numeric(15, 4), nullable=False)
+    
+    # 3-Way Match Status
+    is_three_way_matched: Mapped[bool] = mapped_column(default=False, nullable=False)
+    approved_for_payment: Mapped[bool] = mapped_column(default=False, nullable=False)
+    
+    lpo: Mapped["LocalPurchaseOrder"] = relationship(back_populates="invoices")

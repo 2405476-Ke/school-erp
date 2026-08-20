@@ -328,6 +328,7 @@ const NAV: NavSection[] = [
       { label: "Purchase Requisition", page: "purchase-req" },
       { label: "LPO Register", page: "lpo-register" },
       { label: "GRN Entry", page: "grn-entry" },
+        { label: "3-Way Match Auth", page: "three-way-match" },
       { label: "Stores / Inventory", page: "stores" },
       { label: "Stocktake Reconciliation", page: "stocktake" },
     ],
@@ -8798,6 +8799,7 @@ function renderPage(page: NavPage, onNavigate: (p: NavPage) => void): React.Reac
     case "purchase-req": return <PurchaseRequisition />;
     case "lpo-register": return <LPORegister />;
     case "grn-entry": return <GRNEntry />;
+    case "three-way-match": return <ThreeWayMatch />;
     case "stores": return <StockIssuance />;
     case "stocktake": return <StocktakeReconciliation />;
     case "staff-directory": return <StaffDirectory />;
