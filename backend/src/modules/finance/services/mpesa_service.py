@@ -381,19 +381,24 @@ class MpesaService:
         )
 
         try:
-            # Fetch student by ID or ID in bill reference
-            # Assume bill_ref is student_id for now
-            try:
-                student_id = UUID(bill_ref)
-            except ValueError:
-                logger.error(f"Invalid student_id in bill_ref: {bill_ref}")
-                raise ValidationError(f"Invalid student ID: {bill_ref}")
-
-            student_query = select(Student).where(Student.id == student_id)
+            # Fetch student by Admission Number first (BR-REC-003)
+            # If not found, try matching by UUID (student_id)
+            student_query = select(Student).where(Student.admission_number == str(bill_ref))
             student = await self.db.scalar(student_query)
 
             if not student:
-                raise NotFoundError(f"Student {student_id} not found")
+                try:
+                    student_id = UUID(bill_ref)
+                    student_query = select(Student).where(Student.id == student_id)
+                    student = await self.db.scalar(student_query)
+                except ValueError:
+                    pass
+
+            if not student:
+                logger.error(f"Student not found for admission_number/ID: {bill_ref}")
+                raise NotFoundError(f"Student {bill_ref} not found")
+            
+            student_id = student.id
 
             # Create receipt and allocate payment
             fee_receipt = await self.receipt_service.create_receipt(
