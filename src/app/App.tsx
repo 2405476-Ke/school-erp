@@ -3508,7 +3508,7 @@ function StaffDirectory() {
         </div>
       ) : (
         <DataTable
-          columns={["Name", "Role", "TSC No.", "Department", "Contact", "Status"]}
+          columns={["Name", "Role / Dept.", "TSC / BOM No.", "KRA PIN", "NHIF / NSSF / TPAD", "Status"]}
           rows={staffList.map((staff: any) => [
             staff.full_name,
             staff.role,
