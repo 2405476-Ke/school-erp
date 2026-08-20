@@ -316,6 +316,7 @@ const NAV: NavSection[] = [
       { label: "Fee Structure Config", page: "fee-structure" },
       { label: "Student Fee Ledger", page: "fee-ledger" },
       { label: "M-Pesa Reconciliation", page: "mpesa-recon" },
+        { label: "Bursaries & Scholarships", page: "bursary-credit" },
       { label: "General Ledger", page: "general-ledger" },
       { label: "Period-End Closing", page: "period-close" },
       { label: "Capitation Tracking", page: "capitation" },
@@ -8746,6 +8747,7 @@ function renderPage(page: NavPage, onNavigate: (p: NavPage) => void): React.Reac
     case "fee-structure": return <FeeStructureConfiguration />;
     case "fee-ledger": return <FeeLedger />;
     case "mpesa-recon": return <MpesaReconciliation />;
+    case "bursary-credit": return <BursaryCreditNote />;
     case "general-ledger": return <GeneralLedger />;
     case "period-close": return <PeriodEndClosing />;
     case "capitation": return <CapitationTracking />;
@@ -10129,3 +10131,145 @@ function TermlyBillingManager() {
   );
 }
 
+
+
+// ─── Bursary & Scholarship Credit Notes (BR-REC-008) ─────────────
+
+function BursaryCreditNote() {
+  const [searchStudent, setSearchStudent] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  
+  const [bursaryType, setBursaryType] = useState("CDF");
+  const [amount, setAmount] = useState("");
+  const [reference, setReference] = useState("");
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Quick mock search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchStudent(e.target.value);
+    if (e.target.value.length > 3) {
+      setSelectedStudent({ id: "stu-123", name: "Jane Doe", admission_number: "ADM-998", balance: 45000 });
+    } else {
+      setSelectedStudent(null);
+    }
+  };
+
+  const handleApplyBursary = async () => {
+    if (!selectedStudent || !amount || !reference) return;
+    
+    setIsSubmitting(true);
+    setSuccessMsg(null);
+    
+    // Simulate backend call to create Receipt with payment_method="BURSARY"
+    // await apiPost('/finance/receipts', { student_id, amount, payment_method: 'BURSARY', reference_number })
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setIsSubmitting(false);
+    setSuccessMsg(`KES ${Number(amount).toLocaleString()} ${bursaryType} Bursary successfully credited to ${selectedStudent.name}.\nGL updated to debit Bursary Receivables Account (BR-REC-008).`);
+    
+    // Reset form
+    setAmount("");
+    setReference("");
+  };
+
+  return (
+    <div>
+      <PageHeader title="Bursaries & Scholarships" subtitle="Apply CDF and internal scholarships as credit notes (BR-REC-008)" />
+      
+      <div className="grid grid-cols-2 gap-8">
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-6">
+          <h3 className="font-semibold text-[#16241D] mb-4">Record Bursary Allocation</h3>
+          
+          <div className="mb-4">
+            <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Search Beneficiary Student</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#7A8078]" />
+              <input 
+                type="text" 
+                value={searchStudent}
+                onChange={handleSearch}
+                placeholder="Search by Name or Admission No..."
+                className="w-full pl-9 pr-3 py-2 border border-[#DCD6C4] rounded-sm text-sm"
+              />
+            </div>
+          </div>
+          
+          {selectedStudent && (
+            <div className="bg-[#F9F8F6] p-4 rounded-sm border border-[#EBE7DC] mb-6 flex justify-between items-center">
+              <div>
+                <p className="font-bold text-[#16241D]">{selectedStudent.name}</p>
+                <p className="text-xs text-[#7A8078]">{selectedStudent.admission_number}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs uppercase text-[#7A8078] font-bold">Current Arrears</p>
+                <p className="font-bold font-['IBM_Plex_Mono'] text-[#9C3B2E]">KES {selectedStudent.balance.toLocaleString()}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Bursary Source</label>
+              <select value={bursaryType} onChange={e => setBursaryType(e.target.value)} className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm">
+                <option value="CDF">CDF (Constituency Fund)</option>
+                <option value="Governor">Governor's Scholarship</option>
+                <option value="MOE">MOE Direct Grant</option>
+                <option value="Internal">Internal School Bursary</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Amount (KES)</label>
+              <input 
+                type="number" 
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm font-['IBM_Plex_Mono']"
+              />
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-xs uppercase text-[#7A8078] font-bold mb-1">Reference / Cheque Number</label>
+            <input 
+              type="text" 
+              value={reference}
+              onChange={e => setReference(e.target.value)}
+              placeholder="e.g. CDF/2026/001"
+              className="w-full border border-[#DCD6C4] p-2 rounded-sm text-sm"
+            />
+          </div>
+
+          <button 
+            onClick={handleApplyBursary}
+            disabled={!selectedStudent || !amount || !reference || isSubmitting}
+            className="w-full py-3 bg-[#1F6F4A] text-white font-bold rounded-sm text-sm hover:bg-[#185f3e] disabled:opacity-50"
+          >
+            {isSubmitting ? "Processing..." : "Post Credit Note"}
+          </button>
+          
+          {successMsg && (
+            <div className="mt-4 bg-[#E4F3EB] border border-[#1F6F4A] text-[#1F6F4A] p-3 rounded-sm text-sm whitespace-pre-wrap">
+              <CheckCircle className="w-4 h-4 inline mr-2 -mt-1" />
+              {successMsg}
+            </div>
+          )}
+        </div>
+        
+        <div>
+          <div className="bg-[#F9F8F6] border border-[#EBE7DC] rounded-sm p-4 text-sm text-[#7A8078]">
+            <h4 className="font-bold text-[#16241D] mb-2 uppercase">Accounting Logic</h4>
+            <p className="mb-2">When a bursary is applied, the system treats it as a <strong>Credit Note</strong> (payment) against the student's fee account.</p>
+            <ul className="list-disc pl-4 space-y-1">
+              <li><strong>CR:</strong> Student Receivables (1200)</li>
+              <li><strong>DR:</strong> Bursary & Scholarships Account (1130)</li>
+            </ul>
+            <p className="mt-4">This ensures the student's balance is cleared transparently, and the school maintains an accurate ledger of outstanding CDF/Governor pledges (FRD-REC-008).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
