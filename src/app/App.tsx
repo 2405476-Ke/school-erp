@@ -4369,6 +4369,8 @@ function TransfersClearance() {
           </div>
         ))}
       </div>
+      )}
+
     </div>
   );
 }
