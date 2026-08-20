@@ -86,6 +86,12 @@ class Staff(AuditableBase, TenantMixin):
     bank_account: Mapped[str | None] = mapped_column(String(50), nullable=True)
     bank_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     id_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    nhif_number: Mapped[str | None] = mapped_column(String(30), nullable=True, comment='NHIF/SHA member number')
+    nssf_number: Mapped[str | None] = mapped_column(String(30), nullable=True, comment='NSSF member number')
+    tpad_number: Mapped[str | None] = mapped_column(String(30), nullable=True, comment='TPAD performance appraisal number')
+    department: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    date_joined: Mapped[date | None] = mapped_column(Date, nullable=True)
+    role_title: Mapped[str | None] = mapped_column(String(100), nullable=True, comment='e.g., HOD Science')
     basic_pay: Mapped[Decimal] = mapped_column(
         Numeric(15, 2),
         comment="Monthly basic salary",

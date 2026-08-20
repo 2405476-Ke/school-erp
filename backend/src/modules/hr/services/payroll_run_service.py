@@ -590,3 +590,67 @@ class PayrollRunService:
             })
         
         return p10_lines
+
+    async def generate_payslip_data(self, school_id: UUID, staff_id: UUID, period_month: int, period_year: int) -> dict:
+        """
+        Generate a structured payslip data dictionary for a staff member.
+
+        Args:
+            school_id: Tenant school identifier.
+            staff_id: UUID of the staff member.
+            period_month: Payroll period month (1-12).
+            period_year: Payroll period year.
+
+        Returns:
+            Dictionary with all payslip fields for the period.
+
+        Raises:
+            NotFoundError: If staff, payroll run, or entry is not found.
+        """
+        from src.modules.hr.models.hr_payroll import PayrollEntry, PayrollAllowance, PayrollDeduction, Staff
+        from sqlalchemy.orm import selectinload
+
+        # Fetch staff record
+        staff = await self.db.scalar(select(Staff).where(Staff.id == staff_id, Staff.school_id == school_id))
+        if not staff:
+            raise NotFoundError(f'Staff {staff_id} not found')
+
+        # Fetch payroll run for this period
+        run_query = select(PayrollRun).where(
+            PayrollRun.school_id == school_id,
+            PayrollRun.period_month == period_month,
+            PayrollRun.period_year == period_year
+        )
+        run = await self.db.scalar(run_query)
+        if not run:
+            raise NotFoundError(f'No payroll run found for {period_year}-{period_month:02d}')
+
+        # Fetch entry with allowance and deduction lines eager-loaded
+        entry = await self.db.scalar(
+            select(PayrollEntry)
+            .options(selectinload(PayrollEntry.allowance_lines), selectinload(PayrollEntry.deduction_lines))
+            .where(PayrollEntry.payroll_run_id == run.id, PayrollEntry.staff_id == staff_id)
+        )
+        if not entry:
+            raise NotFoundError(f'Payslip not found for staff {staff_id} in period {period_year}-{period_month:02d}')
+
+        return {
+            'employee_name': f'{staff.first_name} {staff.last_name}',
+            'employee_number': staff.employee_number,
+            'role_title': getattr(staff, 'role_title', None),
+            'kra_pin': staff.kra_pin,
+            'nhif_number': getattr(staff, 'nhif_number', None),
+            'nssf_number': getattr(staff, 'nssf_number', None),
+            'period': f'{period_year}-{period_month:02d}',
+            'basic_pay': float(entry.basic_pay),
+            'allowances': [{'type': a.allowance_type, 'amount': float(a.amount)} for a in entry.allowance_lines],
+            'gross_pay': float(entry.gross_pay),
+            'paye': float(entry.paye),
+            'nssf_tier1': float(entry.nssf_tier1),
+            'nssf_tier2': float(entry.nssf_tier2),
+            'sha_nhif': float(entry.sha_nhif),
+            'housing_levy': float(entry.housing_levy),
+            'total_statutory': float(entry.total_statutory_deductions),
+            'deductions': [{'type': d.deduction_type, 'amount': float(d.amount)} for d in entry.deduction_lines],
+            'net_pay': float(entry.net_pay),
+        }
