@@ -226,3 +226,14 @@ class ExamMarkAuditLog(AuditableBase, TenantMixin):
     
     # Store explicit timestamp for the audit independently of AuditableBase just to be strict
     timestamp: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+
+class TermGradeWeighting(AuditableBase, TenantMixin):
+    """
+    Configuration for final term grade calculation (e.g. CAT1 15% + CAT2 15% + EOT 70%).
+    """
+    __tablename__ = "term_grade_weightings"
+    
+    term_id: Mapped[UUID] = mapped_column(ForeignKey("terms.id", ondelete="CASCADE"))
+    exam_id: Mapped[UUID] = mapped_column(ForeignKey("exams.id", ondelete="CASCADE"))
+    weight_percentage: Mapped[float] = mapped_column(nullable=False, comment="e.g. 15.0 for 15%")
