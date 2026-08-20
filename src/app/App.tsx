@@ -301,6 +301,7 @@ const NAV: NavSection[] = [
     items: [
       { label: "Timetable Builder", page: "timetable" },
         { label: "Syllabus Tracker", page: "syllabus" },
+        { label: "Exam Scheduling", page: "exam-scheduling" },
       { label: "CBC Assessment Entry", page: "cbc-assessment" },
       { label: "8-4-4 Mark Entry", page: "844-marks" },
       { label: "HOD Mark Review", page: "hod-review" },
@@ -8688,6 +8689,7 @@ function renderPage(page: NavPage, onNavigate: (p: NavPage) => void): React.Reac
     case "transfers": return <TransferRequest />;
     case "timetable": return <TimetableBuilder />;
       case "syllabus": return <SyllabusTracker />;
+      case "exam-scheduling": return <ExamScheduler />;
     case "cbc-assessment": return <CBCAssessment />;
     case "844-marks": return <MarksEntry844 />;
     case "hod-review": return <HODMarkReview />;
@@ -8931,6 +8933,294 @@ function SyllabusTracker() {
               </div>
             </>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+// ─── Exam Scheduler Component ────────────────────────────────────────
+
+function useExamSchedule(examId: string | undefined) {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSchedule = async () => {
+    if (!examId) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiGet<any[]>(`/exams/${examId}/schedule`);
+      setData(result || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch exam schedule');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSchedule();
+  }, [examId]);
+
+  return { data, setData, loading, error, refetch: fetchSchedule };
+}
+
+function ExamScheduler() {
+  const [selectedExamId, setSelectedExamId] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Reusing timetable hooks for generic data
+  const classes = useTimetableClasses();
+  const subjects = useTimetableSubjects("8-4-4");
+  
+  // Mock exams list (since we don't have a GET /exams yet, we use a static list for demo)
+  const availableExams = [
+    { id: "e0000000-0000-0000-0000-000000000001", name: "Term 1 Opener Exam" },
+    { id: "e0000000-0000-0000-0000-000000000002", name: "Term 1 Mid-Term Exam" },
+    { id: "e0000000-0000-0000-0000-000000000003", name: "Term 1 End-of-Term Exam" }
+  ];
+
+  const schedule = useExamSchedule(selectedExamId);
+
+  // New slot entry state
+  const [newSlot, setNewSlot] = useState({
+    subject_id: "",
+    class_level: "",
+    date: "",
+    start_time: "08:00",
+    end_time: "10:00"
+  });
+
+  const handleAddSlot = () => {
+    if (!newSlot.subject_id || !newSlot.class_level || !newSlot.date) return;
+    
+    // Combine date and time
+    const startIso = new Date(`${newSlot.date}T${newSlot.start_time}:00`).toISOString();
+    const endIso = new Date(`${newSlot.date}T${newSlot.end_time}:00`).toISOString();
+
+    const subjectName = subjects.data?.find((s: any) => s.id === newSlot.subject_id)?.name || "Unknown";
+
+    const newItem = {
+      subject_id: newSlot.subject_id,
+      subject_name: subjectName,
+      class_level: newSlot.class_level,
+      start_time: startIso,
+      end_time: endIso,
+    };
+
+    schedule.setData([...schedule.data, newItem]);
+    
+    // Reset inputs
+    setNewSlot(prev => ({ ...prev, subject_id: "", start_time: "08:00", end_time: "10:00" }));
+  };
+
+  const handleRemoveSlot = (index: number) => {
+    const updated = [...schedule.data];
+    updated.splice(index, 1);
+    schedule.setData(updated);
+  };
+
+  const handleSaveSchedule = async () => {
+    if (!selectedExamId) return;
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      setSaveSuccess(false);
+
+      const payload = {
+        exam_id: selectedExamId,
+        school_id: "00000000-0000-0000-0000-000000000000",
+        schedules: schedule.data.map(item => ({
+          subject_id: item.subject_id,
+          class_level: item.class_level,
+          start_time: item.start_time,
+          end_time: item.end_time
+        }))
+      };
+
+      await apiPost('/exams/schedule', payload);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save exam schedule');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      <PageHeader title="Digital Exam Scheduling" subtitle="Assign subjects to specific dates, times, and invigilators (Opener, MidTerm, End-of-Term)" />
+
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 mb-6">
+        <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Select Examination Sitting</label>
+        <select 
+          value={selectedExamId}
+          onChange={(e) => setSelectedExamId(e.target.value)}
+          className="w-full md:w-1/2 border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+        >
+          <option value="">Select Exam...</option>
+          {availableExams.map((e: any) => (
+            <option key={e.id} value={e.id}>{e.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {(classes.error || subjects.error || schedule.error || saveError) && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-6">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {classes.error || subjects.error || schedule.error || saveError}</p>
+        </div>
+      )}
+
+      {saveSuccess && (
+        <div className="bg-[#E7F0EA] border border-[#1F6F4A] rounded-sm p-4 mb-6">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A]">✓ Exam schedule saved successfully</p>
+        </div>
+      )}
+
+      {selectedExamId && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Add New Slot Form */}
+          <div className="lg:col-span-1 bg-white border border-[#DCD6C4] rounded-sm p-4 h-fit">
+            <h3 className="font-semibold font-['IBM_Plex_Sans'] text-md mb-4 border-b border-[#DCD6C4] pb-2">Schedule Paper</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-[#7A8078] font-['IBM_Plex_Sans'] mb-1">Target Class / Level</label>
+                <select 
+                  value={newSlot.class_level}
+                  onChange={(e) => setNewSlot(p => ({ ...p, class_level: e.target.value }))}
+                  className="w-full border border-[#DCD6C4] rounded-sm px-2 py-1.5 text-sm"
+                >
+                  <option value="">Select...</option>
+                  <option value="Form 1">Form 1</option>
+                  <option value="Form 2">Form 2</option>
+                  <option value="Form 3">Form 3</option>
+                  <option value="Form 4">Form 4</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#7A8078] font-['IBM_Plex_Sans'] mb-1">Subject</label>
+                <select 
+                  value={newSlot.subject_id}
+                  onChange={(e) => setNewSlot(p => ({ ...p, subject_id: e.target.value }))}
+                  className="w-full border border-[#DCD6C4] rounded-sm px-2 py-1.5 text-sm"
+                >
+                  <option value="">Select...</option>
+                  {subjects.data?.map((s: any) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#7A8078] font-['IBM_Plex_Sans'] mb-1">Date</label>
+                <input 
+                  type="date"
+                  value={newSlot.date}
+                  onChange={(e) => setNewSlot(p => ({ ...p, date: e.target.value }))}
+                  className="w-full border border-[#DCD6C4] rounded-sm px-2 py-1.5 text-sm"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <div className="w-1/2">
+                  <label className="block text-xs text-[#7A8078] font-['IBM_Plex_Sans'] mb-1">Start Time</label>
+                  <input 
+                    type="time"
+                    value={newSlot.start_time}
+                    onChange={(e) => setNewSlot(p => ({ ...p, start_time: e.target.value }))}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-2 py-1.5 text-sm"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-xs text-[#7A8078] font-['IBM_Plex_Sans'] mb-1">End Time</label>
+                  <input 
+                    type="time"
+                    value={newSlot.end_time}
+                    onChange={(e) => setNewSlot(p => ({ ...p, end_time: e.target.value }))}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-2 py-1.5 text-sm"
+                  />
+                </div>
+              </div>
+
+              <button 
+                onClick={handleAddSlot}
+                disabled={!newSlot.subject_id || !newSlot.class_level || !newSlot.date}
+                className="w-full mt-4 px-4 py-2 bg-[#EBE7DC] text-[#16241D] rounded-sm text-sm font-semibold hover:bg-[#DCD6C4] disabled:opacity-50"
+              >
+                + Add Paper to Schedule
+              </button>
+            </div>
+          </div>
+
+          {/* Schedule List */}
+          <div className="lg:col-span-2 bg-white border border-[#DCD6C4] rounded-sm p-4">
+            <div className="flex justify-between items-center mb-4 border-b border-[#DCD6C4] pb-2">
+              <h3 className="font-semibold font-['IBM_Plex_Sans'] text-md">Digital Timetable Matrix</h3>
+              <button 
+                onClick={handleSaveSchedule}
+                disabled={isSaving}
+                className="px-4 py-1.5 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold hover:bg-[#185f3e] disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save Master Schedule"}
+              </button>
+            </div>
+
+            {schedule.loading ? (
+              <p className="text-sm text-[#7A8078] text-center py-8">Loading schedule...</p>
+            ) : schedule.data.length === 0 ? (
+              <p className="text-sm text-[#7A8078] text-center py-8 italic">No papers scheduled for this exam yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#EBE7DC] text-[#7A8078] text-xs uppercase tracking-wider font-['IBM_Plex_Sans']">
+                      <th className="p-2 font-medium">Date</th>
+                      <th className="p-2 font-medium">Time</th>
+                      <th className="p-2 font-medium">Class</th>
+                      <th className="p-2 font-medium">Paper/Subject</th>
+                      <th className="p-2 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {schedule.data.map((item, idx) => {
+                      const startDate = new Date(item.start_time);
+                      const endDate = new Date(item.end_time);
+                      
+                      return (
+                        <tr key={idx} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4] text-sm">
+                          <td className="p-2 font-semibold text-[#16241D]">
+                            {startDate.toLocaleDateString()}
+                          </td>
+                          <td className="p-2 text-[#7A8078]">
+                            {startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </td>
+                          <td className="p-2 text-[#16241D]">
+                            {item.class_level}
+                          </td>
+                          <td className="p-2 text-[#1F6F4A] font-semibold">
+                            {item.subject_name || "Unknown"}
+                          </td>
+                          <td className="p-2">
+                            <button onClick={() => handleRemoveSlot(idx)} className="text-[#9C3B2E] hover:underline text-xs font-semibold">Remove</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

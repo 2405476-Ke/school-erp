@@ -147,10 +147,12 @@ def create_app() -> FastAPI:
     from src.modules.dashboard.routers import router as dashboard_router
     from src.modules.academics.routers.timetable import router as timetable_router
     from src.modules.academics.routers.syllabus import router as syllabus_router
+    from src.modules.academics.routers.exam_scheduling import router as exam_scheduling_router
     app.include_router(settings_router, prefix=settings.API_V1_STR)
     app.include_router(dashboard_router, prefix=settings.API_V1_STR)
     app.include_router(timetable_router, prefix=settings.API_V1_STR)
     app.include_router(syllabus_router, prefix=settings.API_V1_STR)
+    app.include_router(exam_scheduling_router, prefix=settings.API_V1_STR)
     # app.include_router(auth_router, prefix=settings.API_V1_STR)
     # app.include_router(ledger_router, prefix=settings.API_V1_STR)
     # app.include_router(fees_router, prefix=settings.API_V1_STR)

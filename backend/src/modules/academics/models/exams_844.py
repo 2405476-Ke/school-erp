@@ -169,3 +169,24 @@ class ExamResult844(AuditableBase, TenantMixin):
             "exam_id",
         ),
     )
+
+
+class ExamSchedule(AuditableBase, TenantMixin):
+    """
+    Digital schedule for a specific paper within an examination sitting.
+    e.g., Mathematics Paper 1 during EOT1 on Monday at 8:00 AM.
+    """
+    __tablename__ = "exam_schedules"
+
+    exam_id: Mapped[UUID] = mapped_column(ForeignKey("exams.id", ondelete="CASCADE"))
+    subject_id: Mapped[UUID] = mapped_column(ForeignKey("subjects.id", ondelete="RESTRICT"))
+    class_level: Mapped[str] = mapped_column(String(50), comment="e.g. Form 1")
+    start_time: Mapped[datetime]
+    end_time: Mapped[datetime]
+    
+    # Optional fields for deeper scheduling
+    invigilator_id: Mapped[UUID] = mapped_column(ForeignKey("staff.id", ondelete="SET NULL"), nullable=True)
+    room_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), nullable=True) # Assuming rooms table might not exist yet, using raw UUID
+    
+    # Relationships
+    exam: Mapped["Exam"] = relationship("Exam")
