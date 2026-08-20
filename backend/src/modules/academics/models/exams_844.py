@@ -190,3 +190,39 @@ class ExamSchedule(AuditableBase, TenantMixin):
     
     # Relationships
     exam: Mapped["Exam"] = relationship("Exam")
+
+
+class ExamSubjectLock(AuditableBase, TenantMixin):
+    """
+    Tracks the workflow state of marks for a specific subject in a specific stream.
+    Enforces maker-checker (Teacher -> HOD).
+    """
+    __tablename__ = "exam_subject_locks"
+    
+    exam_id: Mapped[UUID] = mapped_column(ForeignKey("exams.id", ondelete="CASCADE"))
+    stream_id: Mapped[UUID] = mapped_column(ForeignKey("streams.id", ondelete="CASCADE"))
+    subject_id: Mapped[UUID] = mapped_column(ForeignKey("subjects.id", ondelete="CASCADE"))
+    
+    # DRAFT, PENDING_REVIEW, LOCKED
+    status: Mapped[str] = mapped_column(String(50), default="DRAFT")
+    
+    locked_by_id: Mapped[UUID] = mapped_column(ForeignKey("staff.id", ondelete="SET NULL"), nullable=True)
+    locked_at: Mapped[datetime] = mapped_column(nullable=True)
+
+
+class ExamMarkAuditLog(AuditableBase, TenantMixin):
+    """
+    Immutable audit trail for all grade modifications.
+    """
+    __tablename__ = "exam_mark_audit_logs"
+    
+    result_id: Mapped[UUID] = mapped_column(ForeignKey("exam_results_844.id", ondelete="CASCADE"))
+    action: Mapped[str] = mapped_column(String(50), comment="INSERT or UPDATE")
+    
+    old_mark: Mapped[float] = mapped_column(nullable=True)
+    new_mark: Mapped[float] = mapped_column(nullable=False)
+    
+    changed_by_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), nullable=False, comment="User ID who made the change")
+    
+    # Store explicit timestamp for the audit independently of AuditableBase just to be strict
+    timestamp: Mapped[datetime] = mapped_column(default=datetime.utcnow)

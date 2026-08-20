@@ -744,3 +744,84 @@ async def get_class_performance(
             message="Failed to retrieve class performance",
             status_code=500,
         )
+
+
+from pydantic import BaseModel
+from src.modules.academics.models.exams_844 import ExamSubjectLock, ExamMarkAuditLog, ExamResult844
+from datetime import datetime
+
+class WorkflowPayload(BaseModel):
+    exam_id: UUID
+    stream_id: UUID
+    subject_id: UUID
+    action: str  # SUBMIT_FOR_REVIEW, LOCK, UNLOCK
+
+@router.post("/marks/workflow", response_model=APIResponse)
+async def update_marks_workflow(
+    payload: WorkflowPayload,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    school_id: UUID = Depends(lambda: UUID("00000000-0000-0000-0000-000000000000")),
+) -> APIResponse:
+    user = getattr(request.state, "user", None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    # Verify RBAC
+    if payload.action in ["LOCK", "UNLOCK"] and user.role not in ["SystemAdmin", "SchoolAdmin"]:
+        raise HTTPException(status_code=403, detail="Forbidden. Only HODs/Admins can lock marks.")
+    
+    query = select(ExamSubjectLock).where(
+        and_(
+            ExamSubjectLock.exam_id == payload.exam_id,
+            ExamSubjectLock.stream_id == payload.stream_id,
+            ExamSubjectLock.subject_id == payload.subject_id,
+            ExamSubjectLock.school_id == school_id
+        )
+    )
+    lock = (await db.execute(query)).scalars().first()
+    
+    if not lock:
+        lock = ExamSubjectLock(
+            exam_id=payload.exam_id,
+            stream_id=payload.stream_id,
+            subject_id=payload.subject_id,
+            school_id=school_id,
+            status="DRAFT"
+        )
+        db.add(lock)
+        
+    if payload.action == "SUBMIT_FOR_REVIEW":
+        lock.status = "PENDING_REVIEW"
+    elif payload.action == "LOCK":
+        lock.status = "LOCKED"
+        lock.locked_by_id = user.id
+        lock.locked_at = datetime.utcnow()
+    elif payload.action == "UNLOCK":
+        lock.status = "DRAFT"
+        lock.locked_by_id = None
+        lock.locked_at = None
+        
+    await db.commit()
+    return APIResponse(status="success", data={"status": lock.status}, message=f"Marks workflow updated to {lock.status}")
+
+@router.get("/marks/audit-log", response_model=APIResponse)
+async def get_mark_audit_logs(
+    result_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+) -> APIResponse:
+    query = select(ExamMarkAuditLog).where(ExamMarkAuditLog.result_id == result_id).order_by(ExamMarkAuditLog.timestamp.desc())
+    logs = (await db.execute(query)).scalars().all()
+    
+    data = []
+    for log in logs:
+        data.append({
+            "action": log.action,
+            "old_mark": log.old_mark,
+            "new_mark": log.new_mark,
+            "changed_by_id": str(log.changed_by_id),
+            "timestamp": log.timestamp.isoformat()
+        })
+        
+    return APIResponse(status="success", data=data, message="Audit logs retrieved successfully")

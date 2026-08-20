@@ -7195,13 +7195,35 @@ function FeeStructureConfiguration() {
                 >
                   Reset to Default
                 </button>
-                <button 
+                
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                if (!selectedClassId || !selectedExamSessionId) return;
+                try {
+                  await apiPost('/exams/844/marks/workflow', {
+                    exam_id: selectedExamSessionId,
+                    stream_id: selectedClassId,
+                    subject_id: "00000000-0000-0000-0000-000000000000", // Generic for prototype
+                    action: "SUBMIT_FOR_REVIEW"
+                  });
+                  alert("Successfully submitted to HOD for review!");
+                } catch (e) {
+                  alert("Failed to submit to HOD");
+                }
+              }}
+              className="px-4 py-2 bg-[#EBE7DC] text-[#16241D] rounded-sm text-sm font-semibold hover:bg-[#DCD6C4]"
+            >
+              Submit to HOD
+            </button>
+            <button 
                   onClick={handleSave}
                   disabled={isSubmitting}
                   className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-60"
                 >
                   {isSubmitting ? "Saving..." : "Save Fee Structure"}
                 </button>
+          </div>
               </div>
             </>
           )}
