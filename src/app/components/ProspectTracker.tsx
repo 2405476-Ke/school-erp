@@ -10,7 +10,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Plus, X } from 'lucide-react';
-import { apiGet, tokenManager } from '@/services/api';
+import { apiGet, apiPost, tokenManager } from '@/services/api';
 import type { StudentProspect, ProspectStatus } from '@/types/api';
 import { formatDate, formatStudentName, formatClassStream, prospectStatusToVariant } from '@/services/formatting';
 
@@ -26,6 +26,7 @@ export function ProspectTracker({ onNavigate }: ProspectTrackerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({ name: '', contact: '', relationship: '', appliedFor: 'FORM_1_A' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // ─── Fetch prospects on component mount ────────────────────────────────
 
@@ -169,7 +170,10 @@ export function ProspectTracker({ onNavigate }: ProspectTrackerProps) {
       {!isLoading && prospects.length > 0 && (
         <ProspectTable
           prospects={filteredProspects}
-          onRowClick={() => onNavigate('student-profile')}
+          onRowClick={(prospectId) => {
+            // Navigate to student profile with prospect ID context
+            onNavigate(`student-profile?prospect_id=${prospectId}`);
+          }}
         />
       )}
 
@@ -193,26 +197,43 @@ export function ProspectTracker({ onNavigate }: ProspectTrackerProps) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              {/* Form Error Display */}
+              {formError && (
+                <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-3">
+                  <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">
+                    {formError}
+                  </p>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">
-                  Full Name
+                  Full Name *
                 </label>
                 <input
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, name: e.target.value });
+                    setFormError(null);
+                  }}
                   placeholder="Student full name"
                   className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">
-                  Guardian Contact
+                  Guardian Contact *
                 </label>
                 <input
                   value={formData.contact}
-                  onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, contact: e.target.value });
+                    setFormError(null);
+                  }}
                   placeholder="Phone or email"
                   className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -224,16 +245,18 @@ export function ProspectTracker({ onNavigate }: ProspectTrackerProps) {
                   onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
                   placeholder="e.g. Father, Mother"
                   className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">
-                  Applied For
+                  Applied For *
                 </label>
                 <select
                   value={formData.appliedFor}
                   onChange={(e) => setFormData({ ...formData, appliedFor: e.target.value })}
                   className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+                  disabled={isSubmitting}
                 >
                   <option value="FORM_1_A">Form 1 · Stream A</option>
                   <option value="FORM_1_B">Form 1 · Stream B</option>
@@ -247,26 +270,57 @@ export function ProspectTracker({ onNavigate }: ProspectTrackerProps) {
             <div className="px-6 py-4 border-t border-[#DCD6C4]">
               <button
                 onClick={async () => {
-                  if (!formData.name || !formData.contact) {
-                    alert('Please fill in all required fields');
+                  // Validation
+                  if (!formData.name.trim()) {
+                    setFormError('Full name is required');
                     return;
                   }
+                  if (!formData.contact.trim()) {
+                    setFormError('Guardian contact is required');
+                    return;
+                  }
+                  if (!formData.appliedFor) {
+                    setFormError('Applied for class is required');
+                    return;
+                  }
+
                   setIsSubmitting(true);
+                  setFormError(null);
+
                   try {
-                    const [firstName, ...lastNameParts] = formData.name.split(' ');
-                    const newProspect: StudentProspect = {
-                      id: Math.random().toString(),
-                      first_name: firstName,
-                      last_name: lastNameParts.join(' ') || 'Unknown',
-                      guardian_phone: formData.contact,
-                      applied_class: (formData.appliedFor.split('_')[0] + '_' + formData.appliedFor.split('_')[1]) as any,
-                      applied_stream: formData.appliedFor.split('_')[2] || 'A',
-                      prospect_status: 'ENQUIRY',
-                      created_at: new Date().toISOString(),
-                    };
+                    const schoolId = tokenManager.getSchoolId();
+                    if (!schoolId) {
+                      throw new Error('School ID not found. Please log in again.');
+                    }
+
+                    const [firstName, ...lastNameParts] = formData.name.trim().split(' ');
+                    const appliedForParts = formData.appliedFor.split('_');
+                    const appliedClass = `${appliedForParts[0]}_${appliedForParts[1]}`;
+                    const appliedStream = appliedForParts[2] || 'A';
+
+                    // BACKEND: POST new prospect
+                    const newProspect = await apiPost<StudentProspect>(
+                      `/admissions/prospects?school_id=${schoolId}`,
+                      {
+                        first_name: firstName,
+                        last_name: lastNameParts.join(' ') || '',
+                        guardian_phone: formData.contact.trim(),
+                        guardian_relationship: formData.relationship.trim(),
+                        applied_class: appliedClass,
+                        applied_stream: appliedStream,
+                      }
+                    );
+
+                    // Add to list
                     setProspects([newProspect, ...prospects]);
+                    
+                    // Reset form
                     setFormData({ name: '', contact: '', relationship: '', appliedFor: 'FORM_1_A' });
                     setShowForm(false);
+                  } catch (err) {
+                    const msg = err instanceof Error ? err.message : 'Failed to save prospect';
+                    setFormError(msg);
+                    console.error('Error saving prospect:', err);
                   } finally {
                     setIsSubmitting(false);
                   }
@@ -288,7 +342,7 @@ export function ProspectTracker({ onNavigate }: ProspectTrackerProps) {
 
 interface ProspectTableProps {
   prospects: StudentProspect[];
-  onRowClick: () => void;
+  onRowClick: (prospectId: string) => void;
 }
 
 function ProspectTable({ prospects, onRowClick }: ProspectTableProps) {
@@ -311,7 +365,7 @@ function ProspectTable({ prospects, onRowClick }: ProspectTableProps) {
           {prospects.map((prospect, idx) => (
             <tr
               key={prospect.id}
-              onClick={onRowClick}
+              onClick={() => onRowClick(prospect.id)}
               className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4] cursor-pointer transition-colors"
             >
               <td className="px-4 py-3 text-sm font-['IBM_Plex_Sans'] text-[#16241D]">

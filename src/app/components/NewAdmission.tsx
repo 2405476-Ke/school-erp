@@ -89,18 +89,26 @@ export function NewAdmission() {
     try {
       setUpiValidation({ status: 'checking', message: 'Checking NEMIS registry...' });
 
-      // Simulate backend check - in production, you'd call a validation endpoint
-      // For now, we'll let the backend handle validation on submit
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const schoolId = tokenManager.getSchoolId();
+      if (!schoolId) {
+        throw new Error('School ID not found. Please log in again.');
+      }
+
+      // BACKEND: Validate UPI uniqueness
+      await apiPost<{ valid: boolean; message?: string }>(
+        `/admissions/validate-upi?school_id=${schoolId}`,
+        { upi: value }
+      );
 
       setUpiValidation({
         status: 'valid',
         message: 'UPI format valid. Final validation on submit.',
       });
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'UPI validation failed';
       setUpiValidation({
         status: 'duplicate',
-        message: 'UPI already registered',
+        message: errorMessage.includes('already') ? 'UPI already registered' : 'Invalid UPI',
       });
     }
   };
@@ -205,7 +213,7 @@ export function NewAdmission() {
                 UPI validated. Status set to Active — Term 1 invoice will auto-generate.
               </p>
               <p className="text-sm text-[#1F6F4A] mt-1 font-['IBM_Plex_Sans']">
-                {form.firstName} {form.lastName} (ADM-2025-{Math.floor(Math.random() * 10000)})
+                {form.firstName} {form.lastName} (ID: {submittedStudent.id})
               </p>
             </div>
           </div>
@@ -511,61 +519,25 @@ export function NewAdmission() {
         {/* Sidebar */}
         <div className="space-y-4">
           {/* Document Uploads */}
+          {/* BACKEND INTEGRATION REQUIRED: GET /admissions/students/{student_id}/document-requirements?school_id={schoolId} */}
           <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
             <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">
               Document Uploads
             </p>
-            {[
-              { label: 'Birth Certificate', status: 'uploaded' },
-              { label: 'KCPE Result Slip', status: 'pending' },
-              { label: 'Leaving Certificate', status: 'pending' },
-            ].map((doc) => (
-              <div
-                key={doc.label}
-                className="flex items-center gap-3 py-2 border-b border-[#DCD6C4] last:border-0"
-              >
-                <div className="flex-1">
-                  <p className="text-xs font-['IBM_Plex_Sans'] text-[#16241D]">
-                    {doc.label}
-                  </p>
-                </div>
-                {doc.status === 'uploaded' ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold font-['IBM_Plex_Sans'] bg-[#E7F0EA] text-[#1F6F4A]">
-                    Uploaded
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    className="text-[11px] text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline flex items-center gap-1"
-                  >
-                    <Upload size={11} /> Upload
-                  </button>
-                )}
-              </div>
-            ))}
+            <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans'] py-3">
+              Document upload functionality will be available after student admission is confirmed.
+            </p>
           </div>
 
           {/* Admission Checklist */}
+          {/* BACKEND INTEGRATION REQUIRED: GET /admissions/students/{student_id}/checklist?school_id={schoolId} */}
           <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
             <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">
-              Admission Checklist — {form.category === 'BOARDER' ? 'Boarder' : 'Day Scholar'}
+              Admission Checklist
             </p>
-            {(form.category === 'BOARDER'
-              ? [
-                  'Bed allocation confirmed',
-                  'Dorm assigned',
-                  'Boarding fees invoiced',
-                  'Medical form submitted',
-                ]
-              : ['Day scholar fee invoiced', 'Bus route assigned']
-            ).map((item) => (
-              <label key={item} className="flex items-center gap-2 py-1.5 cursor-pointer">
-                <input type="checkbox" className="accent-[#1F6F4A]" />
-                <span className="text-xs font-['IBM_Plex_Sans'] text-[#16241D]">
-                  {item}
-                </span>
-              </label>
-            ))}
+            <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans'] py-3">
+              Post-admission checklist will be displayed after student is successfully registered.
+            </p>
           </div>
 
           {/* Submit Button */}

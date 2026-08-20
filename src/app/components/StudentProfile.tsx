@@ -156,20 +156,132 @@ function useStudentDiscipline(studentId: string | undefined) {
   return { data, loading, error };
 }
 
+/**
+ * Hook: Fetch boarding information
+ * Endpoint: GET /boarding/student-allocations?student_id={id}
+ */
+function useStudentBoardingInfo(studentId: string | undefined) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studentId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await apiGet<any>(
+          `/boarding/student-allocations?student_id=${studentId}`
+        );
+        setData(result || null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load boarding data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [studentId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch student documents
+ * Endpoint: GET /admissions/students/{id}/documents
+ */
+function useStudentDocuments(studentId: string | undefined) {
+  const [data, setData] = useState<any[]>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studentId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await apiGet<any[]>(
+          `/admissions/students/${studentId}/documents`
+        );
+        setData(result || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load documents');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [studentId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch guardian contacts
+ * Endpoint: GET /admissions/students/{id}/guardians
+ */
+function useStudentGuardians(studentId: string | undefined) {
+  const [data, setData] = useState<any[]>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studentId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await apiGet<any[]>(
+          `/admissions/students/${studentId}/guardians`
+        );
+        setData(result || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load guardian data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [studentId]);
+
+  return { data, loading, error };
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function StudentProfile({ studentId }: StudentProfileProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const tabs = ['overview', 'academic', 'finance', 'disciplinary', 'boarding', 'documents'];
 
-  // Get student ID from URL params or props (default to demo ID for now)
-  const effectiveStudentId = studentId || 'demo-student-id';
+  // StudentId is required - must come from URL params or props
+  if (!studentId) {
+    return (
+      <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+        <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">
+          ⚠️ Student ID not provided. Please access from Prospect Tracker or Student list.
+        </p>
+      </div>
+    );
+  }
+
+  const effectiveStudentId = studentId;
 
   // Lazy-load data: only fetch when tab becomes active
   const overview = useStudentOverview(activeTab === 'overview' ? effectiveStudentId : undefined);
   const academics = useStudentAcademics(activeTab === 'academic' ? effectiveStudentId : undefined);
   const fees = useFeeAccount(activeTab === 'finance' ? effectiveStudentId : undefined);
   const discipline = useStudentDiscipline(activeTab === 'disciplinary' ? effectiveStudentId : undefined);
+  const boarding = useStudentBoardingInfo(activeTab === 'boarding' ? effectiveStudentId : undefined);
+  const documents = useStudentDocuments(activeTab === 'documents' ? effectiveStudentId : undefined);
+  const guardians = useStudentGuardians(activeTab === 'overview' ? effectiveStudentId : undefined);
 
   // Generate initials from student name
   const getInitials = (student: Student | null) => {
@@ -227,36 +339,12 @@ export function StudentProfile({ studentId }: StudentProfileProps) {
 
       {/* Tab: Boarding */}
       {activeTab === 'boarding' && (
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-4">
-            <div><span className="text-xs text-[#7A8078]">Dormitory:</span> <span className="font-semibold">Maisha</span></div>
-            <div><span className="text-xs text-[#7A8078]">Bed:</span> <span className="font-semibold">14</span></div>
-            <div><span className="text-xs text-[#7A8078]">Status:</span> <StatusTag variant="ok" label="Active" /></div>
-            <div><span className="text-xs text-[#7A8078]">Years Boarded:</span> <span className="font-semibold">1</span></div>
-          </div>
-        </div>
+        <BoardingTab boarding={boarding.data} loading={boarding.loading} error={boarding.error} />
       )}
 
       {/* Tab: Documents */}
       {activeTab === 'documents' && (
-        <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
-          <table className="w-full text-sm font-['IBM_Plex_Sans']">
-            <thead>
-              <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#7A8078] uppercase tracking-wide">Document</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-[#7A8078] uppercase tracking-wide">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[['Birth Certificate', 'Submitted'], ['Admission Letter', 'Submitted'], ['Medical Form', 'Pending']].map(([doc, status]) => (
-                <tr key={doc} className="border-b border-[#DCD6C4] last:border-0">
-                  <td className="px-4 py-3 text-[#16241D]">{doc}</td>
-                  <td className="px-4 py-3 text-center"><StatusTag variant={status === 'Submitted' ? 'ok' : 'warn'} label={status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DocumentsTab documents={documents.data} loading={documents.loading} error={documents.error} />
       )}
     </div>
   );
@@ -326,31 +414,48 @@ function OverviewTab({ student, loading, error }: TabProps & { student: Student 
 
       {/* Guardian Contacts & KPIs */}
       <div className="lg:col-span-2 space-y-4">
-        {/* Guardian Contacts (Placeholder for now) */}
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">
-            Guardian Contacts
-          </p>
-          <div className="space-y-2">
-            {[
-              { name: 'Guardian Name', phone: 'N/A', rel: 'Contact' },
-            ].map((g) => (
-              <div key={g.name} className="flex items-center gap-4 py-2 border-b border-[#DCD6C4] last:border-0">
-                <div className="flex-1">
-                  <p className="text-sm font-['IBM_Plex_Sans'] text-[#16241D]">{g.name}</p>
-                  <p className="text-xs text-[#7A8078] font-['IBM_Plex_Mono']">{g.phone}</p>
-                </div>
-                <StatusTag variant="neutral" label={g.rel} />
-              </div>
-            ))}
+        {/* Guardian Contacts */}
+        {guardians.loading ? (
+          <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">
+              Guardian Contacts
+            </p>
+            <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans'] py-3">Loading...</p>
           </div>
-        </div>
+        ) : guardians.error ? (
+          <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+            <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">
+              ⚠️ Failed to load guardians: {guardians.error}
+            </p>
+          </div>
+        ) : guardians.data && guardians.data.length > 0 ? (
+          <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">
+              Guardian Contacts
+            </p>
+            <div className="space-y-2">
+              {guardians.data.map((g, idx) => (
+                <div key={idx} className="flex items-center gap-4 py-2 border-b border-[#DCD6C4] last:border-0">
+                  <div className="flex-1">
+                    <p className="text-sm font-['IBM_Plex_Sans'] text-[#16241D]">{g.name}</p>
+                    <p className="text-xs text-[#7A8078] font-['IBM_Plex_Mono']">{g.phone}</p>
+                  </div>
+                  <StatusTag variant="neutral" label={g.relationship} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+            <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans'] py-3">No guardian contacts found</p>
+          </div>
+        )}
 
-        {/* KPI Cards (Placeholder) */}
+        {/* KPI Cards - Calculate from loaded data */}
         <div className="grid grid-cols-3 gap-3">
-          <KPICard label="Attendance %" value="N/A" delta="Loading..." deltaDir="up" />
-          <KPICard label="Fee Balance" value="N/A" delta="Loading..." deltaDir="down" mono />
-          <KPICard label="Incidents" value="0" delta="Loading..." deltaDir="up" />
+          <KPICard label="Attendance %" value={overview.data ? '—' : 'Loading'} delta="" deltaDir="up" />
+          <KPICard label="Fee Balance" value={fees.data ? '—' : 'Loading'} delta="" deltaDir="down" mono />
+          <KPICard label="Incidents" value={discipline.data ? discipline.data.length.toString() : '—'} delta="" deltaDir="up" />
         </div>
       </div>
     </div>
@@ -627,6 +732,88 @@ function DisciplinaryTab({
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Boarding Tab
+ * Shows student boarding information
+ */
+function BoardingTab({ boarding, loading, error }: TabProps & { boarding: any }) {
+  if (error) {
+    return (
+      <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+        <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">
+          ⚠️ Failed to load boarding data: {error}
+        </p>
+      </div>
+    );
+  }
+
+  if (loading || !boarding) {
+    return <TabLoadingSpinner />;
+  }
+
+  return (
+    <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 space-y-3">
+      <div className="grid grid-cols-2 gap-4">
+        <div><span className="text-xs text-[#7A8078]">Dormitory:</span> <span className="font-semibold">{boarding.dormitory_name || 'N/A'}</span></div>
+        <div><span className="text-xs text-[#7A8078]">Bed:</span> <span className="font-semibold">{boarding.bed_number || 'N/A'}</span></div>
+        <div><span className="text-xs text-[#7A8078]">Status:</span> <StatusTag variant={boarding.allocation_status === 'ACTIVE' ? 'ok' : 'warn'} label={boarding.allocation_status || 'Unknown'} /></div>
+        <div><span className="text-xs text-[#7A8078]">Allocation Date:</span> <span className="font-semibold">{boarding.allocation_date ? formatDate(boarding.allocation_date) : 'N/A'}</span></div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Documents Tab
+ * Shows required documents and submission status
+ */
+function DocumentsTab({ documents, loading, error }: TabProps & { documents: any[] }) {
+  if (error) {
+    return (
+      <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+        <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">
+          ⚠️ Failed to load documents: {error}
+        </p>
+      </div>
+    );
+  }
+
+  if (loading || !documents) {
+    return <TabLoadingSpinner />;
+  }
+
+  if (documents.length === 0) {
+    return (
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+        <p className="text-sm font-['IBM_Plex_Sans'] text-[#7A8078]">
+          No documents uploaded yet
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
+      <table className="w-full text-sm font-['IBM_Plex_Sans']">
+        <thead>
+          <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+            <th className="px-4 py-3 text-left text-xs font-semibold text-[#7A8078] uppercase tracking-wide">Document</th>
+            <th className="px-4 py-3 text-center text-xs font-semibold text-[#7A8078] uppercase tracking-wide">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {documents.map((doc, idx) => (
+            <tr key={idx} className="border-b border-[#DCD6C4] last:border-0">
+              <td className="px-4 py-3 text-[#16241D]">{doc.document_name}</td>
+              <td className="px-4 py-3 text-center"><StatusTag variant={doc.status === 'SUBMITTED' ? 'ok' : 'warn'} label={doc.status || 'Pending'} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

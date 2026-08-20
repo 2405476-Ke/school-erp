@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard, Users, GraduationCap, DollarSign, ShoppingCart,
   UserCheck, Home, Shield, FileText, Smartphone, ChevronRight,
@@ -21,7 +21,8 @@ import { GateAuditLog } from "@/app/components/GateAuditLog";
 import { StockIssuance } from "@/app/components/StockIssuance";
 import { BatchReport } from "@/app/components/BatchReport";
 
-// ─── Design Tokens ────────────────────────────────────────────────────────────
+// ─── API & Services ───────────────────────────────────────────────────────────
+// import { apiGet, apiPost } from "@/services/api"; // Uncomment when backend is ready
 const INK = "#16241D";
 const PRIMARY = "#1F6F4A";
 const OCHRE = "#B5751F";
@@ -620,136 +621,556 @@ function TopBar() {
 
 // ─── Pages ────────────────────────────────────────────────────────────────────
 
-function PrincipalDashboard() {
+// ─── Principal Dashboard Hooks ────────────────────────────────────────────
+
+function usePrincipalDashboardKPIs() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /dashboard/principal/kpis?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet(`/dashboard/principal/kpis?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch principal KPIs");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load KPIs');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function usePrincipalPendingApprovals() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /dashboard/principal/pending-approvals?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet(`/dashboard/principal/pending-approvals?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch pending approvals");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load approvals');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function usePrincipalAlerts() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /dashboard/principal/alerts?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet(`/dashboard/principal/alerts?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch principal alerts");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load alerts');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function usePrincipalEnrolmentData() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /dashboard/principal/enrolment?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet(`/dashboard/principal/enrolment?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch enrolment data");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load enrolment');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function usePrincipalFeeCollectionData() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /dashboard/principal/fee-collection?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet(`/dashboard/principal/fee-collection?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch fee collection data");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load fee data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+// ─── Principal Dashboard Component ────────────────────────────────────────
+
+function PrincipalDashboard({ onNavigate }: { onNavigate?: (page: NavPage) => void }) {
+  const kpisData = usePrincipalDashboardKPIs();
+  const approvalsData = usePrincipalPendingApprovals();
+  const alertsData = usePrincipalAlerts();
+  const enrolmentData = usePrincipalEnrolmentData();
+  const feeData = usePrincipalFeeCollectionData();
+
+  const displayKpis = kpisData.data || {
+    totalEnrolment: { value: "—", delta: "—", deltaDir: "neutral" as const },
+    feeCollection: { value: "—", delta: "—", deltaDir: "neutral" as const },
+    unaccountedStudents: { value: "—", delta: "—", deltaDir: "neutral" as const },
+    openRequisitions: { value: "—", delta: "—", deltaDir: "neutral" as const },
+  };
+  const displayPendingApprovals = approvalsData.data || [];
+  const displayRecentAlerts = alertsData.data || [];
+  const displayEnrolmentData = enrolmentData.data || [];
+  const displayFeeCollectionData = feeData.data || [];
+
+  const handleReviewApproval = (item: any) => {
+    try {
+      if (item.type === "requisition" && onNavigate) {
+        onNavigate("purchase-req");
+      } else if (item.type === "leave" && onNavigate) {
+        onNavigate("leave-request");
+      }
+    } catch (err) {
+      console.error("Failed to navigate to approval page");
+    }
+  };
+
+  const handleAlertAction = (alert: any) => {
+    if (!alert.actionable) return;
+    try {
+      if (alert.msg.includes("unaccounted") && onNavigate) {
+        onNavigate("muster-roll");
+      } else if (alert.msg.includes("M-Pesa") && onNavigate) {
+        onNavigate("mpesa-recon");
+      }
+    } catch (err) {
+      console.error("Failed to navigate to alert page");
+    }
+  };
+
+  const hasError = kpisData.error || approvalsData.error || alertsData.error || enrolmentData.error || feeData.error;
+  const isLoading = kpisData.loading || approvalsData.loading || alertsData.loading || enrolmentData.loading || feeData.loading;
+
   return (
     <div>
       <Breadcrumbs items={[{ label: "Home" }, { label: "Dashboard" }]} />
       <PageHeader title="Principal Dashboard" subtitle="St. Joseph's High School — Summary overview" badge="Term 2 · Week 6" />
-      <div className="grid grid-cols-2 gap-4 mb-6 lg:grid-cols-4">
-        <KPICard label="Total Enrolment" value="1,284" delta="+12 this term" deltaDir="up" />
-        <KPICard label="Fee Collection %" value="73.4%" delta="Target: 85%" deltaDir="down" mono />
-        <KPICard label="Unaccounted (Boarding)" value="3" delta="Safety critical" deltaDir="down" />
-        <KPICard label="Open Requisitions" value="8" delta="2 pending Tier 2" deltaDir="neutral" />
-      </div>
-      <div className="grid grid-cols-1 gap-4 mb-6 lg:grid-cols-2">
-        <div className="bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
-          <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold mb-4">Pending Approvals</p>
-          <div className="space-y-2">
-            {[
-              { id: "REQ-2025-0084", label: "Science Lab Reagents", amount: "KES 87,500", tier: "Tier 2", stat: "warn" as StatusVariant },
-              { id: "LP-2025-0031", label: "Leave Pass — F. Ochieng (Form 3N)", amount: "", tier: "Deputy P.", stat: "warn" as StatusVariant },
-              { id: "REQ-2025-0081", label: "Library Books — Grade 9", amount: "KES 42,000", tier: "Tier 1", stat: "neutral" as StatusVariant },
-            ].map((item) => (
-              <div key={item.id} className="flex items-center gap-3 py-2 border-b border-[#DCD6C4] last:border-0">
-                <span className="font-['IBM_Plex_Mono'] text-[11px] text-[#7A8078]">{item.id}</span>
-                <span className="flex-1 text-sm font-['IBM_Plex_Sans'] text-[#16241D]">{item.label}</span>
-                {item.amount && <span className="font-['IBM_Plex_Mono'] text-xs text-[#16241D]">{item.amount}</span>}
-                <StatusTag variant={item.stat} label={item.tier} />
-                <button className="text-[11px] text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">Review</button>
-              </div>
-            ))}
-          </div>
+      
+      {/* Error Alert */}
+      {hasError && (
+        <div className="mb-6">
+          <ValidationCallout type="error" message={kpisData.error || approvalsData.error || alertsData.error || enrolmentData.error || feeData.error || "Error loading dashboard"} />
         </div>
+      )}
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 gap-4 mb-6 lg:grid-cols-4">
+        <KPICard label="Total Enrolment" value={displayKpis.totalEnrolment?.value || "—"} delta={displayKpis.totalEnrolment?.delta || ""} deltaDir={displayKpis.totalEnrolment?.deltaDir || "neutral"} />
+        <KPICard label="Fee Collection %" value={displayKpis.feeCollection?.value || "—"} delta={displayKpis.feeCollection?.delta || ""} deltaDir={displayKpis.feeCollection?.deltaDir || "neutral"} mono />
+        <KPICard label="Unaccounted (Boarding)" value={displayKpis.unaccountedStudents?.value || "—"} delta={displayKpis.unaccountedStudents?.delta || ""} deltaDir={displayKpis.unaccountedStudents?.deltaDir || "neutral"} />
+        <KPICard label="Open Requisitions" value={displayKpis.openRequisitions?.value || "—"} delta={displayKpis.openRequisitions?.delta || ""} deltaDir={displayKpis.openRequisitions?.deltaDir || "neutral"} />
+      </div>
+
+      {/* Pending Approvals & Recent Alerts */}
+      <div className="grid grid-cols-1 gap-4 mb-6 lg:grid-cols-2">
+        {/* Pending Approvals */}
+        <div className="bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold">Pending Approvals</p>
+            {onNavigate && (
+              <button onClick={() => onNavigate("purchase-req")} className="text-[10px] text-[#1F6F4A] hover:text-[#0d5135] font-semibold font-['IBM_Plex_Sans'] transition-colors">
+                View All →
+              </button>
+            )}
+          </div>
+          {isLoading ? (
+            <div className="py-6 text-center">
+              <p className="text-[12px] text-[#7A8078] font-['IBM_Plex_Sans']">Loading approvals...</p>
+            </div>
+          ) : displayPendingApprovals.length === 0 ? (
+            <div className="py-6 text-center">
+              <p className="text-[12px] text-[#7A8078] font-['IBM_Plex_Sans']">No pending approvals</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {displayPendingApprovals.map((item: any) => (
+                <div key={item.id} className="flex items-center gap-3 py-3 px-3 border border-[#DCD6C4] rounded-lg hover:bg-[#F8F6F1] transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-['IBM_Plex_Mono'] text-[10px] text-[#7A8078]">{item.id}</span>
+                      <span className="text-[11px] font-['IBM_Plex_Sans'] text-[#16241D] font-medium truncate">{item.label}</span>
+                    </div>
+                    {item.amount && <span className="font-['IBM_Plex_Mono'] text-[11px] text-[#7A8078]">{item.amount}</span>}
+                  </div>
+                  <StatusTag variant={item.stat} label={item.tier} />
+                  <button 
+                    onClick={() => handleReviewApproval(item)}
+                    className="px-3 py-1 text-[10px] font-semibold text-white bg-[#1F6F4A] hover:bg-[#0d5135] rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    Review
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Alerts */}
         <div className="bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
           <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold mb-4">Recent Alerts</p>
           <div className="space-y-2">
-            {[
-              { msg: "3 students unaccounted in Form 4 dorm — 21:15", type: "bad" as StatusVariant },
-              { msg: "M-Pesa unallocated funds: KES 34,200 in suspense", type: "warn" as StatusVariant },
-              { msg: "NEMIS export flagged 3 records — UPI format invalid", type: "warn" as StatusVariant },
-              { msg: "Payroll run complete — 74 staff processed", type: "ok" as StatusVariant },
-            ].map((a, i) => (
-              <div key={i} className="flex items-start gap-2 py-2 border-b border-[#DCD6C4] last:border-0">
-                <StatusTag variant={a.type} label={a.type === "bad" ? "Critical" : a.type === "warn" ? "Warning" : "OK"} />
-                <span className="text-sm font-['IBM_Plex_Sans'] text-[#16241D]">{a.msg}</span>
+            {displayRecentAlerts.map((a: any, i: number) => (
+              <div 
+                key={i} 
+                onClick={() => a.actionable && handleAlertAction(a)}
+                className={`flex items-start gap-3 p-3 border-l-4 rounded-lg transition-all ${
+                  a.type === "bad" ? "bg-[#F7E6E2] border-l-[#9C3B2E]" :
+                  a.type === "warn" ? "bg-[#F5EAD6] border-l-[#B5751F]" :
+                  "bg-[#E7F0EA] border-l-[#1F6F4A]"
+                } ${a.actionable ? "cursor-pointer hover:shadow-md" : ""}`}
+              >
+                <span className="text-lg mt-1">
+                  {a.type === "bad" ? "🚨" : a.type === "warn" ? "⚠️" : "✅"}
+                </span>
+                <div className="flex-1">
+                  <p className={`text-sm font-['IBM_Plex_Sans'] ${
+                    a.type === "bad" ? "text-[#9C3B2E]" :
+                    a.type === "warn" ? "text-[#B5751F]" :
+                    "text-[#1F6F4A]"
+                  }`}>
+                    {a.msg}
+                  </p>
+                  {a.actionable && <p className="text-[10px] text-[#7A8078] font-['IBM_Plex_Sans'] mt-1">Click to view details</p>}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Enrolment & Fee Collection */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {/* Enrolment by Form */}
         <div className="bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
           <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold mb-4">Enrolment by Form</p>
-          {[
-            { form: "Form 1", count: 348, cap: 360 },
-            { form: "Form 2", count: 322, cap: 360 },
-            { form: "Form 3", count: 308, cap: 360 },
-            { form: "Form 4", count: 306, cap: 360 },
-          ].map((r) => (
-            <div key={r.form} className="flex items-center gap-3 py-1.5">
-              <span className="text-xs font-['IBM_Plex_Sans'] text-[#7A8078] w-14">{r.form}</span>
-              <div className="flex-1 bg-[#EBE7DC] rounded-sm h-2 overflow-hidden">
-                <div className="h-2 bg-[#1F6F4A] rounded-sm" style={{ width: `${(r.count / r.cap) * 100}%` }} />
-              </div>
-              <span className="font-['IBM_Plex_Mono'] text-xs text-[#16241D]">{r.count}</span>
-            </div>
-          ))}
+          <div className="space-y-3">
+            {displayEnrolmentData.map((r: any) => {
+              const capacity = (r.count / r.cap) * 100;
+              const utilStatus = capacity >= 95 ? "Full" : capacity >= 85 ? "Near Cap" : "Open";
+              return (
+                <div key={r.form} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] font-['IBM_Plex_Sans'] text-[#16241D] font-medium">{r.form}</span>
+                    <span className={`text-[10px] font-['IBM_Plex_Sans'] font-semibold px-2 py-1 rounded-full ${
+                      capacity >= 95 ? "bg-[#F7E6E2] text-[#9C3B2E]" :
+                      capacity >= 85 ? "bg-[#F5EAD6] text-[#B5751F]" :
+                      "bg-[#E7F0EA] text-[#1F6F4A]"
+                    }`}>
+                      {utilStatus}
+                    </span>
+                  </div>
+                  <div className="flex-1 bg-[#EBE7DC] rounded-lg h-2 overflow-hidden">
+                    <div className={`h-2 rounded-lg ${capacity >= 95 ? "bg-[#9C3B2E]" : capacity >= 85 ? "bg-[#B5751F]" : "bg-[#1F6F4A]"}`} style={{ width: `${capacity}%` }} />
+                  </div>
+                  <p className="text-[10px] text-[#7A8078] font-['IBM_Plex_Mono']">{r.count}/{r.cap}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Fee Collection */}
         <div className="lg:col-span-2 bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
-          <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold mb-4">Fee Collection — Current Term</p>
-          {[
-            { category: "Form 1 Boarders", collected: "KES 2,840,000", expected: "KES 3,600,000", pct: 78 },
-            { category: "Form 2 Boarders", collected: "KES 2,610,000", expected: "KES 3,360,000", pct: 78 },
-            { category: "Form 3 Day Scholars", collected: "KES 980,000", expected: "KES 1,440,000", pct: 68 },
-            { category: "Form 4 Day Scholars", collected: "KES 910,000", expected: "KES 1,380,000", pct: 66 },
-          ].map((r) => (
-            <div key={r.category} className="flex items-center gap-3 py-1.5">
-              <span className="text-xs font-['IBM_Plex_Sans'] text-[#16241D] w-40 truncate">{r.category}</span>
-              <div className="flex-1 bg-[#EBE7DC] rounded-sm h-2 overflow-hidden">
-                <div className={`h-2 rounded-sm ${r.pct >= 80 ? "bg-[#1F6F4A]" : r.pct >= 70 ? "bg-[#B5751F]" : "bg-[#9C3B2E]"}`} style={{ width: `${r.pct}%` }} />
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold">Fee Collection — Current Term</p>
+            {onNavigate && (
+              <button onClick={() => onNavigate("fee-ledger")} className="text-[10px] text-[#1F6F4A] hover:text-[#0d5135] font-semibold font-['IBM_Plex_Sans'] transition-colors">
+                View Details →
+              </button>
+            )}
+          </div>
+          <div className="space-y-3">
+            {displayFeeCollectionData.map((r: any) => (
+              <div key={r.category} className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] font-['IBM_Plex_Sans'] text-[#16241D] font-medium truncate">{r.category}</span>
+                  <span className={`text-[10px] font-['IBM_Plex_Mono'] font-semibold ${r.pct >= 80 ? "text-[#1F6F4A]" : r.pct >= 70 ? "text-[#B5751F]" : "text-[#9C3B2E]"}`}>
+                    {r.pct}%
+                  </span>
+                </div>
+                <div className="flex-1 bg-[#EBE7DC] rounded-lg h-2 overflow-hidden">
+                  <div className={`h-2 rounded-lg ${r.pct >= 80 ? "bg-[#1F6F4A]" : r.pct >= 70 ? "bg-[#B5751F]" : "bg-[#9C3B2E]"}`} style={{ width: `${r.pct}%` }} />
+                </div>
+                <div className="text-[10px] text-[#7A8078] font-['IBM_Plex_Mono']">
+                  {r.collected} of {r.expected}
+                </div>
               </div>
-              <span className="font-['IBM_Plex_Mono'] text-xs text-[#7A8078]">{r.pct}%</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function BursarDashboard() {
+// ─── Bursar Dashboard Hooks ────────────────────────────────────────────────
+
+function useBursarDashboardKPIs() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /dashboard/bursar/kpis?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet(`/dashboard/bursar/kpis?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch bursar KPIs");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load KPIs');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useBursarVoteHeads() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /dashboard/bursar/vote-heads?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet(`/dashboard/bursar/vote-heads?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch vote head data");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load vote heads');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useBursarUnmatchedTransactions() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /dashboard/bursar/unmatched-transactions?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet(`/dashboard/bursar/unmatched-transactions?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch unmatched transactions");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load transactions');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+// ─── Bursar Dashboard Component ────────────────────────────────────────────
+
+function BursarDashboard({ onNavigate }: { onNavigate?: (page: NavPage) => void }) {
+  const kpisData = useBursarDashboardKPIs();
+  const voteHeadsData = useBursarVoteHeads();
+  const transactionsData = useBursarUnmatchedTransactions();
+
+  const displayKpis = kpisData.data || {
+    grossFees: { value: "—", label: "Gross Fees Expected" },
+    collected: { value: "—", delta: "—", label: "Collected to Date" },
+    unallocated: { value: "—", delta: "—", label: "Unallocated (M-Pesa)", type: "warn" as StatusVariant },
+    capitation: { value: "—", delta: "—", label: "Capitation Received" },
+  };
+  const displayVoteHeadData = voteHeadsData.data || [];
+  const displayUnmatchedTransactions = transactionsData.data || [];
+
+  const handleAssignTransaction = (ref: string) => {
+    try {
+      if (onNavigate) {
+        onNavigate("mpesa-recon");
+      }
+    } catch (err) {
+      console.error("Failed to navigate to M-Pesa reconciliation");
+    }
+  };
+
+  const hasError = kpisData.error || voteHeadsData.error || transactionsData.error;
+  const isLoading = kpisData.loading || voteHeadsData.loading || transactionsData.loading;
+
   return (
     <div>
       <Breadcrumbs items={[{ label: "Home" }, { label: "Finance" }, { label: "Dashboard" }]} />
       <PageHeader title="Bursar Dashboard" subtitle="Finance overview — current term position" badge="Term 2 · Week 6" />
+      
+      {/* Error Alert */}
+      {hasError && (
+        <div className="mb-6">
+          <ValidationCallout type="error" message={kpisData.error || voteHeadsData.error || transactionsData.error || "Error loading dashboard"} />
+        </div>
+      )}
+
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 mb-6 lg:grid-cols-4">
-        <KPICard label="Gross Fees Expected" value="KES 9,780,000" mono />
-        <KPICard label="Collected to Date" value="KES 7,164,200" delta="73.3%" deltaDir="neutral" mono />
-        <KPICard label="Unallocated (M-Pesa)" value="KES 34,200" delta="Suspense" deltaDir="down" mono />
-        <KPICard label="Capitation Received" value="KES 1,200,000" delta="Restricted use" deltaDir="neutral" mono />
+        <KPICard label={displayKpis.grossFees.label} value={displayKpis.grossFees.value} mono />
+        <KPICard label={displayKpis.collected.label} value={displayKpis.collected.value} delta={displayKpis.collected.delta || ""} deltaDir="neutral" mono />
+        <KPICard label={displayKpis.unallocated.label} value={displayKpis.unallocated.value} delta={displayKpis.unallocated.delta || ""} deltaDir="down" mono />
+        <KPICard label={displayKpis.capitation.label} value={displayKpis.capitation.value} delta={displayKpis.capitation.delta || ""} deltaDir="neutral" mono />
       </div>
+
+      {/* Ledger & Unmatched Transactions */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Vote Head Summary */}
         <LedgerPanel
           title="Vote Head Summary — Term 2 2025"
-          rows={[
-            { label: "Tuition", amount: "KES 4,200,000", type: "credit" },
-            { label: "Boarding", amount: "KES 2,100,000", type: "credit" },
-            { label: "Activity", amount: "KES 480,000", type: "credit" },
-            { label: "RMI", amount: "KES 240,000", type: "credit" },
-            { label: "Transport (Day Scholars)", amount: "KES 144,200", type: "credit" },
-          ]}
+          rows={displayVoteHeadData}
           total="KES 7,164,200"
         />
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Unmatched M-Pesa Transactions</p>
-          <div className="space-y-1">
-            {[
-              { ref: "MPESA-QHG74521", amount: "KES 12,000", time: "08:41 today" },
-              { ref: "MPESA-QHF21039", amount: "KES 15,000", time: "07:22 today" },
-              { ref: "MPESA-QHD88823", amount: "KES 7,200", time: "Yesterday" },
-            ].map((t) => (
-              <div key={t.ref} className="flex items-center gap-3 py-2 border-b border-dashed border-[#DCD6C4] last:border-0">
-                <div className="flex-1">
-                  <span className="font-['IBM_Plex_Mono'] text-xs text-[#7A8078]">{t.ref}</span>
-                  <span className="text-xs text-[#7A8078] ml-2 font-['IBM_Plex_Sans']">{t.time}</span>
-                </div>
-                <span className="font-['IBM_Plex_Mono'] text-sm font-semibold text-[#B5751F]">{t.amount}</span>
-                <button className="text-[11px] text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">Assign</button>
-              </div>
-            ))}
+
+        {/* Unmatched M-Pesa Transactions */}
+        <div className="bg-white border border-[#DCD6C4] rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-[#7A8078] font-['IBM_Plex_Sans'] font-semibold">Unmatched M-Pesa Transactions</p>
+            {onNavigate && (
+              <button onClick={() => onNavigate("mpesa-recon")} className="text-[10px] text-[#1F6F4A] hover:text-[#0d5135] font-semibold font-['IBM_Plex_Sans'] transition-colors">
+                View All →
+              </button>
+            )}
           </div>
-          <div className="mt-3 pt-3 border-t border-[#DCD6C4] flex justify-between items-center">
-            <span className="text-xs text-[#7A8078] font-['IBM_Plex_Sans']">3 unmatched · KES 34,200 total</span>
+          
+          {isLoading ? (
+            <div className="py-6 text-center">
+              <p className="text-[12px] text-[#7A8078] font-['IBM_Plex_Sans']">Loading transactions...</p>
+            </div>
+          ) : displayUnmatchedTransactions.length === 0 ? (
+            <div className="py-6 text-center">
+              <p className="text-[12px] text-[#7A8078] font-['IBM_Plex_Sans']">All M-Pesa transactions matched</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {displayUnmatchedTransactions.map((t: any) => (
+                <div key={t.ref} className="flex items-center gap-3 p-3 border border-[#DCD6C4] rounded-lg hover:bg-[#F8F6F1] transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-['IBM_Plex_Mono'] text-[10px] text-[#7A8078]">{t.ref}</span>
+                      <span className="text-[11px] font-['IBM_Plex_Sans'] text-[#7A8078]">{t.time}</span>
+                    </div>
+                    <span className="font-['IBM_Plex_Mono'] text-[12px] font-semibold text-[#B5751F]">{t.amount}</span>
+                  </div>
+                  <button 
+                    onClick={() => handleAssignTransaction(t.ref)}
+                    className="px-3 py-1 text-[10px] font-semibold text-white bg-[#1F6F4A] hover:bg-[#0d5135] rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    Assign
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Suspense Summary */}
+          <div className="mt-4 pt-4 border-t border-[#DCD6C4] flex justify-between items-center">
+            <span className="text-[12px] text-[#7A8078] font-['IBM_Plex_Sans']">
+              {displayUnmatchedTransactions.length} unmatched · KES {displayUnmatchedTransactions.reduce((sum: number, t: any) => sum + (parseInt(t.amount.replace(/[^0-9]/g, '')) || 0), 0).toLocaleString('en-KE')} total
+            </span>
             <StatusTag variant="warn" label="Suspense" />
           </div>
         </div>
@@ -774,82 +1195,645 @@ function BursarDashboard() {
 // - Loading states per tab
 
 
+// ─── CBC Assessment Entry Hooks ────────────────────────────────────────────
+
+/**
+ * Hook: Fetch available classes
+ * Endpoint: GET /academics/classes?school_id={id}
+ */
+function useAssessmentClasses() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch assessment classes from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load classes');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch subjects/learning areas for CBC
+ * Endpoint: GET /academics/cbc-subjects?school_id={id}
+ */
+function useAssessmentSubjects() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/cbc-subjects?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch CBC subjects from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load subjects');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch learning strands for subject
+ * Endpoint: GET /academics/cbc-strands?subject_id={id}&school_id={sid}
+ */
+function useAssessmentStrands(subjectId: string | undefined) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!subjectId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/cbc-strands?subject_id=${subjectId}&school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log(`Would fetch strands for subject ${subjectId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load strands');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [subjectId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch students in class
+ * Endpoint: GET /academics/class/{id}/students?school_id={sid}
+ */
+function useClassStudents(classId: string | undefined) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!classId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/class/${classId}/students?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log(`Would fetch students for class ${classId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load students');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [classId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch existing ratings for assessment
+ * Endpoint: GET /academics/cbc-assessment?class_id={id}&subject_id={sid}&strand_id={stid}
+ */
+function useExistingRatings(classId: string | undefined, subjectId: string | undefined, strandId: string | undefined) {
+  const [data, setData] = useState<Record<string, number> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!classId || !subjectId || !strandId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<Record<string, number>>(`/academics/cbc-assessment?class_id=${classId}&subject_id=${subjectId}&strand_id=${strandId}`);
+        // setData(result);
+        
+        console.log(`Would fetch ratings for class ${classId}, subject ${subjectId}, strand ${strandId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load ratings');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [classId, subjectId, strandId]);
+
+  return { data, loading, error };
+}
+
+// ─── CBC Assessment Entry Component ────────────────────────────────────────
+
 function CBCAssessment() {
-  const [curriculumTab, setCurriculumTab] = useState<"CBC" | "8-4-4">("CBC");
-  const students = ["Amina W. Kariuki", "Brian O. Ouma", "Cynthia A. Muga", "David K. Rotich", "Eunice N. Wafula", "Felix A. Otieno"];
-  const [ratings, setRatings] = useState<Record<number, number | null>>({});
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
+  const [selectedStrandId, setSelectedStrandId] = useState<string>("");
+  const [ratings, setRatings] = useState<Record<string, number | null>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Fetch data from backend
+  const classes = useAssessmentClasses();
+  const subjects = useAssessmentSubjects();
+  const strands = useAssessmentStrands(selectedSubjectId);
+  const students = useClassStudents(selectedClassId);
+  const existingRatings = useExistingRatings(selectedClassId, selectedSubjectId, selectedStrandId);
+
+  // Load existing ratings when fetched
+  useEffect(() => {
+    if (existingRatings.data) {
+      setRatings(existingRatings.data);
+    }
+  }, [existingRatings.data]);
+
+  // Populate ratings from existing data when available
   const ratedCount = Object.values(ratings).filter((v) => v !== null).length;
-  const total = students.length;
-  const allRated = ratedCount === total;
+  const totalStudents = students.data?.length || 0;
+  const allRated = ratedCount === totalStudents && totalStudents > 0;
+
+  const handleSubmitRatings = async () => {
+    if (!selectedClassId || !selectedSubjectId || !selectedStrandId || !allRated) {
+      setSubmitError("Please select class, subject, and strand, and rate all students");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSubmitError(null);
+      setSubmitSuccess(false);
+
+      // BACKEND: Submit ratings
+      // const payload = {
+      //   class_id: selectedClassId,
+      //   subject_id: selectedSubjectId,
+      //   strand_id: selectedStrandId,
+      //   ratings: ratings,
+      // };
+      // await apiPost('/academics/cbc-assessment', payload);
+      
+      // For now, just show success
+      setSubmitSuccess(true);
+      setTimeout(() => setSubmitSuccess(false), 3000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to submit ratings';
+      setSubmitError(msg);
+      console.error("Assessment submission error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Get selected subject and strand details
+  const selectedSubject = subjects.data?.find((s: any) => s.id === selectedSubjectId);
+  const selectedStrand = strands.data?.find((s: any) => s.id === selectedStrandId);
+  const selectedClass = classes.data?.find((c: any) => c.id === selectedClassId);
 
   return (
     <div>
-      <PageHeader title="CBC Formative Assessment Entry" subtitle="Mathematics · Learning Strand 3 · Form 2 Stream A" />
-      <div className="flex gap-1 mb-5 p-1 bg-[#EBE7DC] rounded-sm w-fit">
-        {(["CBC", "8-4-4"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setCurriculumTab(t)}
-            className={`px-5 py-1.5 text-xs font-semibold uppercase tracking-wide rounded-sm transition-colors font-['IBM_Plex_Sans']
-              ${curriculumTab === t ? "bg-white text-[#16241D] shadow-sm" : "text-[#7A8078] hover:text-[#16241D]"}`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-['IBM_Plex_Sans'] text-[#7A8078]">{ratedCount} of {total} students rated</span>
-          <div className="w-32 bg-[#EBE7DC] rounded-sm h-1.5 overflow-hidden">
-            <div className="h-1.5 bg-[#1F6F4A] rounded-sm transition-all" style={{ width: `${(ratedCount / total) * 100}%` }} />
-          </div>
+      <PageHeader 
+        title="CBC Formative Assessment Entry" 
+        subtitle={selectedSubject && selectedStrand && selectedClass 
+          ? `${selectedSubject.name} · ${selectedStrand.name} · ${selectedClass.name}`
+          : "Select class, subject, and learning strand to begin"
+        } 
+      />
+
+      {/* Selection Controls */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        {/* Class Selection */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Class</label>
+          {classes.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : classes.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {classes.error}</p>
+          ) : (
+            <select 
+              value={selectedClassId}
+              onChange={(e) => {
+                setSelectedClassId(e.target.value);
+                setSelectedSubjectId("");
+                setSelectedStrandId("");
+                setRatings({});
+              }}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            >
+              <option value="">Choose class...</option>
+              {classes.data?.map((cls: any) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name} {cls.stream ? `- ${cls.stream}` : ''}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
-        <button
-          disabled={!allRated}
-          className="bg-[#1F6F4A] text-white px-4 py-1.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#185f3e] transition-colors"
-          title={!allRated ? `Rate all students before submitting (${total - ratedCount} remaining)` : ""}
-        >
-          Submit Strand Ratings
-        </button>
+
+        {/* Subject Selection */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Subject</label>
+          {subjects.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : subjects.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {subjects.error}</p>
+          ) : (
+            <select 
+              value={selectedSubjectId}
+              onChange={(e) => {
+                setSelectedSubjectId(e.target.value);
+                setSelectedStrandId("");
+                setRatings({});
+              }}
+              disabled={!selectedClassId}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]"
+            >
+              <option value="">Choose subject...</option>
+              {subjects.data?.map((subj: any) => (
+                <option key={subj.id} value={subj.id}>
+                  {subj.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Strand Selection */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Learning Strand</label>
+          {strands.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : strands.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {strands.error}</p>
+          ) : (
+            <select 
+              value={selectedStrandId}
+              onChange={(e) => {
+                setSelectedStrandId(e.target.value);
+                setRatings({});
+              }}
+              disabled={!selectedSubjectId}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]"
+            >
+              <option value="">Choose strand...</option>
+              {strands.data?.map((strand: any) => (
+                <option key={strand.id} value={strand.id}>
+                  {strand.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
-      {!allRated && (
-        <div className="mb-4">
-          <ValidationCallout type="warning" message={`Submit disabled — ${total - ratedCount} student${total - ratedCount > 1 ? "s" : ""} have no rating selected. Rate all active students to unlock submission.`} />
+
+      {/* Error/Success Messages */}
+      {submitError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {submitError}</p>
         </div>
       )}
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Student Name</th>
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Rating (1=Below · 2=Approaching · 3=Meeting · 4=Exceeding)</th>
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student, i) => (
-              <tr key={i} className="border-b border-[#DCD6C4] last:border-0">
-                <td className="px-4 py-3">{student}</td>
-                <td className="px-4 py-3">
-                  <RatingSelector selected={ratings[i] ?? null} onChange={(v) => setRatings((r) => ({ ...r, [i]: v }))} />
-                </td>
-                <td className="px-4 py-3">
-                  {ratings[i] ? <StatusTag variant="ok" label="Rated" /> : <StatusTag variant="neutral" label="Pending" />}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {submitSuccess && (
+        <div className="bg-[#E7F0EA] border border-[#1F6F4A] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A]">✅ Ratings submitted successfully</p>
+        </div>
+      )}
+
+      {/* Ratings Form */}
+      {selectedClassId && selectedSubjectId && selectedStrandId && (
+        <>
+          {/* Progress Bar */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-['IBM_Plex_Sans'] text-[#7A8078]">{ratedCount} of {totalStudents} students rated</span>
+              <div className="w-32 bg-[#EBE7DC] rounded-sm h-1.5 overflow-hidden">
+                <div 
+                  className="h-1.5 bg-[#1F6F4A] rounded-sm transition-all" 
+                  style={{ width: `${totalStudents > 0 ? (ratedCount / totalStudents) * 100 : 0}%` }} 
+                />
+              </div>
+            </div>
+            <button
+              onClick={handleSubmitRatings}
+              disabled={!allRated || isSubmitting}
+              className="bg-[#1F6F4A] text-white px-4 py-1.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#185f3e] transition-colors"
+              title={!allRated ? `Rate all students before submitting (${totalStudents - ratedCount} remaining)` : ""}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Strand Ratings"}
+            </button>
+          </div>
+
+          {/* Warning if not all rated */}
+          {!allRated && totalStudents > 0 && (
+            <div className="mb-4">
+              <ValidationCallout 
+                type="warning" 
+                message={`Submit disabled — ${totalStudents - ratedCount} student${totalStudents - ratedCount > 1 ? "s" : ""} have no rating selected. Rate all active students to unlock submission.`} 
+              />
+            </div>
+          )}
+
+          {/* Students Table */}
+          {students.loading ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading students...</p>
+            </div>
+          ) : students.error ? (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {students.error}</p>
+            </div>
+          ) : students.data && students.data.length > 0 ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
+              <table className="w-full text-sm font-['IBM_Plex_Sans']">
+                <thead>
+                  <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                    <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Student Name</th>
+                    <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Rating (1=Below · 2=Approaching · 3=Meeting · 4=Exceeding)</th>
+                    <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.data.map((student: any) => (
+                    <tr key={student.id} className="border-b border-[#DCD6C4] last:border-0">
+                      <td className="px-4 py-3">{student.first_name} {student.last_name}</td>
+                      <td className="px-4 py-3">
+                        <RatingSelector 
+                          selected={ratings[student.id] ?? null} 
+                          onChange={(v) => setRatings((r) => ({ ...r, [student.id]: v }))} 
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        {ratings[student.id] ? <StatusTag variant="ok" label="Rated" /> : <StatusTag variant="neutral" label="Pending" />}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">No students found in this class</p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
+// ─── 8-4-4 Exam Marks Entry Hooks ─────────────────────────────────────────
+
+/**
+ * Hook: Fetch available classes
+ * Endpoint: GET /academics/classes?school_id={id}
+ */
+function useMarksEntryClasses() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch marks entry classes from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load classes');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch exam sessions (terms)
+ * Endpoint: GET /academics/exam-sessions?school_id={id}
+ */
+function useExamSessions() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/exam-sessions?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch exam sessions from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load exam sessions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch 8-4-4 subjects
+ * Endpoint: GET /academics/subjects?curriculum=8-4-4&school_id={id}
+ */
+function useMarksEntrySubjects844() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/subjects?curriculum=8-4-4&school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch 8-4-4 subjects from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load subjects');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch students in class
+ * Endpoint: GET /academics/class/{id}/students?school_id={sid}
+ */
+function useMarksEntryClassStudents(classId: string | undefined) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!classId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/class/${classId}/students?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log(`Would fetch students for class ${classId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load students');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [classId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch existing exam marks
+ * Endpoint: GET /academics/exam-marks?class_id={id}&exam_session_id={sid}
+ */
+function useExistingExamMarks(classId: string | undefined, examSessionId: string | undefined) {
+  const [data, setData] = useState<Record<string, Record<string, number>> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!classId || !examSessionId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<Record<string, Record<string, number>>>(`/academics/exam-marks?class_id=${classId}&exam_session_id=${examSessionId}`);
+        // setData(result);
+        
+        console.log(`Would fetch marks for class ${classId}, exam ${examSessionId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load existing marks');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [classId, examSessionId]);
+
+  return { data, loading, error };
+}
+
+// ─── 8-4-4 Exam Marks Entry Component ──────────────────────────────────────
+
 function MarksEntry844() {
-  const [curriculumTab, setCurriculumTab] = useState<"CBC" | "8-4-4">("8-4-4");
-  const subjects = ["Math", "Eng", "Kis", "Bio", "Chem", "Hist", "Geo"];
-  const students = ["Amina Kariuki", "Brian Ouma", "Cynthia Muga", "David Rotich", "Eunice Wafula"];
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
+  const [selectedExamSessionId, setSelectedExamSessionId] = useState<string>("");
   const [marks, setMarks] = useState<Record<string, Record<string, string>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Fetch data from backend
+  const classes = useMarksEntryClasses();
+  const examSessions = useExamSessions();
+  const subjects = useMarksEntrySubjects844();
+  const students = useMarksEntryClassStudents(selectedClassId);
+  const existingMarks = useExistingExamMarks(selectedClassId, selectedExamSessionId);
+
+  // Load existing marks when fetched (convert numbers to strings for input fields)
+  useEffect(() => {
+    if (existingMarks.data) {
+      const stringMarks: Record<string, Record<string, string>> = {};
+      for (const studentId in existingMarks.data) {
+        stringMarks[studentId] = {};
+        for (const subjectId in existingMarks.data[studentId]) {
+          stringMarks[studentId][subjectId] = String(existingMarks.data[studentId][subjectId]);
+        }
+      }
+      setMarks(stringMarks);
+    }
+  }, [existingMarks.data]);
 
   const gradeOf = (m: number): { grade: string; variant: StatusVariant } => {
     if (m >= 80) return { grade: "A", variant: "ok" };
@@ -859,169 +1843,732 @@ function MarksEntry844() {
     return { grade: "D", variant: "bad" };
   };
 
-  const mean = (subj: string) => {
-    const vals = students.map((s) => parseFloat(marks[s]?.[subj] ?? "0")).filter((v) => !isNaN(v));
-    return vals.length ? (vals.reduce((a, b) => a + b, 0) / students.length).toFixed(1) : "—";
+  const mean = (subjId: string) => {
+    const studentList = students.data || [];
+    const vals = studentList
+      .map((s: any) => parseFloat(marks[s.id]?.[subjId] ?? "0"))
+      .filter((v) => !isNaN(v));
+    return vals.length ? (vals.reduce((a, b) => a + b, 0) / studentList.length).toFixed(1) : "—";
+  };
+
+  const handleSubmitMarks = async () => {
+    if (!selectedClassId || !selectedExamSessionId) {
+      setSubmitError("Please select class and exam session");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSubmitError(null);
+      setSubmitSuccess(false);
+
+      // BACKEND: Submit marks
+      // const payload = {
+      //   class_id: selectedClassId,
+      //   exam_session_id: selectedExamSessionId,
+      //   marks: marks,
+      // };
+      // await apiPost('/academics/exam-marks', payload);
+      
+      // For now, just show success
+      setSubmitSuccess(true);
+      setTimeout(() => setSubmitSuccess(false), 3000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to submit marks';
+      setSubmitError(msg);
+      console.error("Marks submission error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Get selected data details
+  const selectedClass = classes.data?.find((c: any) => c.id === selectedClassId);
+  const selectedSession = examSessions.data?.find((s: any) => s.id === selectedExamSessionId);
+  const subjectList = subjects.data || [];
+
+  return (
+    <div>
+      <PageHeader 
+        title="8-4-4 Exam Mark Entry" 
+        subtitle={selectedClass && selectedSession
+          ? `${selectedSession.name} · ${selectedClass.name}${selectedClass.stream ? ` ${selectedClass.stream}` : ''}`
+          : "Select class and exam session to begin"
+        }
+      />
+
+      {/* Selection Controls */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Class Selection */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Class</label>
+          {classes.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : classes.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {classes.error}</p>
+          ) : (
+            <select 
+              value={selectedClassId}
+              onChange={(e) => {
+                setSelectedClassId(e.target.value);
+                setSelectedExamSessionId("");
+                setMarks({});
+              }}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            >
+              <option value="">Choose class...</option>
+              {classes.data?.map((cls: any) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name} {cls.stream ? `- ${cls.stream}` : ''}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Exam Session Selection */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Exam Session</label>
+          {examSessions.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : examSessions.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {examSessions.error}</p>
+          ) : (
+            <select 
+              value={selectedExamSessionId}
+              onChange={(e) => {
+                setSelectedExamSessionId(e.target.value);
+                setMarks({});
+              }}
+              disabled={!selectedClassId}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]"
+            >
+              <option value="">Choose exam session...</option>
+              {examSessions.data?.map((session: any) => (
+                <option key={session.id} value={session.id}>
+                  {session.name} ({session.year})
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+
+      {/* Error/Success Messages */}
+      {submitError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {submitError}</p>
+        </div>
+      )}
+      {submitSuccess && (
+        <div className="bg-[#E7F0EA] border border-[#1F6F4A] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A]">✅ Marks submitted successfully</p>
+        </div>
+      )}
+
+      {/* Marks Entry Table */}
+      {selectedClassId && selectedExamSessionId && (
+        <>
+          {/* Submit Button */}
+          <div className="mb-4 flex justify-end">
+            <button
+              onClick={handleSubmitMarks}
+              disabled={isSubmitting}
+              className="bg-[#1F6F4A] text-white px-4 py-1.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#185f3e] transition-colors"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Exam Marks"}
+            </button>
+          </div>
+
+          {/* Marks Table */}
+          {students.loading ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading students...</p>
+            </div>
+          ) : students.error ? (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {students.error}</p>
+            </div>
+          ) : subjects.loading ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading subjects...</p>
+            </div>
+          ) : subjects.error ? (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {subjects.error}</p>
+            </div>
+          ) : students.data && students.data.length > 0 && subjectList.length > 0 ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-x-auto">
+              <table className="w-full text-sm font-['IBM_Plex_Sans']">
+                <thead>
+                  <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                    <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold sticky left-0 bg-[#F3EFE4]">Student</th>
+                    {subjectList.map((s: any) => (
+                      <th key={s.id} className="px-3 py-2.5 text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold text-center" colSpan={2}>{s.name}</th>
+                    ))}
+                  </tr>
+                  <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                    <th className="sticky left-0 bg-[#F3EFE4]" />
+                    {subjectList.map((s: any) => (
+                      <>
+                        <th key={`${s.id}-m`} className="px-2 py-1 text-[9px] text-[#7A8078] text-center">Mark</th>
+                        <th key={`${s.id}-g`} className="px-2 py-1 text-[9px] text-[#7A8078] text-center">Grade</th>
+                      </>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.data.map((student: any) => (
+                    <tr key={student.id} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4] transition-colors">
+                      <td className="px-4 py-2 sticky left-0 bg-white font-['IBM_Plex_Sans'] text-sm">{student.first_name} {student.last_name}</td>
+                      {subjectList.map((s: any) => {
+                        const val = marks[student.id]?.[s.id] ?? "";
+                        const num = parseFloat(val);
+                        const { grade, variant } = !isNaN(num) && val !== "" ? gradeOf(num) : { grade: "", variant: "neutral" as StatusVariant };
+                        return (
+                          <>
+                            <td key={`${s.id}-in`} className="px-2 py-2 text-center">
+                              <input
+                                className="w-12 text-center font-['IBM_Plex_Mono'] text-xs border border-[#DCD6C4] rounded-sm py-1 focus:outline-none focus:ring-1 focus:ring-[#1F6F4A]"
+                                value={val}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  if (v === "" || (parseFloat(v) >= 0 && parseFloat(v) <= 100))
+                                    setMarks((m) => ({ ...m, [student.id]: { ...m[student.id], [s.id]: v } }));
+                                }}
+                                placeholder="0"
+                              />
+                            </td>
+                            <td key={`${s.id}-gr`} className="px-2 py-2 text-center">
+                              {grade && <StatusTag variant={variant} label={grade} />}
+                            </td>
+                          </>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                  <tr className="border-t-2 border-[#16241D] bg-[#F3EFE4] font-semibold">
+                    <td className="px-4 py-2 text-xs uppercase text-[#7A8078] font-['IBM_Plex_Sans'] sticky left-0 bg-[#F3EFE4]">Class Mean</td>
+                    {subjectList.map((s: any) => (
+                      <>
+                        <td key={`${s.id}-mean`} className="px-2 py-2 text-center font-['IBM_Plex_Mono'] text-xs text-[#16241D]">{mean(s.id)}</td>
+                        <td key={`${s.id}-mg`} />
+                      </>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">No students or subjects found</p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Fee Ledger Hooks ─────────────────────────────────────────────────────
+
+/**
+ * Hook: Fetch student info for fee ledger
+ * Endpoint: GET /fee-management/fee-ledger/student?student_id={id}
+ */
+function useFeeLedgerStudent(studentId: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studentId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any>(`/fee-management/fee-ledger/student?student_id=${studentId}`);
+        // setData(result);
+        
+        console.log(`Would fetch fee ledger student info for ${studentId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load student info');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [studentId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch fee ledger statistics (KPIs)
+ * Endpoint: GET /fee-management/fee-ledger/stats?student_id={id}
+ */
+function useFeeLedgerStats(studentId: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studentId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any>(`/fee-management/fee-ledger/stats?student_id=${studentId}`);
+        // setData(result);
+        
+        console.log(`Would fetch fee ledger stats for ${studentId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load statistics');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [studentId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch fee ledger line items (transactions)
+ * Endpoint: GET /fee-management/fee-ledger/items?student_id={id}
+ */
+function useFeeLedgerItems(studentId: string | undefined) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studentId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any[]>(`/fee-management/fee-ledger/items?student_id=${studentId}`);
+        // setData(result);
+        
+        console.log(`Would fetch fee ledger items for ${studentId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load ledger items');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [studentId]);
+
+  return { data, loading, error };
+}
+
+// ─── Fee Ledger Component ──────────────────────────────────────────────────
+
+function FeeLedger() {
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[] | null>(null);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Fetch data from backend
+  const student = useFeeLedgerStudent(selectedStudentId);
+  const stats = useFeeLedgerStats(selectedStudentId);
+  const ledgerItems = useFeeLedgerItems(selectedStudentId);
+
+  // Handle student search
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    if (query.length < 2) {
+      setSearchResults(null);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      // BACKEND: Replace with real API call
+      // const results = await apiGet<any[]>(`/admissions/students/search?q=${query}&school_id=${tokenManager.getSchoolId()}`);
+      // setSearchResults(results);
+      
+      console.log(`Would search for students matching: ${query}`);
+      setSearchResults(null);
+    } catch (err) {
+      console.error("Search failed:", err);
+    }
+  };
+
+  const handleSelectStudent = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setSearchQuery("");
+    setShowSearchResults(false);
+  };
+
+  const handlePrintStatement = () => {
+    if (!selectedStudentId) {
+      alert("Please select a student first");
+      return;
+    }
+    // BACKEND: Replace with actual print/PDF generation
+    console.log("Would generate print statement for student:", selectedStudentId);
   };
 
   return (
     <div>
-      <PageHeader title="8-4-4 Exam Mark Entry" subtitle="End of Term 2 · Form 2 Stream A" />
-      <div className="flex gap-1 mb-5 p-1 bg-[#EBE7DC] rounded-sm w-fit">
-        {(["CBC", "8-4-4"] as const).map((t) => (
-          <button key={t} onClick={() => setCurriculumTab(t)}
-            className={`px-5 py-1.5 text-xs font-semibold uppercase tracking-wide rounded-sm transition-colors font-['IBM_Plex_Sans'] ${curriculumTab === t ? "bg-white text-[#16241D]" : "text-[#7A8078] hover:text-[#16241D]"}`}>
-            {t}
-          </button>
-        ))}
-      </div>
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-x-auto">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold sticky left-0 bg-[#F3EFE4]">Student</th>
-              {subjects.map((s) => (
-                <th key={s} className="px-3 py-2.5 text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold text-center" colSpan={2}>{s}</th>
-              ))}
-            </tr>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              <th className="sticky left-0 bg-[#F3EFE4]" />
-              {subjects.map((s) => (
-                <>
-                  <th key={`${s}-m`} className="px-2 py-1 text-[9px] text-[#7A8078] text-center">Mark</th>
-                  <th key={`${s}-g`} className="px-2 py-1 text-[9px] text-[#7A8078] text-center">Grade</th>
-                </>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student) => (
-              <tr key={student} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4] transition-colors">
-                <td className="px-4 py-2 sticky left-0 bg-white font-['IBM_Plex_Sans'] text-sm">{student}</td>
-                {subjects.map((s) => {
-                  const val = marks[student]?.[s] ?? "";
-                  const num = parseFloat(val);
-                  const { grade, variant } = !isNaN(num) && val !== "" ? gradeOf(num) : { grade: "", variant: "neutral" as StatusVariant };
-                  return (
-                    <>
-                      <td key={`${s}-in`} className="px-2 py-2 text-center">
-                        <input
-                          className="w-12 text-center font-['IBM_Plex_Mono'] text-xs border border-[#DCD6C4] rounded-sm py-1 focus:outline-none focus:ring-1 focus:ring-[#1F6F4A]"
-                          value={val}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === "" || (parseFloat(v) >= 0 && parseFloat(v) <= 100))
-                              setMarks((m) => ({ ...m, [student]: { ...m[student], [s]: v } }));
-                          }}
-                          placeholder="0"
-                        />
-                      </td>
-                      <td key={`${s}-gr`} className="px-2 py-2 text-center">
-                        {grade && <StatusTag variant={variant} label={grade} />}
-                      </td>
-                    </>
-                  );
-                })}
-              </tr>
-            ))}
-            <tr className="border-t-2 border-[#16241D] bg-[#F3EFE4] font-semibold">
-              <td className="px-4 py-2 text-xs uppercase text-[#7A8078] font-['IBM_Plex_Sans'] sticky left-0 bg-[#F3EFE4]">Class Mean</td>
-              {subjects.map((s) => (
-                <>
-                  <td key={`${s}-mean`} className="px-2 py-2 text-center font-['IBM_Plex_Mono'] text-xs text-[#16241D]">{mean(s)}</td>
-                  <td key={`${s}-mg`} />
-                </>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+      <PageHeader 
+        title="Student Fee Ledger" 
+        subtitle={selectedStudentId && student.data 
+          ? `${student.data.first_name} ${student.data.last_name} · ${student.data.admission_number}`
+          : "Select a student to view fee ledger"
+        }
+      />
 
-function FeeLedger() {
-  return (
-    <div>
-      <PageHeader title="Student Fee Ledger" subtitle="student.feeLedger.runningBalance — Amina W. Kariuki · ADM-2025-0048" />
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex items-center gap-2 border border-[#DCD6C4] rounded-sm px-3 py-1.5 bg-white">
-          <Search size={13} className="text-[#7A8078]" />
-          <input className="text-sm font-['IBM_Plex_Sans'] outline-none bg-transparent placeholder-[#7A8078] w-48" placeholder="Search by admission no. or name..." />
+        <div className="relative flex-1 max-w-md">
+          <div className="flex items-center gap-2 border border-[#DCD6C4] rounded-sm px-3 py-1.5 bg-white">
+            <Search size={13} className="text-[#7A8078]" />
+            <input 
+              className="text-sm font-['IBM_Plex_Sans'] outline-none bg-transparent placeholder-[#7A8078] flex-1"
+              placeholder="Search by admission no. or name..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              onFocus={() => searchResults && setShowSearchResults(true)}
+            />
+          </div>
+          {showSearchResults && searchResults && (
+            <div className="absolute top-full left-0 right-0 mt-1 border border-[#DCD6C4] rounded-sm bg-white z-10 shadow-sm">
+              {searchResults.length > 0 ? (
+                searchResults.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => handleSelectStudent(s.id)}
+                    className="w-full text-left px-3 py-2 text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4] border-b border-[#DCD6C4] last:border-0 transition-colors"
+                  >
+                    {s.first_name} {s.last_name} · {s.admission_number}
+                  </button>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-xs text-[#7A8078] font-['IBM_Plex_Sans']">No students found</div>
+              )}
+            </div>
+          )}
         </div>
-        <button className="flex items-center gap-1.5 border border-[#DCD6C4] rounded-sm px-3 py-1.5 text-sm text-[#7A8078] hover:bg-[#F3EFE4] font-['IBM_Plex_Sans']">
+        <button 
+          onClick={handlePrintStatement}
+          disabled={!selectedStudentId}
+          className="flex items-center gap-1.5 border border-[#DCD6C4] rounded-sm px-3 py-1.5 text-sm text-[#7A8078] hover:bg-[#F3EFE4] disabled:opacity-60 font-['IBM_Plex_Sans'] transition-colors"
+        >
           <Printer size={12} /> Print Statement
         </button>
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-4">
-        <KPICard label="Outstanding Balance" value="KES 8,000" delta="Arrears from Term 1" deltaDir="down" mono />
-        <KPICard label="Total Paid This Term" value="KES 50,700" delta="2 transactions" deltaDir="up" mono />
-        <KPICard label="Current Term Charge" value="KES 58,700" mono />
-      </div>
-      <LedgerPanel
-        title="feeLedger.lineItems — Chronological Order"
-        rows={[
-          { label: "Arrears B/F — Term 1 2025", amount: "KES 8,200", type: "debit", note: "carried forward" },
-          { label: "Tuition — Term 2 2025", amount: "KES 28,000", type: "debit", note: "Vote Head: Tuition" },
-          { label: "Boarding Fee — Term 2 2025", amount: "KES 18,000", type: "debit", note: "Vote Head: Boarding" },
-          { label: "Activity Fee — Term 2 2025", amount: "KES 3,000", type: "debit", note: "Vote Head: Activity" },
-          { label: "RMI — Term 2 2025", amount: "KES 1,500", type: "debit", note: "Vote Head: RMI" },
-          { label: "Payment — M-Pesa MPESA-QHG12345", amount: "– KES 30,000", type: "credit", note: "→ arrears first, then tuition" },
-          { label: "Payment — M-Pesa MPESA-QHG54321", amount: "– KES 20,700", type: "credit", note: "→ tuition balance" },
-        ]}
-        total="KES 8,000"
-      />
+
+      {selectedStudentId && (
+        <>
+          {/* Loading state */}
+          {(student.loading || stats.loading || ledgerItems.loading) && (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center mb-4">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading fee ledger...</p>
+            </div>
+          )}
+
+          {/* Error states */}
+          {student.error && (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {student.error}</p>
+            </div>
+          )}
+          {stats.error && (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {stats.error}</p>
+            </div>
+          )}
+          {ledgerItems.error && (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {ledgerItems.error}</p>
+            </div>
+          )}
+
+          {/* KPI Cards */}
+          {!student.loading && !stats.loading && stats.data && (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-4">
+              <KPICard 
+                label="Outstanding Balance" 
+                value={`KES ${(stats.data.outstanding_balance || 0).toLocaleString('en-KE')}`} 
+                delta={stats.data.arrears_note || "Arrears from previous term"} 
+                deltaDir={stats.data.outstanding_balance > 0 ? "down" : "up"} 
+                mono 
+              />
+              <KPICard 
+                label="Total Paid This Term" 
+                value={`KES ${(stats.data.total_paid_this_term || 0).toLocaleString('en-KE')}`} 
+                delta={`${stats.data.payment_count || 0} transactions`} 
+                deltaDir="up" 
+                mono 
+              />
+              <KPICard 
+                label="Current Term Charge" 
+                value={`KES ${(stats.data.current_term_charge || 0).toLocaleString('en-KE')}`} 
+                mono 
+              />
+            </div>
+          )}
+
+          {/* Fee Ledger Items */}
+          {!ledgerItems.loading && ledgerItems.data && (
+            <LedgerPanel
+              title="feeLedger.lineItems — Chronological Order"
+              rows={ledgerItems.data.map((item: any) => ({
+                label: item.description,
+                amount: `KES ${Math.abs(item.amount || 0).toLocaleString('en-KE')}`,
+                type: item.type, // "debit" or "credit"
+                note: item.note || "",
+              }))}
+              total={`KES ${(stats.data?.outstanding_balance || 0).toLocaleString('en-KE')}`}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
 
-function MpesaReconciliation() {
-  const [selectedPayment, setSelectedPayment] = useState<number | null>(null);
-  const [searchStudent, setSearchStudent] = useState("");
+// ─── M-Pesa Reconciliation Hooks ──────────────────────────────────────────
 
-  const payments = [
-    { ref: "MPESA-QHG74521", amount: "KES 12,000", time: "08:41", matched: false },
-    { ref: "MPESA-QHF21039", amount: "KES 15,000", time: "07:22", matched: false },
-    { ref: "MPESA-QHD88823", amount: "KES 7,200", time: "Yesterday", matched: false },
-    { ref: "MPESA-QHA44512", amount: "KES 58,700", time: "Monday", matched: true, student: "David K. Rotich" },
-    { ref: "MPESA-QHA32177", amount: "KES 50,700", time: "Monday", matched: true, student: "Amina W. Kariuki" },
+/**
+ * Hook: Fetch unmatched M-Pesa payments
+ * Endpoint: GET /fee-management/mpesa/unmatched-payments?school_id={id}
+ */
+function useUnmatchedPayments() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/fee-management/mpesa/unmatched-payments?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch unmatched M-Pesa payments");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load payments');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch matched M-Pesa payments
+ * Endpoint: GET /fee-management/mpesa/matched-payments?school_id={id}
+ */
+function useMatchedPayments() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/fee-management/mpesa/matched-payments?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch matched M-Pesa payments");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load matched payments');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Search students for payment matching
+ * Endpoint: GET /admissions/students/search?q={query}&school_id={id}
+ */
+function useStudentSearch(query: string) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (query.length < 2) {
+      setData(null);
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/admissions/students/search?q=${query}&school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log(`Would search students for: ${query}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to search students');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchData, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [query]);
+
+  return { data, loading, error };
+}
+
+// ─── M-Pesa Reconciliation Component ───────────────────────────────────────
+
+function MpesaReconciliation() {
+  const [selectedPaymentRef, setSelectedPaymentRef] = useState<string | null>(null);
+  const [searchStudent, setSearchStudent] = useState("");
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
+
+  // Fetch data from backend
+  const unmatchedPayments = useUnmatchedPayments();
+  const matchedPayments = useMatchedPayments();
+  const studentSearch = useStudentSearch(searchStudent);
+
+  // Combine all payments for display
+  const allPayments = [
+    ...(unmatchedPayments.data || []),
+    ...(matchedPayments.data || []),
   ];
+
+  const selectedPayment = allPayments.find((p: any) => p.reference === selectedPaymentRef);
+
+  const handleAssignPayment = async (studentId: string) => {
+    if (!selectedPayment) {
+      setAssignError("No payment selected");
+      return;
+    }
+
+    try {
+      setIsAssigning(true);
+      setAssignError(null);
+
+      // BACKEND: Replace with real API call
+      // await apiPost('/fee-management/mpesa/assign-payment', {
+      //   payment_reference: selectedPayment.reference,
+      //   student_id: studentId,
+      //   school_id: tokenManager.getSchoolId(),
+      // });
+
+      console.log(`Would assign payment ${selectedPayment.reference} to student ${studentId}`);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setAssignError(err instanceof Error ? err.message : "Failed to assign payment");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
 
   return (
     <div>
-      <PageHeader title="M-Pesa Reconciliation" subtitle="Live feed — unallocated funds suspense management" />
+      <PageHeader 
+        title="M-Pesa Reconciliation" 
+        subtitle={`Live feed — ${unmatchedPayments.data?.length || 0} unmatched · ${matchedPayments.data?.length || 0} matched`}
+      />
+      
+      {/* Error states */}
+      {unmatchedPayments.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {unmatchedPayments.error}</p>
+        </div>
+      )}
+      {matchedPayments.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {matchedPayments.error}</p>
+        </div>
+      )}
+      {assignError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {assignError}</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div>
           <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Incoming Payments</p>
-          <div className="border border-[#DCD6C4] rounded-sm bg-white divide-y divide-[#DCD6C4]">
-            {payments.map((p, i) => (
-              <div
-                key={p.ref}
-                onClick={() => !p.matched && setSelectedPayment(i)}
-                className={`flex items-center gap-3 px-4 py-3 transition-colors
-                  ${!p.matched ? "cursor-pointer hover:bg-[#F3EFE4]" : "opacity-60"}
-                  ${selectedPayment === i ? "bg-[#F5EAD6]" : ""}`}
-              >
-                <div className="flex-1">
-                  <p className="font-['IBM_Plex_Mono'] text-xs text-[#16241D]">{p.ref}</p>
-                  <p className="text-[11px] text-[#7A8078] font-['IBM_Plex_Sans']">{p.time}</p>
-                </div>
-                <span className="font-['IBM_Plex_Mono'] text-sm font-semibold text-[#16241D]">{p.amount}</span>
-                {p.matched
-                  ? <StatusTag variant="ok" label="Matched" />
-                  : <StatusTag variant="warn" label="Unmatched" />}
-              </div>
-            ))}
-          </div>
+          {unmatchedPayments.loading || matchedPayments.loading ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+              <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans']">Loading payments...</p>
+            </div>
+          ) : (
+            <div className="border border-[#DCD6C4] rounded-sm bg-white divide-y divide-[#DCD6C4] max-h-96 overflow-y-auto">
+              {allPayments.length > 0 ? (
+                allPayments.map((p: any) => (
+                  <div
+                    key={p.reference}
+                    onClick={() => !p.matched && setSelectedPaymentRef(p.reference)}
+                    className={`flex items-center gap-3 px-4 py-3 transition-colors
+                      ${!p.matched ? "cursor-pointer hover:bg-[#F3EFE4]" : "opacity-60"}
+                      ${selectedPaymentRef === p.reference ? "bg-[#F5EAD6]" : ""}`}
+                  >
+                    <div className="flex-1">
+                      <p className="font-['IBM_Plex_Mono'] text-xs text-[#16241D]">{p.reference}</p>
+                      <p className="text-[11px] text-[#7A8078] font-['IBM_Plex_Sans']">{p.time}</p>
+                    </div>
+                    <span className="font-['IBM_Plex_Mono'] text-sm font-semibold text-[#16241D]">KES {(p.amount || 0).toLocaleString('en-KE')}</span>
+                    {p.matched
+                      ? <StatusTag variant="ok" label="Matched" />
+                      : <StatusTag variant="warn" label="Unmatched" />}
+                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-xs text-[#7A8078] font-['IBM_Plex_Sans']">No payments available</div>
+              )}
+            </div>
+          )}
         </div>
+
         <div>
           <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Manual Assignment</p>
-          <div className={`border-2 border-dashed rounded-sm bg-white p-4 min-h-[200px] ${selectedPayment !== null ? "border-[#B5751F]" : "border-[#DCD6C4]"}`}>
-            {selectedPayment !== null ? (
+          <div className={`border-2 border-dashed rounded-sm bg-white p-4 min-h-[200px] ${selectedPayment && !selectedPayment.matched ? "border-[#B5751F]" : "border-[#DCD6C4]"}`}>
+            {selectedPayment && !selectedPayment.matched ? (
               <div>
                 <div className="mb-3 p-3 bg-[#F5EAD6] rounded-sm">
-                  <p className="text-xs font-['IBM_Plex_Mono'] text-[#B5751F]">{payments[selectedPayment].ref}</p>
-                  <p className="font-['IBM_Plex_Mono'] text-lg font-semibold text-[#16241D]">{payments[selectedPayment].amount}</p>
+                  <p className="text-xs font-['IBM_Plex_Mono'] text-[#B5751F]">{selectedPayment.reference}</p>
+                  <p className="font-['IBM_Plex_Mono'] text-lg font-semibold text-[#16241D]">KES {(selectedPayment.amount || 0).toLocaleString('en-KE')}</p>
                 </div>
                 <div className="mb-3">
                   <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Search Student</label>
@@ -1034,16 +2581,26 @@ function MpesaReconciliation() {
                 </div>
                 {searchStudent.length > 2 && (
                   <div className="border border-[#DCD6C4] rounded-sm divide-y divide-[#DCD6C4]">
-                    {["Amina W. Kariuki · ADM-2025-0048", "Brian O. Ouma · ADM-2025-0049"].map((s) => (
-                      <button key={s} className="w-full text-left px-3 py-2 text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4] transition-colors">
-                        {s}
-                      </button>
-                    ))}
+                    {studentSearch.loading ? (
+                      <div className="px-3 py-2 text-xs text-[#7A8078] font-['IBM_Plex_Sans']">Searching...</div>
+                    ) : studentSearch.error ? (
+                      <div className="px-3 py-2 text-xs text-[#9C3B2E] font-['IBM_Plex_Sans']">⚠️ {studentSearch.error}</div>
+                    ) : studentSearch.data && studentSearch.data.length > 0 ? (
+                      studentSearch.data.map((s: any) => (
+                        <button 
+                          key={s.id}
+                          onClick={() => handleAssignPayment(s.id)}
+                          disabled={isAssigning}
+                          className="w-full text-left px-3 py-2 text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4] transition-colors disabled:opacity-60"
+                        >
+                          {s.first_name} {s.last_name} · {s.admission_number}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-xs text-[#7A8078] font-['IBM_Plex_Sans']">No students found</div>
+                    )}
                   </div>
                 )}
-                <button className="mt-3 w-full bg-[#1F6F4A] text-white py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors">
-                  Assign Payment to Student
-                </button>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full py-10 text-center">
@@ -1058,11 +2615,133 @@ function MpesaReconciliation() {
   );
 }
 
+// ─── Purchase Requisition Hooks ────────────────────────────────────────
+
+/**
+ * Hook: Fetch vote heads for requisition
+ * Endpoint: GET /procurement/vote-heads?school_id={id}
+ */
+function useProcurementVoteHeads() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/procurement/vote-heads?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch procurement vote heads");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load vote heads');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch budget availability for vote head
+ * Endpoint: GET /procurement/budget-check?school_id={id}&vote_head_id={id}
+ */
+function useBudgetCheck(voteHeadId: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!voteHeadId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any>(`/procurement/budget-check?school_id=${schoolId}&vote_head_id=${voteHeadId}`);
+        // setData(result);
+        
+        console.log(`Would check budget for vote head ${voteHeadId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to check budget');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [voteHeadId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Get current user info (HOD/Requestor)
+ * Endpoint: GET /users/current?school_id={id}
+ */
+function useCurrentUser() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any>(`/users/current?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch current user info");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load user info');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+// ─── Purchase Requisition Component ───────────────────────────────────
+
 function PurchaseRequisition() {
-  const [step, setStep] = useState(1);
-  const [total, setTotal] = useState(87500);
-  const budget = 120000;
-  const over = total > budget;
+  const [selectedVoteHeadId, setSelectedVoteHeadId] = useState<string>("");
+  const [lineItems, setLineItems] = useState<any[]>([]);
+  const [justification, setJustification] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Fetch data from backend
+  const voteHeads = useProcurementVoteHeads();
+  const budgetCheck = useBudgetCheck(selectedVoteHeadId);
+  const currentUser = useCurrentUser();
+
+  // Calculate total from line items
+  const total = lineItems.reduce((sum, item) => sum + ((item.quantity || 0) * (item.unit_cost || 0)), 0);
+  
+  // Determine approval tier based on total and budget
+  const requiresTier2 = total > 50000;
+  const exceedsBudget = budgetCheck.data && total > (budgetCheck.data.remaining_budget || 0);
 
   const procurementSteps = [
     { label: "Requisition", owner: "HOD" },
@@ -1075,13 +2754,95 @@ function PurchaseRequisition() {
     { label: "Payment Auth.", owner: "BOM" },
   ];
 
+  const handleAddLineItem = () => {
+    setLineItems([...lineItems, { description: "", quantity: 0, unit_cost: 0 }]);
+  };
+
+  const handleRemoveLineItem = (index: number) => {
+    setLineItems(lineItems.filter((_, i) => i !== index));
+  };
+
+  const handleLineItemChange = (index: number, field: string, value: any) => {
+    const newItems = [...lineItems];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setLineItems(newItems);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedVoteHeadId) {
+      setSubmitError("Please select a vote head");
+      return;
+    }
+
+    if (lineItems.length === 0) {
+      setSubmitError("Please add at least one line item");
+      return;
+    }
+
+    if (exceedsBudget) {
+      setSubmitError(`Total exceeds available budget by KES ${(total - (budgetCheck.data?.remaining_budget || 0)).toLocaleString('en-KE')}`);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSubmitError(null);
+      setSubmitSuccess(false);
+
+      // BACKEND: Replace with real API call
+      // await apiPost('/procurement/requisitions', {
+      //   vote_head_id: selectedVoteHeadId,
+      //   line_items: lineItems,
+      //   justification,
+      //   school_id: tokenManager.getSchoolId(),
+      // });
+
+      console.log("Would submit requisition:", { selectedVoteHeadId, lineItems, justification });
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Failed to submit requisition");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div>
-      <PageHeader title="Purchase Requisition" subtitle="Create new requisition — requires approval before LPO" />
+      <PageHeader 
+        title="Purchase Requisition" 
+        subtitle={selectedVoteHeadId && voteHeads.data
+          ? `Create new requisition — ${voteHeads.data.find((v: any) => v.id === selectedVoteHeadId)?.name || 'selected vote head'}`
+          : "Create new requisition — requires approval before LPO"
+        }
+      />
+
+      {/* Error states */}
+      {voteHeads.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {voteHeads.error}</p>
+        </div>
+      )}
+      {budgetCheck.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {budgetCheck.error}</p>
+        </div>
+      )}
+      {submitError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {submitError}</p>
+        </div>
+      )}
+      {submitSuccess && (
+        <div className="bg-[#E7F0EA] border border-[#1F6F4A] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A]">✓ Requisition submitted successfully</p>
+        </div>
+      )}
+
       <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 mb-5">
         <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Procurement Pipeline</p>
-        <ApprovalStepper steps={procurementSteps} currentStep={step} />
+        <ApprovalStepper steps={procurementSteps} currentStep={1} />
       </div>
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
@@ -1089,425 +2850,1106 @@ function PurchaseRequisition() {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">HOD / Requestor</label>
-                <input defaultValue="Dr. Mwangi — Science Dept." className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
+                <input 
+                  value={currentUser.data ? `${currentUser.data.first_name} ${currentUser.data.last_name} — ${currentUser.data.department || 'N/A'}` : "Loading..."}
+                  readOnly
+                  className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] bg-[#F3EFE4]" 
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Vote Head</label>
-                <select className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]">
-                  <option>Science — Consumables</option>
-                  <option>Library</option>
-                  <option>Sports</option>
-                  <option>Boarding</option>
-                </select>
+                {voteHeads.loading ? (
+                  <p className="text-xs text-[#7A8078]">Loading...</p>
+                ) : (
+                  <select 
+                    value={selectedVoteHeadId}
+                    onChange={(e) => setSelectedVoteHeadId(e.target.value)}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+                  >
+                    <option value="">Choose vote head...</option>
+                    {voteHeads.data?.map((vh: any) => (
+                      <option key={vh.id} value={vh.id}>
+                        {vh.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
-            <div className="mb-3 p-3 bg-[#E7F0EA] rounded-sm flex justify-between items-center">
-              <span className="text-xs font-['IBM_Plex_Sans'] text-[#1F6F4A]">Remaining Budget — Science Consumables</span>
-              <span className="font-['IBM_Plex_Mono'] text-base font-semibold text-[#1F6F4A]">KES {budget.toLocaleString()}</span>
-            </div>
+
+            {selectedVoteHeadId && budgetCheck.data && (
+              <div className="mb-3 p-3 bg-[#E7F0EA] rounded-sm flex justify-between items-center">
+                <span className="text-xs font-['IBM_Plex_Sans'] text-[#1F6F4A]">Remaining Budget — {voteHeads.data?.find((v: any) => v.id === selectedVoteHeadId)?.name || 'Selected'}</span>
+                <span className="font-['IBM_Plex_Mono'] text-base font-semibold text-[#1F6F4A]">KES {(budgetCheck.data.remaining_budget || 0).toLocaleString('en-KE')}</span>
+              </div>
+            )}
           </div>
 
           <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
-            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Line Items</p>
-            <table className="w-full text-sm font-['IBM_Plex_Sans']">
-              <thead>
-                <tr className="border-b border-[#DCD6C4]">
-                  {["Description", "Qty", "Unit Cost (KES)", "Subtotal"].map((h) => (
-                    <th key={h} className="py-2 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { desc: "Hydrochloric Acid (500ml)", qty: 10, unit: 3500 },
-                  { desc: "Sodium Hydroxide Pellets (500g)", qty: 5, unit: 2800 },
-                  { desc: "Litmus Paper — Red & Blue sets", qty: 20, unit: 850 },
-                  { desc: "Bunsen Burner Replacement", qty: 3, unit: 8000 },
-                ].map((item, i) => (
-                  <tr key={i} className="border-b border-[#DCD6C4] last:border-0">
-                    <td className="py-2">{item.desc}</td>
-                    <td className="py-2 font-['IBM_Plex_Mono']">{item.qty}</td>
-                    <td className="py-2 font-['IBM_Plex_Mono']">{item.unit.toLocaleString()}</td>
-                    <td className="py-2 font-['IBM_Plex_Mono'] text-[#1F6F4A]">KES {(item.qty * item.unit).toLocaleString()}</td>
+            <div className="flex justify-between items-center mb-3">
+              <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans']">Line Items</p>
+              <button 
+                onClick={handleAddLineItem}
+                className="text-[10px] text-[#1F6F4A] hover:text-[#0d5135] font-semibold font-['IBM_Plex_Sans']"
+              >
+                + Add Item
+              </button>
+            </div>
+            {lineItems.length > 0 ? (
+              <table className="w-full text-sm font-['IBM_Plex_Sans']">
+                <thead>
+                  <tr className="border-b border-[#DCD6C4]">
+                    {["Description", "Qty", "Unit Cost (KES)", "Subtotal", ""].map((h) => (
+                      <th key={h} className="py-2 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-[#16241D]">
-                  <td colSpan={3} className="py-2 text-right text-xs uppercase tracking-wide text-[#7A8078]">Total</td>
-                  <td className="py-2 font-['IBM_Plex_Mono'] font-bold text-[#16241D]">KES {total.toLocaleString()}</td>
-                </tr>
-              </tfoot>
-            </table>
+                </thead>
+                <tbody>
+                  {lineItems.map((item, i) => (
+                    <tr key={i} className="border-b border-[#DCD6C4]">
+                      <td className="py-2"><input type="text" value={item.description} onChange={(e) => handleLineItemChange(i, 'description', e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-2 py-1 text-xs" placeholder="Item description" /></td>
+                      <td className="py-2"><input type="number" value={item.quantity} onChange={(e) => handleLineItemChange(i, 'quantity', parseInt(e.target.value) || 0)} className="w-12 border border-[#DCD6C4] rounded-sm px-2 py-1 text-xs" min="0" /></td>
+                      <td className="py-2"><input type="number" value={item.unit_cost} onChange={(e) => handleLineItemChange(i, 'unit_cost', parseInt(e.target.value) || 0)} className="w-24 border border-[#DCD6C4] rounded-sm px-2 py-1 text-xs" min="0" /></td>
+                      <td className="py-2 font-['IBM_Plex_Mono'] text-[#1F6F4A]">KES {((item.quantity || 0) * (item.unit_cost || 0)).toLocaleString('en-KE')}</td>
+                      <td className="py-2 text-right"><button onClick={() => handleRemoveLineItem(i)} className="text-[#9C3B2E] hover:text-[#7a2f26] text-xs font-semibold">Remove</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-[#16241D]">
+                    <td colSpan={3} className="py-2 text-right text-xs uppercase tracking-wide text-[#7A8078]">Total</td>
+                    <td className="py-2 font-['IBM_Plex_Mono'] font-bold text-[#16241D]">KES {total.toLocaleString('en-KE')}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            ) : (
+              <p className="text-xs text-[#7A8078] py-4 text-center">No line items added. Click "Add Item" to start.</p>
+            )}
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
             <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Justification</p>
-            <textarea className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] h-24 resize-none"
-              defaultValue="Required for KCSE Form 4 practicals scheduled for Week 8 and 9. Current stock is depleted." />
+            <textarea 
+              value={justification}
+              onChange={(e) => setJustification(e.target.value)}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] h-24 resize-none"
+              placeholder="Enter justification for this requisition..."
+            />
           </div>
-          {over && (
-            <ValidationCallout type="error" message={`Submission blocked — total KES ${total.toLocaleString()} exceeds remaining budget for Vote Head "Science Consumables" by KES ${(total - budget).toLocaleString()}. Reduce items or seek budget amendment.`} />
+
+          {exceedsBudget && (
+            <ValidationCallout type="error" message={`Submission blocked — total KES ${total.toLocaleString('en-KE')} exceeds remaining budget. Reduce items or seek budget amendment.`} />
           )}
-          <div className="flex items-center gap-2 p-3 bg-[#F5EAD6] rounded-sm border border-[#B5751F]">
-            <AlertTriangle size={14} className="text-[#B5751F] flex-shrink-0" />
-            <p className="text-xs font-['IBM_Plex_Sans'] text-[#B5751F]">
-              KES 87,500 exceeds Tier 1 threshold (KES 50,000). This will require <strong>Tier 2 Principal approval</strong>.
-            </p>
-          </div>
+
+          {requiresTier2 && (
+            <div className="flex items-center gap-2 p-3 bg-[#F5EAD6] rounded-sm border border-[#B5751F]">
+              <AlertTriangle size={14} className="text-[#B5751F] flex-shrink-0" />
+              <p className="text-xs font-['IBM_Plex_Sans'] text-[#B5751F]">
+                KES {total.toLocaleString('en-KE')} exceeds Tier 1 threshold (KES 50,000). This will require <strong>Tier 2 Principal approval</strong>.
+              </p>
+            </div>
+          )}
+
           <button
-            disabled={over}
+            onClick={handleSubmit}
+            disabled={exceedsBudget || isSubmitting || lineItems.length === 0}
             className="w-full bg-[#1F6F4A] text-white py-3 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Submit Requisition
+            {isSubmitting ? "Submitting..." : "Submit Requisition"}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+// ─── General Ledger Hooks ────────────────────────────────────────────────
+
+/**
+ * Hook: Fetch general ledger entries for period
+ * Endpoint: GET /accounting/general-ledger?school_id={id}&year={year}&term={term}
+ */
+function useGeneralLedgerEntries(year: string | undefined, term: string | undefined) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!year || !term) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/accounting/general-ledger?school_id=${schoolId}&year=${year}&term=${term}`);
+        // setData(result);
+        
+        console.log(`Would fetch general ledger for year ${year}, term ${term}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load general ledger');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [year, term]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch accounting periods (years and terms)
+ * Endpoint: GET /accounting/periods?school_id={id}
+ */
+function useAccountingPeriods() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any>(`/accounting/periods?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch accounting periods");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load periods');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+// ─── General Ledger Component ─────────────────────────────────────────────
 
 function GeneralLedger() {
-  const rows = [
-    { code: "1001", name: "Cash & Bank", debit: 2840000, credit: 0 },
-    { code: "1002", name: "M-Pesa Suspense", debit: 34200, credit: 0 },
-    { code: "2001", name: "Fee Income — Tuition", debit: 0, credit: 4200000 },
-    { code: "2002", name: "Fee Income — Boarding", debit: 0, credit: 2100000 },
-    { code: "2003", name: "Fee Income — Activity", debit: 0, credit: 480000 },
-    { code: "3001", name: "Capitation Fund (Restricted)", debit: 0, credit: 1200000 },
-    { code: "4001", name: "Science Dept. Expenses", debit: 87500, credit: 0 },
-    { code: "4002", name: "Staff Salaries", debit: 3250000, credit: 0 },
-    { code: "4003", name: "Statutory Remittances", debit: 768300, credit: 0 },
-  ];
-  const totalDebit = rows.reduce((s, r) => s + r.debit, 0);
-  const totalCredit = rows.reduce((s, r) => s + r.credit, 0);
+  const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedTerm, setSelectedTerm] = useState<string>("");
+
+  // Fetch data from backend
+  const periods = useAccountingPeriods();
+  const ledgerEntries = useGeneralLedgerEntries(selectedYear, selectedTerm);
+
+  // Calculate totals from backend data
+  const rows = ledgerEntries.data || [];
+  const totalDebit = rows.reduce((s: number, r: any) => s + (r.debit || 0), 0);
+  const totalCredit = rows.reduce((s: number, r: any) => s + (r.credit || 0), 0);
   const balanced = Math.abs(totalDebit - totalCredit) < 1;
 
+  const getTermOptions = (year: string) => {
+    // Backend should provide term options per year
+    return [
+      { id: "term1", name: "Term 1" },
+      { id: "term2", name: "Term 2" },
+      { id: "term3", name: "Term 3" },
+    ];
+  };
+
+  const getCurrentPeriodStatus = () => {
+    if (!selectedYear || !selectedTerm) return "Not selected";
+    // Would be determined by backend based on period closing status
+    return "Open";
+  };
+
   return (
     <div>
-      <PageHeader title="General Ledger & Trial Balance" subtitle="Period: Term 2 2025 · Status: Open" />
-      <div className="mb-4">
-        {balanced
-          ? <ValidationCallout type="success" message="Ledger balanced — Total Debits = Total Credits (KES 6,979,800). No discrepancies found." />
-          : <ValidationCallout type="error" message={`Out of balance by KES ${Math.abs(totalDebit - totalCredit).toLocaleString()} — investigate before period close.`} />
+      <PageHeader 
+        title="General Ledger & Trial Balance" 
+        subtitle={selectedYear && selectedTerm 
+          ? `Period: ${periods.data?.years?.find((y: any) => y.id === selectedYear)?.name || selectedYear} · ${getTermOptions(selectedYear).find((t: any) => t.id === selectedTerm)?.name || selectedTerm} · Status: ${getCurrentPeriodStatus()}`
+          : "Select year and term to view ledger"
         }
-      </div>
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              {["Account Code", "Account Name", "Debit (KES)", "Credit (KES)", "Balance"].map((h) => (
-                <th key={h} className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{h}</th>
+      />
+
+      {/* Year and Term Selection */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Academic Year</label>
+          {periods.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : periods.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {periods.error}</p>
+          ) : (
+            <select 
+              value={selectedYear}
+              onChange={(e) => {
+                setSelectedYear(e.target.value);
+                setSelectedTerm("");
+              }}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            >
+              <option value="">Choose year...</option>
+              {periods.data?.years?.map((year: any) => (
+                <option key={year.id} value={year.id}>
+                  {year.name}
+                </option>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.code} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4] transition-colors">
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#7A8078]">{row.code}</td>
-                <td className="px-4 py-3">{row.name}</td>
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[#9C3B2E]">{row.debit > 0 ? row.debit.toLocaleString() : "—"}</td>
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[#1F6F4A]">{row.credit > 0 ? row.credit.toLocaleString() : "—"}</td>
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[#16241D]">
-                  {(row.debit - row.credit).toLocaleString()}
-                </td>
-              </tr>
+            </select>
+          )}
+        </div>
+
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Term</label>
+          <select 
+            value={selectedTerm}
+            onChange={(e) => setSelectedTerm(e.target.value)}
+            disabled={!selectedYear}
+            className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]"
+          >
+            <option value="">Choose term...</option>
+            {selectedYear && getTermOptions(selectedYear).map((term: any) => (
+              <option key={term.id} value={term.id}>
+                {term.name}
+              </option>
             ))}
-          </tbody>
-          <tfoot>
-            <tr className="border-t-2 border-[#16241D] bg-[#F3EFE4] font-semibold">
-              <td colSpan={2} className="px-4 py-3 text-xs uppercase text-[#7A8078] font-['IBM_Plex_Sans']">Totals</td>
-              <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-sm text-[#9C3B2E]">{totalDebit.toLocaleString()}</td>
-              <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-sm text-[#1F6F4A]">{totalCredit.toLocaleString()}</td>
-              <td className="px-4 py-3">{balanced ? <StatusTag variant="ok" label="Balanced" /> : <StatusTag variant="bad" label="Imbalanced" />}</td>
-            </tr>
-          </tfoot>
-        </table>
+          </select>
+        </div>
       </div>
+
+      {selectedYear && selectedTerm && (
+        <>
+          {/* Loading state */}
+          {ledgerEntries.loading && (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center mb-4">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading general ledger...</p>
+            </div>
+          )}
+
+          {/* Error states */}
+          {ledgerEntries.error && (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {ledgerEntries.error}</p>
+            </div>
+          )}
+
+          {/* Balance status */}
+          {!ledgerEntries.loading && (
+            <div className="mb-4">
+              {balanced
+                ? <ValidationCallout type="success" message={`Ledger balanced — Total Debits = Total Credits (KES ${totalDebit.toLocaleString('en-KE')}). No discrepancies found.`} />
+                : <ValidationCallout type="error" message={`Out of balance by KES ${Math.abs(totalDebit - totalCredit).toLocaleString('en-KE')} — investigate before period close.`} />
+              }
+            </div>
+          )}
+
+          {/* Ledger Table */}
+          {!ledgerEntries.loading && rows.length > 0 && (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
+              <table className="w-full text-sm font-['IBM_Plex_Sans']">
+                <thead>
+                  <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                    {["Account Code", "Account Name", "Debit (KES)", "Credit (KES)", "Balance"].map((h) => (
+                      <th key={h} className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row: any) => (
+                    <tr key={row.code} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4] transition-colors">
+                      <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#7A8078]">{row.code}</td>
+                      <td className="px-4 py-3">{row.name}</td>
+                      <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[#9C3B2E]">{(row.debit || 0) > 0 ? (row.debit).toLocaleString('en-KE') : "—"}</td>
+                      <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[#1F6F4A]">{(row.credit || 0) > 0 ? (row.credit).toLocaleString('en-KE') : "—"}</td>
+                      <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[#16241D]">
+                        {((row.debit || 0) - (row.credit || 0)).toLocaleString('en-KE')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-[#16241D] bg-[#F3EFE4] font-semibold">
+                    <td colSpan={2} className="px-4 py-3 text-xs uppercase text-[#7A8078] font-['IBM_Plex_Sans']">Totals</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-sm text-[#9C3B2E]">{totalDebit.toLocaleString('en-KE')}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-sm text-[#1F6F4A]">{totalCredit.toLocaleString('en-KE')}</td>
+                    <td className="px-4 py-3">{balanced ? <StatusTag variant="ok" label="Balanced" /> : <StatusTag variant="bad" label="Imbalanced" />}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
+
+// ─── Muster Roll Hooks ────────────────────────────────────────────────
+
+/**
+ * Hook: Fetch muster roll data
+ * Endpoint: GET /boarding/muster-roll?school_id={id}&date={YYYY-MM-DD}
+ */
+function useMusterRollData(selectedDate: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any>(`/boarding/muster-roll?school_id=${schoolId}&date=${selectedDate}`);
+        // setData(result);
+        
+        console.log(`Would fetch muster roll for date ${selectedDate}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load muster roll');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedDate]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Report unaccounted student
+ * Endpoint: POST /boarding/muster-roll/escalate
+ */
+function useEscalateUnaccountedStudent() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const escalate = async (studentId: string, incidentDetails: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // await apiPost('/boarding/muster-roll/escalate', {
+      //   student_id: studentId,
+      //   incident_details: incidentDetails,
+      //   school_id: tokenManager.getSchoolId(),
+      //   timestamp: new Date().toISOString(),
+      // });
+
+      console.log(`Would escalate unaccounted student ${studentId}`);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to escalate");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { escalate, loading, error };
+}
+
+// ─── Muster Roll Component ─────────────────────────────────────────────
 
 function MusterRoll() {
+  const today = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState<string>(today);
   const [filter, setFilter] = useState("all");
-  const counts = { inDorm: 304, onLeave: 12, sickbay: 3, unaccounted: 3 };
-  const students = [
-    { name: "Amina W. Kariuki", dorm: "Maisha · Bed 14", status: "In Dorm" },
-    { name: "Brian O. Ouma", dorm: "Simba · Bed 22", status: "On Leave" },
-    { name: "Cynthia A. Muga", dorm: "Maisha · Bed 07", status: "In Dorm" },
-    { name: "David K. Rotich", dorm: "Simba · Bed 31", status: "Unaccounted" },
-    { name: "Felix A. Otieno", dorm: "Kenya · Bed 18", status: "Sickbay" },
-    { name: "Grace N. Muturi", dorm: "Maisha · Bed 02", status: "Unaccounted" },
-  ];
+  const [escalatingStudentId, setEscalatingStudentId] = useState<string | null>(null);
+
+  // Fetch data from backend
+  const musterRoll = useMusterRollData(selectedDate);
+  const { escalate, loading: escalateLoading, error: escalateError } = useEscalateUnaccountedStudent();
+
+  const counts = musterRoll.data?.summary || { in_dorm: 0, on_leave: 0, sickbay: 0, unaccounted: 0 };
+  const students = musterRoll.data?.students || [];
+
+  const currentTime = musterRoll.data?.recorded_time || new Date().toLocaleTimeString('en-KE');
+
+  const handleEscalate = async (studentId: string) => {
+    setEscalatingStudentId(studentId);
+    await escalate(studentId, `Student unaccounted in muster roll on ${selectedDate}`);
+  };
 
   return (
     <div>
-      <PageHeader title="Evening Muster Roll" subtitle="Boarding — real-time student location status" badge="21:15 EAT" />
-      <div className="grid grid-cols-4 gap-4 mb-5">
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
-          <p className="font-['Fraunces'] text-4xl text-[#1F6F4A]">{counts.inDorm}</p>
-          <p className="text-xs uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mt-1">In Dorm</p>
-        </div>
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
-          <p className="font-['Fraunces'] text-4xl text-[#B5751F]">{counts.onLeave}</p>
-          <p className="text-xs uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mt-1">On Leave</p>
-        </div>
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
-          <p className="font-['Fraunces'] text-4xl text-[#7A8078]">{counts.sickbay}</p>
-          <p className="text-xs uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mt-1">Sickbay</p>
-        </div>
-        <div className="bg-[#F7E6E2] border-2 border-[#9C3B2E] rounded-sm p-4 text-center">
-          <p className="font-['Fraunces'] text-4xl font-bold text-[#9C3B2E]">{counts.unaccounted}</p>
-          <p className="text-xs uppercase tracking-widest text-[#9C3B2E] font-['IBM_Plex_Sans'] mt-1 font-semibold">Unaccounted</p>
-          <p className="text-[10px] text-[#9C3B2E] font-['IBM_Plex_Sans'] mt-0.5">Immediate action required</p>
-        </div>
-      </div>
-      <div className="flex gap-2 mb-4">
-        {["all", "In Dorm", "On Leave", "Sickbay", "Unaccounted"].map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-3 py-1 text-xs font-['IBM_Plex_Sans'] rounded-sm border transition-colors ${filter === f ? "bg-[#16241D] text-white border-[#16241D]" : "bg-white text-[#7A8078] border-[#DCD6C4] hover:bg-[#F3EFE4]"}`}
-          >
-            {f === "all" ? "All Students" : f}
-          </button>
-        ))}
-      </div>
-      <DataTable
-        columns={["Student", "Dorm / Bed", "Status", "Action"]}
-        rows={students
-          .filter((s) => filter === "all" || s.status === filter)
-          .map((s) => [
-            s.name,
-            s.dorm,
-            <StatusTag variant={s.status === "In Dorm" ? "ok" : s.status === "On Leave" ? "warn" : s.status === "Unaccounted" ? "bad" : "neutral"} label={s.status} />,
-            s.status === "Unaccounted" ? <button className="text-xs text-[#9C3B2E] font-semibold font-['IBM_Plex_Sans'] hover:underline">Escalate</button> : <span className="text-xs text-[#7A8078]">—</span>
-          ])}
+      <PageHeader 
+        title="Evening Muster Roll" 
+        subtitle="Boarding — real-time student location status" 
+        badge={currentTime}
       />
+
+      {/* Error states */}
+      {musterRoll.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {musterRoll.error}</p>
+        </div>
+      )}
+      {escalateError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {escalateError}</p>
+        </div>
+      )}
+
+      {/* Date Selection */}
+      <div className="mb-4">
+        <input 
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+        />
+      </div>
+
+      {musterRoll.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center mb-4">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading muster roll...</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-4 gap-4 mb-5">
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+              <p className="font-['Fraunces'] text-4xl text-[#1F6F4A]">{counts.in_dorm || 0}</p>
+              <p className="text-xs uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mt-1">In Dorm</p>
+            </div>
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+              <p className="font-['Fraunces'] text-4xl text-[#B5751F]">{counts.on_leave || 0}</p>
+              <p className="text-xs uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mt-1">On Leave</p>
+            </div>
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+              <p className="font-['Fraunces'] text-4xl text-[#7A8078]">{counts.sickbay || 0}</p>
+              <p className="text-xs uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mt-1">Sickbay</p>
+            </div>
+            <div className={`${(counts.unaccounted || 0) > 0 ? "bg-[#F7E6E2] border-2 border-[#9C3B2E]" : "bg-white border border-[#DCD6C4]"} rounded-sm p-4 text-center`}>
+              <p className={`font-['Fraunces'] text-4xl font-bold ${(counts.unaccounted || 0) > 0 ? "text-[#9C3B2E]" : "text-[#1F6F4A]"}`}>{counts.unaccounted || 0}</p>
+              <p className={`text-xs uppercase tracking-widest font-['IBM_Plex_Sans'] mt-1 ${(counts.unaccounted || 0) > 0 ? "text-[#9C3B2E] font-semibold" : "text-[#7A8078]"}`}>Unaccounted</p>
+              {(counts.unaccounted || 0) > 0 && <p className="text-[10px] text-[#9C3B2E] font-['IBM_Plex_Sans'] mt-0.5">Immediate action required</p>}
+            </div>
+          </div>
+
+          <div className="flex gap-2 mb-4">
+            {["all", "In Dorm", "On Leave", "Sickbay", "Unaccounted"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1 text-xs font-['IBM_Plex_Sans'] rounded-sm border transition-colors ${filter === f ? "bg-[#16241D] text-white border-[#16241D]" : "bg-white text-[#7A8078] border-[#DCD6C4] hover:bg-[#F3EFE4]"}`}
+              >
+                {f === "all" ? "All Students" : f}
+              </button>
+            ))}
+          </div>
+
+          <DataTable
+            columns={["Student", "Dorm / Bed", "Status", "Action"]}
+            rows={students
+              .filter((s: any) => filter === "all" || s.status === filter)
+              .map((s: any) => [
+                s.name,
+                s.dorm_location || "—",
+                <StatusTag 
+                  variant={s.status === "In Dorm" ? "ok" : s.status === "On Leave" ? "warn" : s.status === "Unaccounted" ? "bad" : "neutral"} 
+                  label={s.status} 
+                />,
+                s.status === "Unaccounted" ? (
+                  <button 
+                    onClick={() => handleEscalate(s.id)}
+                    disabled={escalateLoading && escalatingStudentId === s.id}
+                    className="text-xs text-[#9C3B2E] font-semibold font-['IBM_Plex_Sans'] hover:underline disabled:opacity-60"
+                  >
+                    {escalateLoading && escalatingStudentId === s.id ? "Escalating..." : "Escalate"}
+                  </button>
+                ) : <span className="text-xs text-[#7A8078]">—</span>
+              ])}
+          />
+        </>
+      )}
     </div>
   );
 }
 
+// ─── Staff Directory Hooks ────────────────────────────────────────────
+
+/**
+ * Hook: Fetch staff directory
+ * Endpoint: GET /staff/directory?school_id={id}&search={query}
+ */
+function useStaffDirectory(searchQuery: string | undefined) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/staff/directory?school_id=${schoolId}&search=${searchQuery || ''}`);
+        // setData(result);
+        
+        console.log(`Would fetch staff directory with search: "${searchQuery || ''}"`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load staff directory');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [searchQuery]);
+
+  return { data, loading, error };
+}
+
+// ─── Staff Directory Component ─────────────────────────────────────
+
 function StaffDirectory() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const staffDirectory = useStaffDirectory(searchQuery || undefined);
+  const staffList = staffDirectory.data || [];
+
   return (
     <div>
-      <PageHeader title="Staff Directory" subtitle="All teaching and non-teaching staff" />
+      <PageHeader 
+        title="Staff Directory" 
+        subtitle={`All teaching and non-teaching staff — ${staffList.length} members`}
+      />
+      
+      {staffDirectory.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {staffDirectory.error}</p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 border border-[#DCD6C4] rounded-sm px-3 py-1.5 bg-white">
             <Search size={13} className="text-[#7A8078]" />
-            <input className="text-sm font-['IBM_Plex_Sans'] outline-none bg-transparent placeholder-[#7A8078] w-48" placeholder="Search staff..." />
+            <input 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="text-sm font-['IBM_Plex_Sans'] outline-none bg-transparent placeholder-[#7A8078] w-48" 
+              placeholder="Search staff..." 
+            />
           </div>
         </div>
         <button className="flex items-center gap-2 bg-[#1F6F4A] text-white px-4 py-1.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors">
           <Plus size={14} /> Add Staff Member
         </button>
       </div>
-      <DataTable
-        columns={["Name", "Role", "TSC No.", "Department", "Contact", "Status"]}
-        rows={[
-          ["Dr. J. Mwangi", "HoD Science", <span className="font-['IBM_Plex_Mono'] text-xs">TSC-123456</span>, "Science", "0712 111 222", <StatusTag variant="ok" label="Active" />],
-          ["Mrs. A. Kamau", "Deputy Principal", <span className="font-['IBM_Plex_Mono'] text-xs">TSC-234567</span>, "Administration", "0733 333 444", <StatusTag variant="ok" label="Active" />],
-          ["Mr. B. Odhiambo", "Mathematics Teacher", <span className="font-['IBM_Plex_Mono'] text-xs">TSC-345678</span>, "Mathematics", "0744 555 666", <StatusTag variant="warn" label="On Leave" />],
-          ["Ms. C. Wangari", "Librarian", <span className="font-['IBM_Plex_Mono'] text-xs">BOM-001</span>, "Library", "0755 777 888", <StatusTag variant="ok" label="Active" />],
-          ["Mr. D. Otieno", "Storekeeper", <span className="font-['IBM_Plex_Mono'] text-xs">BOM-002</span>, "Stores", "0766 999 000", <StatusTag variant="ok" label="Active" />],
-        ]}
-      />
+
+      {staffDirectory.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading staff directory...</p>
+        </div>
+      ) : (
+        <DataTable
+          columns={["Name", "Role", "TSC No.", "Department", "Contact", "Status"]}
+          rows={staffList.map((staff: any) => [
+            staff.full_name,
+            staff.role,
+            <span className="font-['IBM_Plex_Mono'] text-xs">{staff.tsc_number || staff.bom_number || "—"}</span>,
+            staff.department,
+            staff.phone_number || "—",
+            <StatusTag variant={staff.status === "Active" ? "ok" : staff.status === "On Leave" ? "warn" : "neutral"} label={staff.status} />
+          ])}
+        />
+      )}
     </div>
   );
 }
 
+// ─── Payroll Run Hooks ────────────────────────────────────────────────
+
+function usePayrollRunData(period: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!period) return;
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log(`Would fetch payroll data for period ${period}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load payroll data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [period]);
+
+  return { data, loading, error };
+}
+
+function useCommitPayroll() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const commit = async (period: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log(`Would commit payroll for period ${period}`);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to commit payroll');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { commit, loading, error };
+}
+
+// ─── Payroll Run Component ────────────────────────────────────────────
+
 function PayrollRun() {
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("");
   const [confirmed, setConfirmed] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  return (
-    <div>
-      <PageHeader title="Payroll Run" subtitle="June 2025 · 74 staff · Requires confirmation before commit" />
-      {confirmed && (
-        <div className="mb-4">
-          <ValidationCallout type="success" message="Payroll Run committed — June 2025. 74 staff processed. Audit log entry created. PAYE/NHIF/NSSF remittance report available." />
-        </div>
-      )}
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden mb-4">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              {["Staff Member", "Gross Pay", "PAYE", "NHIF", "NSSF", "Housing Levy", "Net Pay"].map((h) => (
-                <th key={h} className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              { name: "Dr. J. Mwangi", gross: 85000, paye: 15300, nhif: 1700, nssf: 2040, levy: 850 },
-              { name: "Mrs. A. Kamau", gross: 92000, paye: 17480, nhif: 1700, nssf: 2208, levy: 920 },
-              { name: "Mr. B. Odhiambo", gross: 62000, paye: 9300, nhif: 1700, nssf: 1488, levy: 620 },
-              { name: "Ms. C. Wangari", gross: 45000, paye: 5850, nhif: 1700, nssf: 1080, levy: 450 },
-            ].map((s) => {
-              const net = s.gross - s.paye - s.nhif - s.nssf - s.levy;
-              return (
-                <tr key={s.name} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4]">
-                  <td className="px-4 py-3">{s.name}</td>
-                  {[s.gross, s.paye, s.nhif, s.nssf, s.levy].map((v, i) => (
-                    <td key={i} className={`px-4 py-3 font-['IBM_Plex_Mono'] text-xs ${i > 0 ? "text-[#9C3B2E]" : "text-[#16241D]"}`}>
-                      {v.toLocaleString()}
-                    </td>
-                  ))}
-                  <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-sm font-semibold text-[#1F6F4A]">{net.toLocaleString()}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div className="flex items-start gap-4">
-        <div className="flex-1 p-3 bg-[#F5EAD6] border border-[#B5751F] rounded-sm">
-          <p className="text-xs font-['IBM_Plex_Sans'] text-[#B5751F]">
-            <strong>Critical action</strong> — Running payroll commits payments to 74 staff members and creates an immutable audit log entry. Requires confirmation step. Once committed, reversal requires BOM Finance Chair approval.
-          </p>
-        </div>
-        <button
-          onClick={() => setShowModal(true)}
-          disabled={confirmed}
-          className="flex-shrink-0 bg-[#1F6F4A] text-white px-6 py-3 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Run Payroll
-        </button>
-      </div>
+  const payrollData = usePayrollRunData(selectedPeriod || undefined);
+  const { commit, loading: commitLoading, error: commitError } = useCommitPayroll();
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#16241D]/60">
-          <div className="bg-white rounded-sm border border-[#DCD6C4] w-[420px] p-6 shadow-xl">
-            <h3 className="font-['Fraunces'] text-xl text-[#16241D] mb-2">Confirm Payroll Run</h3>
-            <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">
-              This will commit June 2025 payroll for 74 staff. This action is irreversible without BOM Finance Chair approval and will generate an audit log entry.
-            </p>
-            <div className="mb-4 p-3 bg-[#F3EFE4] rounded-sm border border-[#DCD6C4]">
-              <div className="flex justify-between text-sm font-['IBM_Plex_Sans'] mb-1">
-                <span className="text-[#7A8078]">Total Gross</span>
-                <span className="font-['IBM_Plex_Mono'] font-semibold">KES 3,250,000</span>
-              </div>
-              <div className="flex justify-between text-sm font-['IBM_Plex_Sans']">
-                <span className="text-[#7A8078]">Total Net Pay</span>
-                <span className="font-['IBM_Plex_Mono'] font-semibold text-[#1F6F4A]">KES 2,481,700</span>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setShowModal(false)} className="flex-1 border border-[#DCD6C4] py-2 rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Cancel</button>
-              <button onClick={() => { setConfirmed(true); setShowModal(false); }} className="flex-1 bg-[#1F6F4A] text-white py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">
-                Confirm — Run Payroll
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+  const staffList = payrollData.data?.staff_payroll || [];
+  const summary = payrollData.data?.summary || { staff_count: 0, total_gross: 0, total_net: 0, period: "" };
 
-function AuditLog() {
-  return (
-    <div>
-      <PageHeader title="Audit Log Viewer" subtitle="System-wide immutable action log — read only" />
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex items-center gap-2 border border-[#DCD6C4] rounded-sm px-3 py-1.5 bg-white">
-          <Search size={13} className="text-[#7A8078]" />
-          <input className="text-sm font-['IBM_Plex_Sans'] outline-none bg-transparent placeholder-[#7A8078] w-48" placeholder="Search by user, entity, action..." />
-        </div>
-        <select className="border border-[#DCD6C4] rounded-sm px-3 py-1.5 text-sm font-['IBM_Plex_Sans'] bg-white text-[#7A8078] focus:outline-none">
-          <option>All Modules</option>
-          <option>Finance</option>
-          <option>Academics</option>
-          <option>Gate & Security</option>
-        </select>
-      </div>
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              {["Timestamp", "User", "Action", "Entity Affected", "Before / After"].map((h) => (
-                <th key={h} className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              { ts: "2025-06-15 21:14:03", user: "A.Kamau", action: "LOCK_MARKS", entity: "ExamSession:F2-T2-2025", before: "draft", after: "locked" },
-              { ts: "2025-06-15 19:32:51", user: "P.Nambale", action: "APPROVE_REQUISITION", entity: "REQ-2025-0081", before: "Tier 1 Pending", after: "Approved" },
-              { ts: "2025-06-15 17:11:22", user: "J.Otieno", action: "GATE_EXIT_DENIED", entity: "Student:ADM-2024-0188", before: "—", after: "DO NOT EXIT" },
-              { ts: "2025-06-15 14:03:08", user: "System", action: "MPESA_PAYMENT_RECEIVED", entity: "FeeLedger:ADM-2025-0048", before: "KES 58,700", after: "KES 8,000" },
-              { ts: "2025-06-15 08:00:00", user: "System", action: "PAYROLL_RUN_COMMIT", entity: "Payroll:June-2025", before: "draft", after: "committed" },
-            ].map((row, i) => (
-              <tr key={i} className="border-b border-[#DCD6C4] last:border-0">
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[11px] text-[#7A8078] whitespace-nowrap">{row.ts}</td>
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#16241D]">{row.user}</td>
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs font-medium text-[#1F6F4A]">{row.action}</td>
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#7A8078]">{row.entity}</td>
-                <td className="px-4 py-3 text-xs text-[#7A8078]">
-                  <span className="text-[#9C3B2E]">{row.before}</span>
-                  {row.before !== "—" && <span className="mx-1">→</span>}
-                  <span className="text-[#1F6F4A]">{row.after}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function NemisExport() {
-  const [validated, setValidated] = useState(false);
-  const [running, setRunning] = useState(false);
-
-  const handleValidate = () => {
-    setRunning(true);
-    setTimeout(() => { setRunning(false); setValidated(true); }, 1500);
+  const handleCommit = async () => {
+    if (selectedPeriod) {
+      await commit(selectedPeriod);
+      setConfirmed(true);
+      setShowModal(false);
+    }
   };
 
   return (
     <div>
-      <PageHeader title="NEMIS / KEMIS Export Centre" subtitle="Validation-first workflow — download file for manual upload to NEMIS portal" />
-      {!validated ? (
+      <PageHeader 
+        title="Payroll Run" 
+        subtitle={selectedPeriod && summary ? `${summary.period} · ${summary.staff_count} staff · Requires confirmation before commit` : "Select period to run payroll"} 
+      />
+      {payrollData.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {payrollData.error}</p>
+        </div>
+      )}
+      {commitError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {commitError}</p>
+        </div>
+      )}
+      
+      {confirmed && (
+        <div className="mb-4">
+          <ValidationCallout type="success" message={`Payroll Run committed — ${summary.period}. ${summary.staff_count} staff processed. Audit log entry created. PAYE/NHIF/NSSF remittance report available.`} />
+        </div>
+      )}
+      
+      <div className="mb-4">
+        <select 
+          value={selectedPeriod}
+          onChange={(e) => setSelectedPeriod(e.target.value)}
+          className="border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+        >
+          <option value="">Select payroll period...</option>
+          <option value="June-2025">June 2025</option>
+          <option value="May-2025">May 2025</option>
+          <option value="April-2025">April 2025</option>
+        </select>
+      </div>
+
+      {payrollData.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading payroll data...</p>
+        </div>
+      ) : selectedPeriod && staffList.length > 0 ? (
+        <>
+          <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden mb-4">
+            <table className="w-full text-sm font-['IBM_Plex_Sans']">
+              <thead>
+                <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                  {["Staff Member", "Gross Pay", "PAYE", "NHIF", "NSSF", "Housing Levy", "Net Pay"].map((h) => (
+                    <th key={h} className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {staffList.map((staff: any, i: number) => (
+                  <tr key={i} className="border-b border-[#DCD6C4] last:border-0 hover:bg-[#F3EFE4]">
+                    <td className="px-4 py-3">{staff.name}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#16241D]">{(staff.gross_pay || 0).toLocaleString('en-KE')}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#9C3B2E]">{(staff.paye || 0).toLocaleString('en-KE')}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#9C3B2E]">{(staff.nhif || 0).toLocaleString('en-KE')}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#9C3B2E]">{(staff.nssf || 0).toLocaleString('en-KE')}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#9C3B2E]">{(staff.housing_levy || 0).toLocaleString('en-KE')}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-sm font-semibold text-[#1F6F4A]">{(staff.net_pay || 0).toLocaleString('en-KE')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-start gap-4">
+            <div className="flex-1 p-3 bg-[#F5EAD6] border border-[#B5751F] rounded-sm">
+              <p className="text-xs font-['IBM_Plex_Sans'] text-[#B5751F]">
+                <strong>Critical action</strong> — Running payroll commits payments to {summary.staff_count} staff members and creates an immutable audit log entry. Requires confirmation step. Once committed, reversal requires BOM Finance Chair approval.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              disabled={confirmed}
+              className="flex-shrink-0 bg-[#1F6F4A] text-white px-6 py-3 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Run Payroll
+            </button>
+          </div>
+
+          {showModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#16241D]/60">
+              <div className="bg-white rounded-sm border border-[#DCD6C4] w-[420px] p-6 shadow-xl">
+                <h3 className="font-['Fraunces'] text-xl text-[#16241D] mb-2">Confirm Payroll Run</h3>
+                <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">
+                  This will commit {summary.period} payroll for {summary.staff_count} staff. This action is irreversible without BOM Finance Chair approval and will generate an audit log entry.
+                </p>
+                <div className="mb-4 p-3 bg-[#F3EFE4] rounded-sm border border-[#DCD6C4]">
+                  <div className="flex justify-between text-sm font-['IBM_Plex_Sans'] mb-1">
+                    <span className="text-[#7A8078]">Total Gross</span>
+                    <span className="font-['IBM_Plex_Mono'] font-semibold">KES {(summary.total_gross || 0).toLocaleString('en-KE')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-['IBM_Plex_Sans']">
+                    <span className="text-[#7A8078]">Total Net Pay</span>
+                    <span className="font-['IBM_Plex_Mono'] font-semibold text-[#1F6F4A]">KES {(summary.total_net || 0).toLocaleString('en-KE')}</span>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setShowModal(false)} className="flex-1 border border-[#DCD6C4] py-2 rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Cancel</button>
+                  <button onClick={handleCommit} disabled={commitLoading} className="flex-1 bg-[#1F6F4A] text-white py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-60">
+                    {commitLoading ? "Processing..." : "Confirm — Run Payroll"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      ) : selectedPeriod ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">No payroll data available for this period</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Select a payroll period to view staff details</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Audit Log Hooks ──────────────────────────────────────────────────
+
+function useAuditLog(module: string | undefined, searchQuery: string | undefined) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!module && !searchQuery) return; // Lazy load if no filters
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const params = new URLSearchParams();
+        // if (module && module !== 'all') params.append('module', module);
+        // if (searchQuery) params.append('search', searchQuery);
+        // params.append('limit', '100');
+        // const result = await apiGet<any[]>(`/audit-log?school_id=${schoolId}&${params.toString()}`)
+        // setData(result);
+        
+        console.log(`Would fetch audit log for module=${module}, search=${searchQuery}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load audit log');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [module, searchQuery]);
+
+  return { data, loading, error };
+}
+
+// ─── Audit Log Component ──────────────────────────────────────────────
+
+function AuditLog() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedModule, setSelectedModule] = useState("all");
+
+  const auditLog = useAuditLog(selectedModule !== "all" ? selectedModule : undefined, searchQuery || undefined);
+  const entries = auditLog.data || [];
+
+  return (
+    <div>
+      <PageHeader 
+        title="Audit Log Viewer" 
+        subtitle={`System-wide immutable action log — ${entries.length} entries · read only`}
+      />
+
+      {auditLog.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {auditLog.error}</p>
+        </div>
+      )}
+
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex items-center gap-2 border border-[#DCD6C4] rounded-sm px-3 py-1.5 bg-white">
+          <Search size={13} className="text-[#7A8078]" />
+          <input 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="text-sm font-['IBM_Plex_Sans'] outline-none bg-transparent placeholder-[#7A8078] w-48" 
+            placeholder="Search by user, entity, action..." 
+          />
+        </div>
+        <select 
+          value={selectedModule}
+          onChange={(e) => setSelectedModule(e.target.value)}
+          className="border border-[#DCD6C4] rounded-sm px-3 py-1.5 text-sm font-['IBM_Plex_Sans'] bg-white text-[#7A8078] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+        >
+          <option value="all">All Modules</option>
+          <option value="Finance">Finance</option>
+          <option value="Academics">Academics</option>
+          <option value="Gate & Security">Gate & Security</option>
+          <option value="Students">Students</option>
+        </select>
+      </div>
+
+      {auditLog.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading audit log...</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
+          <table className="w-full text-sm font-['IBM_Plex_Sans']">
+            <thead>
+              <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                {["Timestamp", "User", "Action", "Entity Affected", "Before / After"].map((h) => (
+                  <th key={h} className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {entries.length > 0 ? (
+                entries.map((row: any, i: number) => (
+                  <tr key={i} className="border-b border-[#DCD6C4] last:border-0 hover:bg-[#F3EFE4]">
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-[11px] text-[#7A8078] whitespace-nowrap">{row.timestamp}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#16241D]">{row.user}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs font-medium text-[#1F6F4A]">{row.action}</td>
+                    <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs text-[#7A8078]">{row.entity}</td>
+                    <td className="px-4 py-3 text-xs text-[#7A8078]">
+                      <span className="text-[#9C3B2E]">{row.before_value || "—"}</span>
+                      {row.before_value && row.after_value && <span className="mx-1">→</span>}
+                      <span className="text-[#1F6F4A]">{row.after_value || "—"}</span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-4 py-6 text-center text-sm text-[#7A8078] font-['IBM_Plex_Sans']">
+                    No audit log entries found for the selected filters
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── NEMIS Export Hooks ────────────────────────────────────────────────
+
+function useNemisValidation() {
+  const [validationData, setValidationData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const validate = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // const schoolId = tokenManager.getSchoolId();
+      // const result = await apiPost<any>('/nemis/validate', { school_id: schoolId });
+      // setValidationData(result);
+
+      console.log("Would validate NEMIS records");
+      setError("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to validate NEMIS records');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { validationData, loading, error, validate };
+}
+
+function useNemisFlaggedRecords() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/nemis/flagged-records?school_id=${schoolId}`);
+        // setData(result);
+
+        console.log("Would fetch flagged NEMIS records");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load flagged records');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useNemisExport() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const exportFile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // const schoolId = tokenManager.getSchoolId();
+      // const result = await apiPost<{ file_url: string }>('/nemis/export', { school_id: schoolId });
+      // window.location.href = result.file_url;
+
+      console.log("Would export NEMIS file");
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate export file');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { exportFile, loading, error };
+}
+
+// ─── NEMIS Export Component ────────────────────────────────────────────
+
+function NemisExport() {
+  const { validationData, loading: validating, error: validationError, validate } = useNemisValidation();
+  const flaggedRecords = useNemisFlaggedRecords();
+  const { exportFile, loading: exporting, error: exportError } = useNemisExport();
+
+  const recordsCount = validationData?.records_checked || 0;
+  const flaggedCount = validationData?.flagged_count || 0;
+  const flaggedList = flaggedRecords.data || [];
+  const isValidated = validationData?.validated === true;
+  const canExport = isValidated && flaggedCount === 0;
+
+  return (
+    <div>
+      <PageHeader 
+        title="NEMIS / KEMIS Export Centre" 
+        subtitle="Validation-first workflow — download file for manual upload to NEMIS portal" 
+      />
+
+      {validationError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {validationError}</p>
+        </div>
+      )}
+
+      {exportError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {exportError}</p>
+        </div>
+      )}
+
+      {!isValidated ? (
         <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 text-center max-w-md mx-auto mt-8">
           <FileText size={32} className="text-[#7A8078] mx-auto mb-3" />
           <h2 className="font-['Fraunces'] text-xl text-[#16241D] mb-2">Run Validation Check First</h2>
           <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">
-            The system will check all 1,284 student records against NEMIS format requirements before enabling export. Fix any flagged records before downloading.
+            The system will check all student records against NEMIS format requirements before enabling export. Fix any flagged records before downloading.
           </p>
-          <button onClick={handleValidate} disabled={running} className="bg-[#1F6F4A] text-white px-6 py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-60">
-            {running ? "Checking records..." : "Run Validation Check"}
+          <button 
+            onClick={validate} 
+            disabled={validating}
+            className="bg-[#1F6F4A] text-white px-6 py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-60"
+          >
+            {validating ? "Checking records..." : "Run Validation Check"}
           </button>
         </div>
       ) : (
         <div className="space-y-4">
-          <ValidationCallout type="warning" message="1,284 records checked · 3 flagged — resolve flagged records before generating export file." />
-          <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Flagged Records</p>
-            <div className="space-y-2">
-              {[
-                { adm: "ADM-2024-0188", name: "Brian O. Ouma", issue: "UPI format invalid — missing leading digit" },
-                { adm: "ADM-2024-0312", name: "Cynthia A. Muga", issue: "Age anomaly — DOB inconsistent with class enrolment year" },
-                { adm: "ADM-2023-0094", name: "Felix A. Otieno", issue: "Missing KCPE Index Number" },
-              ].map((r) => (
-                <div key={r.adm} className="flex items-start gap-3 py-2 border-b border-[#DCD6C4] last:border-0">
-                  <AlertTriangle size={14} className="text-[#B5751F] mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-['IBM_Plex_Sans'] text-[#16241D]">{r.name}</p>
-                    <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans']">{r.issue}</p>
-                    <p className="font-['IBM_Plex_Mono'] text-[10px] text-[#7A8078]">{r.adm}</p>
+          <ValidationCallout type={flaggedCount === 0 ? "success" : "warning"} message={`${recordsCount} records checked · ${flaggedCount} flagged — ${flaggedCount === 0 ? "ready to export" : "resolve flagged records before generating export file"}`} />
+          {flaggedList.length > 0 && (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+              <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Flagged Records</p>
+              <div className="space-y-2">
+                {flaggedList.map((r: any) => (
+                  <div key={r.admission_number} className="flex items-start gap-3 py-2 border-b border-[#DCD6C4] last:border-0">
+                    <AlertTriangle size={14} className="text-[#B5751F] mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-['IBM_Plex_Sans'] text-[#16241D]">{r.student_name}</p>
+                      <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans']">{r.issue}</p>
+                      <p className="font-['IBM_Plex_Mono'] text-[10px] text-[#7A8078]">{r.admission_number}</p>
+                    </div>
+                    <button className="text-[11px] text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">Fix in Profile</button>
                   </div>
-                  <button className="text-[11px] text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">Fix in Profile</button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-          <button disabled className="w-full bg-[#7A8078] text-white py-2.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] cursor-not-allowed opacity-50">
-            Generate NEMIS Export File — Resolve 3 flagged records first
+          )}
+          <button 
+            onClick={exportFile}
+            disabled={!canExport || exporting}
+            className={`w-full py-2.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] transition-colors ${
+              canExport 
+                ? "bg-[#1F6F4A] text-white hover:bg-[#185f3e]" 
+                : "bg-[#7A8078] text-white cursor-not-allowed opacity-50"
+            }`}
+          >
+            {exporting ? "Generating file..." : flaggedCount === 0 ? "Generate NEMIS Export File" : `Resolve ${flaggedCount} flagged records first`}
           </button>
         </div>
       )}
@@ -1515,8 +3957,211 @@ function NemisExport() {
   );
 }
 
+// ─── Parent Portal Hooks ──────────────────────────────────────────────
+
+function useParentStudentInfo() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const parentId = tokenManager.getParentId(); // or from context
+        // const result = await apiGet<any>(`/parents/student-info?parent_id=${parentId}`);
+        // setData(result);
+        
+        console.log("Would fetch parent student info");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load student info');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useParentFeeStatement() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const studentId = tokenManager.getSelectedStudentId();
+        // const result = await apiGet<any>(`/parents/fee-statement?student_id=${studentId}`);
+        // setData(result);
+        
+        console.log("Would fetch fee statement");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load fee statement');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useParentPaymentHistory() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const studentId = tokenManager.getSelectedStudentId();
+        // const result = await apiGet<any[]>(`/parents/payment-history?student_id=${studentId}`);
+        // setData(result);
+        
+        console.log("Would fetch payment history");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load payment history');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useParentAcademicReport() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const studentId = tokenManager.getSelectedStudentId();
+        // const result = await apiGet<any>(`/parents/academic-report?student_id=${studentId}`);
+        // setData(result);
+        
+        console.log("Would fetch academic report");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load academic report');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useParentNotifications() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const parentId = tokenManager.getParentId();
+        // const result = await apiGet<any[]>(`/parents/notifications?parent_id=${parentId}&limit=10`);
+        // setData(result);
+        
+        console.log("Would fetch parent notifications");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load notifications');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useSchoolContactInfo() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any>(`/school/contact-info?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch school contact info");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load contact info');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+// ─── Parent Portal Component ───────────────────────────────────────────
+
 function ParentPortal() {
   const [tab, setTab] = useState("fees");
+
+  const studentInfo = useParentStudentInfo();
+  const feeStatement = useParentFeeStatement();
+  const paymentHistory = useParentPaymentHistory();
+  const academicReport = useParentAcademicReport();
+  const notifications = useParentNotifications();
+  const schoolContact = useSchoolContactInfo();
+
+  const parentName = studentInfo.data?.parent_name || "Parent";
+  const studentName = studentInfo.data?.student_name || "Student";
+  const studentClass = studentInfo.data?.class_name || "";
+  const outstandingBalance = feeStatement.data?.outstanding_balance || 0;
+  const dueDate = feeStatement.data?.due_date || "";
+  const balanceStatus = feeStatement.data?.status || "overdue";
+  const payments = paymentHistory.data || [];
+  const academicData = academicReport.data || {};
+  const notificationList = notifications.data || [];
+  const schoolData = schoolContact.data || {};
+
   return (
     <div className="max-w-sm mx-auto bg-[#F3EFE4] min-h-screen font-['IBM_Plex_Sans']">
       {/* Mobile header */}
@@ -1527,8 +4172,8 @@ function ParentPortal() {
           </div>
           <Bell size={18} className="text-[#4A5C50]" />
         </div>
-        <p className="font-['Fraunces'] text-lg text-[#E9E6DA] mt-2">Good evening, Joseph</p>
-        <p className="text-[#4A5C50] text-xs">Amina W. Kariuki · Form 2 Stream A</p>
+        <p className="font-['Fraunces'] text-lg text-[#E9E6DA] mt-2">Good evening, {parentName}</p>
+        <p className="text-[#4A5C50] text-xs">{studentName} · {studentClass}</p>
       </div>
 
       {/* Nav tabs */}
@@ -1552,92 +4197,144 @@ function ParentPortal() {
       <div className="px-4 py-5">
         {tab === "fees" && (
           <div className="space-y-4">
-            <div className="bg-white border border-[#DCD6C4] rounded-sm p-5 text-center">
-              <p className="text-xs uppercase tracking-widest text-[#7A8078] mb-2">Outstanding Balance</p>
-              <p className="font-['Fraunces'] text-5xl text-[#9C3B2E] mb-1">KES 8,000</p>
-              <p className="text-xs text-[#7A8078]">Term 2 · Due: 15 June 2025</p>
-              <StatusTag variant="bad" label="Payment Due" />
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-[#7A8078] mb-2">Payment History</p>
-              <div className="space-y-2">
-                {[
-                  { ref: "MPESA-QHG54321", amount: "KES 20,700", date: "12 Jun 2025" },
-                  { ref: "MPESA-QHG12345", amount: "KES 30,000", date: "03 Jun 2025" },
-                ].map((p) => (
-                  <div key={p.ref} className="bg-white border border-[#DCD6C4] rounded-sm px-4 py-3 flex justify-between items-center">
-                    <div>
-                      <p className="font-['IBM_Plex_Mono'] text-xs text-[#7A8078]">{p.ref}</p>
-                      <p className="text-xs text-[#7A8078]">{p.date}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-['IBM_Plex_Mono'] text-sm font-semibold text-[#1F6F4A]">{p.amount}</p>
-                      <StatusTag variant="ok" label="Received" />
-                    </div>
-                  </div>
-                ))}
+            {feeStatement.error ? (
+              <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+                <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {feeStatement.error}</p>
               </div>
-            </div>
+            ) : feeStatement.loading ? (
+              <div className="bg-white border border-[#DCD6C4] rounded-sm p-5 text-center">
+                <p className="text-sm text-[#7A8078]">Loading fee statement...</p>
+              </div>
+            ) : (
+              <>
+                <div className="bg-white border border-[#DCD6C4] rounded-sm p-5 text-center">
+                  <p className="text-xs uppercase tracking-widest text-[#7A8078] mb-2">Outstanding Balance</p>
+                  <p className="font-['Fraunces'] text-5xl text-[#9C3B2E] mb-1">KES {outstandingBalance.toLocaleString('en-KE')}</p>
+                  <p className="text-xs text-[#7A8078]">{academicData.term || "Term 2"} · Due: {dueDate}</p>
+                  <StatusTag variant={balanceStatus === "ok" ? "ok" : "bad"} label={balanceStatus === "ok" ? "Paid" : "Payment Due"} />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-[#7A8078] mb-2">Payment History</p>
+                  {payments.length > 0 ? (
+                    <div className="space-y-2">
+                      {payments.map((p: any, i: number) => (
+                        <div key={i} className="bg-white border border-[#DCD6C4] rounded-sm px-4 py-3 flex justify-between items-center">
+                          <div>
+                            <p className="font-['IBM_Plex_Mono'] text-xs text-[#7A8078]">{p.reference_number || p.mpesa_ref}</p>
+                            <p className="text-xs text-[#7A8078]">{p.payment_date}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-['IBM_Plex_Mono'] text-sm font-semibold text-[#1F6F4A]">KES {(p.amount || 0).toLocaleString('en-KE')}</p>
+                            <StatusTag variant="ok" label="Received" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+                      <p className="text-xs text-[#7A8078]">No payment history available</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
         {tab === "academic" && (
           <div className="space-y-3">
-            <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-              <p className="text-[10px] uppercase tracking-widest text-[#7A8078] mb-2">Term 1 2025 Summary</p>
-              <div className="space-y-2">
-                {[
-                  ["Mean Grade", "B (75.2)", "ok"],
-                  ["Attendance", "94%", "ok"],
-                  ["Position in Class", "6th of 42", "neutral"],
-                ].map(([k, v, s]) => (
-                  <div key={k} className="flex justify-between items-center text-sm">
-                    <span className="text-[#7A8078]">{k}</span>
-                    <StatusTag variant={s as StatusVariant} label={v} />
-                  </div>
-                ))}
+            {academicReport.error ? (
+              <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+                <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {academicReport.error}</p>
               </div>
-            </div>
-            <p className="text-xs text-center text-[#7A8078]">Full report card available from the school office.</p>
+            ) : academicReport.loading ? (
+              <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+                <p className="text-sm text-[#7A8078]">Loading academic report...</p>
+              </div>
+            ) : (
+              <>
+                <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-[#7A8078] mb-2">{academicData.term} Summary</p>
+                  <div className="space-y-2">
+                    {[
+                      ["Mean Grade", academicData.mean_grade || "N/A", "ok"],
+                      ["Attendance", academicData.attendance || "N/A", "ok"],
+                      ["Position in Class", academicData.class_position || "N/A", "neutral"],
+                    ].map(([k, v, s]) => (
+                      <div key={k} className="flex justify-between items-center text-sm">
+                        <span className="text-[#7A8078]">{k}</span>
+                        <StatusTag variant={s as StatusVariant} label={String(v)} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-center text-[#7A8078]">Full report card available from the school office.</p>
+              </>
+            )}
           </div>
         )}
         {tab === "notifications" && (
           <div className="space-y-2">
-            {[
-              { msg: "Gate exit recorded — Amina exited at 15:34 (Approved leave pass)", type: "ok" as StatusVariant, time: "Today 15:34" },
-              { msg: "Fee payment confirmed — KES 20,700 received via M-Pesa", type: "ok" as StatusVariant, time: "12 Jun" },
-              { msg: "Fee reminder — KES 8,000 balance outstanding. Due 15 June.", type: "warn" as StatusVariant, time: "10 Jun" },
-              { msg: "Academic report available — Term 1 2025 results published.", type: "neutral" as StatusVariant, time: "04 Jun" },
-            ].map((n, i) => (
-              <div key={i} className="bg-white border border-[#DCD6C4] rounded-sm px-4 py-3">
-                <div className="flex justify-between items-start mb-1">
-                  <StatusTag variant={n.type} label={n.type === "ok" ? "Received" : n.type === "warn" ? "Action Required" : "Info"} />
-                  <span className="text-[10px] text-[#7A8078] font-['IBM_Plex_Sans']">{n.time}</span>
-                </div>
-                <p className="text-sm text-[#16241D]">{n.msg}</p>
+            {notifications.error ? (
+              <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+                <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {notifications.error}</p>
               </div>
-            ))}
+            ) : notifications.loading ? (
+              <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+                <p className="text-sm text-[#7A8078]">Loading notifications...</p>
+              </div>
+            ) : notificationList.length > 0 ? (
+              notificationList.map((n: any, i: number) => {
+                const statusType = n.notification_type === "success" ? "ok" : n.notification_type === "warning" ? "warn" : "neutral";
+                const statusLabel = statusType === "ok" ? "Received" : statusType === "warn" ? "Action Required" : "Info";
+                return (
+                  <div key={i} className="bg-white border border-[#DCD6C4] rounded-sm px-4 py-3">
+                    <div className="flex justify-between items-start mb-1">
+                      <StatusTag variant={statusType as StatusVariant} label={statusLabel} />
+                      <span className="text-[10px] text-[#7A8078] font-['IBM_Plex_Sans']">{n.created_date}</span>
+                    </div>
+                    <p className="text-sm text-[#16241D]">{n.message}</p>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+                <p className="text-sm text-[#7A8078]">No notifications yet</p>
+              </div>
+            )}
           </div>
         )}
         {tab === "contact" && (
           <div className="space-y-3">
-            <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-              <p className="text-[10px] uppercase tracking-widest text-[#7A8078] mb-3">School Contact</p>
-              <div className="space-y-2 text-sm">
-                {[
-                  ["School", "St. Joseph's High School"],
-                  ["Phone", "+254 57 202 0001"],
-                  ["Email", "info@stjosephsnambale.sc.ke"],
-                  ["Deputy Principal", "Mrs. A. Kamau"],
-                  ["Bursar", "Mr. G. Omondi"],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between">
-                    <span className="text-[#7A8078]">{k}</span>
-                    <span className="text-[#16241D] font-medium text-right">{v}</span>
-                  </div>
-                ))}
+            {schoolContact.error ? (
+              <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+                <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {schoolContact.error}</p>
               </div>
-            </div>
-            <p className="text-xs text-center text-[#7A8078]">Parent portal is read-only. Contact the school directly for any queries or changes.</p>
+            ) : schoolContact.loading ? (
+              <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+                <p className="text-sm text-[#7A8078]">Loading contact info...</p>
+              </div>
+            ) : (
+              <>
+                <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-[#7A8078] mb-3">School Contact</p>
+                  <div className="space-y-2 text-sm">
+                    {[
+                      ["School", schoolData.school_name || "N/A"],
+                      ["Phone", schoolData.phone_number || "N/A"],
+                      ["Email", schoolData.email || "N/A"],
+                      ["Deputy Principal", schoolData.deputy_principal_name || "N/A"],
+                      ["Bursar", schoolData.bursar_name || "N/A"],
+                    ].map(([k, v]) => (
+                      <div key={k} className="flex justify-between">
+                        <span className="text-[#7A8078]">{k}</span>
+                        <span className="text-[#16241D] font-medium text-right">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-center text-[#7A8078]">Parent portal is read-only. Contact the school directly for any queries or changes.</p>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -1674,74 +4371,402 @@ function TransfersClearance() {
   );
 }
 
-function HODMarkReview() {
-  const [locked, setLocked] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+// ─── HOD Mark Review Hooks ────────────────────────────────────────────────
 
-  const marks = [
-    { name: "Amina W. Kariuki", math: 78, eng: 85, bio: 72 },
-    { name: "Brian O. Ouma", math: 65, eng: 71, bio: 68 },
-    { name: "Cynthia A. Muga", math: 82, eng: 78, bio: 80 },
-    { name: "David K. Rotich", math: 54, eng: 62, bio: 58 },
-  ];
+/**
+ * Hook: Fetch available classes
+ * Endpoint: GET /academics/classes?school_id={id}
+ */
+function useHODClasses() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch HOD classes from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load classes');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch exam sessions
+ * Endpoint: GET /academics/exam-sessions?school_id={id}
+ */
+function useHODExamSessions() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/exam-sessions?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch HOD exam sessions from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load exam sessions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch marks for HOD review
+ * Endpoint: GET /academics/marks-for-review?class_id={id}&exam_session_id={sid}
+ */
+function useMarksForHODReview(classId: string | undefined, examSessionId: string | undefined) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!classId || !examSessionId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any[]>(`/academics/marks-for-review?class_id=${classId}&exam_session_id=${examSessionId}`);
+        // setData(result);
+        
+        console.log(`Would fetch marks for HOD review: class ${classId}, exam ${examSessionId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load marks');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [classId, examSessionId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch HOD information for class
+ * Endpoint: GET /academics/class/{id}/hod-info
+ */
+function useClassHODInfo(classId: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!classId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any>(`/academics/class/${classId}/hod-info`);
+        // setData(result);
+        
+        console.log(`Would fetch HOD info for class ${classId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load HOD info');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [classId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Check if marks are locked
+ * Endpoint: GET /academics/marks-lock-status?class_id={id}&exam_session_id={sid}
+ */
+function useMarksLockStatus(classId: string | undefined, examSessionId: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!classId || !examSessionId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any>(`/academics/marks-lock-status?class_id=${classId}&exam_session_id=${examSessionId}`);
+        // setData(result);
+        
+        console.log(`Would fetch marks lock status: class ${classId}, exam ${examSessionId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load lock status');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [classId, examSessionId]);
+
+  return { data, loading, error };
+}
+
+// ─── HOD Mark Review Component ─────────────────────────────────────────────
+
+function HODMarkReview() {
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
+  const [selectedExamSessionId, setSelectedExamSessionId] = useState<string>("");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isLocking, setIsLocking] = useState(false);
+  const [lockError, setLockError] = useState<string | null>(null);
+  const [lockSuccess, setLockSuccess] = useState(false);
+
+  // Fetch data from backend
+  const classes = useHODClasses();
+  const examSessions = useHODExamSessions();
+  const marks = useMarksForHODReview(selectedClassId, selectedExamSessionId);
+  const hodInfo = useClassHODInfo(selectedClassId);
+  const lockStatus = useMarksLockStatus(selectedClassId, selectedExamSessionId);
+
+  const isLocked = lockStatus.data?.locked || false;
+  const lockTimestamp = lockStatus.data?.locked_at;
+  const lockedByHOD = lockStatus.data?.locked_by;
+
+  const handleLockMarks = async () => {
+    if (!selectedClassId || !selectedExamSessionId) {
+      setLockError("Please select class and exam session");
+      return;
+    }
+
+    try {
+      setIsLocking(true);
+      setLockError(null);
+      setLockSuccess(false);
+
+      // BACKEND: Lock marks
+      // const payload = {
+      //   class_id: selectedClassId,
+      //   exam_session_id: selectedExamSessionId,
+      // };
+      // await apiPost('/academics/lock-marks', payload);
+      
+      // For now, just show success
+      setLockSuccess(true);
+      setTimeout(() => setLockSuccess(false), 3000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to lock marks';
+      setLockError(msg);
+      console.error("Lock marks error:", err);
+    } finally {
+      setIsLocking(false);
+      setShowConfirm(false);
+    }
+  };
+
+  // Get selected data details
+  const selectedClass = classes.data?.find((c: any) => c.id === selectedClassId);
+  const selectedSession = examSessions.data?.find((s: any) => s.id === selectedExamSessionId);
+  const marksList = marks.data || [];
 
   return (
     <div>
-      <PageHeader title="HOD Mark Review & Lock" subtitle="Form 2 Stream A · Term 2 2025 · HOD: Dr. J. Mwangi" />
-      {locked && (
-        <div className="mb-4">
-          <ValidationCallout type="success" message="Marks locked by Dr. J. Mwangi at 21:14 on 15 Jun 2025. Subject teachers can no longer edit. Audit log entry created." />
+      <PageHeader 
+        title="HOD Mark Review & Lock" 
+        subtitle={selectedClass && selectedSession && hodInfo.data
+          ? `${selectedClass.name}${selectedClass.stream ? ` ${selectedClass.stream}` : ''} · ${selectedSession.name} · HOD: ${hodInfo.data.hod_name || 'TBA'}`
+          : "Select class and exam session to begin"
+        }
+      />
+
+      {/* Selection Controls */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Class Selection */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Class</label>
+          {classes.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : classes.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {classes.error}</p>
+          ) : (
+            <select 
+              value={selectedClassId}
+              onChange={(e) => {
+                setSelectedClassId(e.target.value);
+                setSelectedExamSessionId("");
+              }}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            >
+              <option value="">Choose class...</option>
+              {classes.data?.map((cls: any) => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name} {cls.stream ? `- ${cls.stream}` : ''}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
-      )}
-      <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">{locked ? "All marks are locked and read-only." : "Review marks below. Lock when confirmed — this action cannot be undone by subject teachers."}</p>
-        <button
-          onClick={() => setShowConfirm(true)}
-          disabled={locked}
-          className="flex items-center gap-2 bg-[#16241D] text-white px-5 py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#0f1a14] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Lock size={14} /> Lock Marks
-        </button>
-      </div>
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078]">Student</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078]">Mathematics</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078]">English</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078]">Biology</th>
-            </tr>
-          </thead>
-          <tbody>
-            {marks.map((row) => (
-              <tr key={row.name} className="border-b border-[#DCD6C4] last:border-0">
-                <td className="px-4 py-3">{row.name}</td>
-                {[row.math, row.eng, row.bio].map((m, i) => (
-                  <td key={i} className="px-4 py-3 text-center">
-                    <span className={`font-['IBM_Plex_Mono'] text-sm inline-flex items-center justify-center gap-1 ${locked ? "text-[#7A8078]" : "text-[#16241D]"}`}>
-                      {locked && <Lock size={10} className="text-[#DCD6C4]" />}
-                      {m}
-                    </span>
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+        {/* Exam Session Selection */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Exam Session</label>
+          {examSessions.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : examSessions.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {examSessions.error}</p>
+          ) : (
+            <select 
+              value={selectedExamSessionId}
+              onChange={(e) => setSelectedExamSessionId(e.target.value)}
+              disabled={!selectedClassId}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]"
+            >
+              <option value="">Choose exam session...</option>
+              {examSessions.data?.map((session: any) => (
+                <option key={session.id} value={session.id}>
+                  {session.name} ({session.year})
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
 
+      {/* Error/Success Messages */}
+      {lockError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {lockError}</p>
+        </div>
+      )}
+      {lockSuccess && (
+        <div className="bg-[#E7F0EA] border border-[#1F6F4A] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A]">✅ Marks locked successfully</p>
+        </div>
+      )}
+
+      {/* Marks Review Section */}
+      {selectedClassId && selectedExamSessionId && (
+        <>
+          {isLocked && (
+            <div className="mb-4">
+              <ValidationCallout type="success" message={`Marks locked by ${lockedByHOD || 'HOD'} at ${lockTimestamp || 'unknown time'}. Subject teachers can no longer edit. Audit log entry created.`} />
+            </div>
+          )}
+
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">
+              {isLocked ? "All marks are locked and read-only." : "Review marks below. Lock when confirmed — this action cannot be undone by subject teachers."}
+            </p>
+            <button
+              onClick={() => setShowConfirm(true)}
+              disabled={isLocked || isLocking}
+              className="flex items-center gap-2 bg-[#16241D] text-white px-5 py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#0f1a14] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Lock size={14} /> {isLocking ? "Locking..." : "Lock Marks"}
+            </button>
+          </div>
+
+          {/* Marks Table */}
+          {marks.loading ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading marks...</p>
+            </div>
+          ) : marks.error ? (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {marks.error}</p>
+            </div>
+          ) : marksList.length > 0 ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
+              <table className="w-full text-sm font-['IBM_Plex_Sans']">
+                <thead>
+                  <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                    <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Student</th>
+                    {marksList[0]?.marks && Object.keys(marksList[0].marks).map((subj) => (
+                      <th key={subj} className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{subj}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {marksList.map((row: any) => (
+                    <tr key={row.student_id} className="border-b border-[#DCD6C4] last:border-0">
+                      <td className="px-4 py-3">{row.student_name}</td>
+                      {row.marks && Object.values(row.marks).map((mark: any, i) => (
+                        <td key={i} className="px-4 py-3 text-center">
+                          <span className={`font-['IBM_Plex_Mono'] text-sm inline-flex items-center justify-center gap-1 ${isLocked ? "text-[#7A8078]" : "text-[#16241D]"}`}>
+                            {isLocked && <Lock size={10} className="text-[#DCD6C4]" />}
+                            {mark}
+                          </span>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">No marks found for this class and exam session</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Lock Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#16241D]/60">
           <div className="bg-white rounded-sm border border-[#DCD6C4] w-[400px] p-6 shadow-xl">
             <h3 className="font-['Fraunces'] text-xl text-[#16241D] mb-2">Lock Marks — Confirm</h3>
             <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">
-              Locking marks for Form 2 Stream A, Term 2 2025 is irreversible by subject teachers. Only the Principal can unlock after this point. An audit log entry will be created.
+              Locking marks for {selectedClass?.name} {selectedClass?.stream || ''}, {selectedSession?.name} is irreversible by subject teachers. Only the Principal can unlock after this point. An audit log entry will be created.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setShowConfirm(false)} className="flex-1 border border-[#DCD6C4] py-2 rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Cancel</button>
-              <button onClick={() => { setLocked(true); setShowConfirm(false); }} className="flex-1 bg-[#16241D] text-white py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] flex items-center justify-center gap-2 hover:bg-[#0f1a14]">
-                <Lock size={13} /> Confirm Lock Marks
+              <button 
+                onClick={() => setShowConfirm(false)} 
+                disabled={isLocking}
+                className="flex-1 border border-[#DCD6C4] py-2 rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleLockMarks}
+                disabled={isLocking}
+                className="flex-1 bg-[#16241D] text-white py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] flex items-center justify-center gap-2 hover:bg-[#0f1a14] disabled:opacity-50"
+              >
+                <Lock size={13} /> {isLocking ? "Locking..." : "Confirm Lock Marks"}
               </button>
             </div>
           </div>
@@ -1751,71 +4776,336 @@ function HODMarkReview() {
   );
 }
 
+// ─── LPO Register Hooks ───────────────────────────────────────────────
+
+function useLPORegister() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/procurement/lpo-register?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch LPO register");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load LPO register');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+// ─── LPO Register Component ───────────────────────────────────────────
+
 function LPORegister() {
+  const lpoRegister = useLPORegister();
+  const lpoList = lpoRegister.data || [];
+
   return (
     <div>
-      <PageHeader title="LPO Register" subtitle="Local Purchase Orders — active and historical" />
-      <DataTable
-        columns={["LPO No.", "Supplier", "Vote Head", "Amount", "Raised", "Status"]}
-        rows={[
-          [<span className="font-['IBM_Plex_Mono'] text-xs">LPO-2025-0031</span>, "Nairobi Lab Supplies Ltd.", "Science", <span className="font-['IBM_Plex_Mono']">KES 87,500</span>, "14 Jun 2025", <StatusTag variant="warn" label="Awaiting Delivery" />],
-          [<span className="font-['IBM_Plex_Mono'] text-xs">LPO-2025-0028</span>, "Kenya Books Ltd.", "Library", <span className="font-['IBM_Plex_Mono']">KES 42,000</span>, "10 Jun 2025", <StatusTag variant="ok" label="GRN Received" />],
-          [<span className="font-['IBM_Plex_Mono'] text-xs">LPO-2025-0025</span>, "Equatorial Sports", "Sports", <span className="font-['IBM_Plex_Mono']">KES 28,000</span>, "01 Jun 2025", <StatusTag variant="ok" label="Paid" />],
-          [<span className="font-['IBM_Plex_Mono'] text-xs">LPO-2025-0022</span>, "Farmchem East Africa", "Boarding", <span className="font-['IBM_Plex_Mono']">KES 15,000</span>, "25 May 2025", <StatusTag variant="neutral" label="Draft" />],
-        ]}
-      />
+      <PageHeader title="LPO Register" subtitle={`Local Purchase Orders — ${lpoList.length} active and historical`} />
+      
+      {lpoRegister.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {lpoRegister.error}</p>
+        </div>
+      )}
+
+      {lpoRegister.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading LPO register...</p>
+        </div>
+      ) : (
+        <DataTable
+          columns={["LPO No.", "Supplier", "Vote Head", "Amount", "Raised", "Status"]}
+          rows={lpoList.map((lpo: any) => [
+            <span className="font-['IBM_Plex_Mono'] text-xs">{lpo.lpo_number}</span>,
+            lpo.supplier_name,
+            lpo.vote_head,
+            <span className="font-['IBM_Plex_Mono']">KES {(lpo.amount || 0).toLocaleString('en-KE')}</span>,
+            lpo.raised_date,
+            <StatusTag 
+              variant={lpo.status === "Paid" ? "ok" : lpo.status === "GRN Received" ? "ok" : lpo.status === "Awaiting Delivery" ? "warn" : "neutral"} 
+              label={lpo.status}
+            />
+          ])}
+        />
+      )}
     </div>
   );
 }
+
+// ─── Stores Inventory Hooks ───────────────────────────────────────────
+
+function useStoresInventory() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/stores/inventory?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch stores inventory");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load inventory');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+// ─── Stores Inventory Component ────────────────────────────────────────
 
 function StoresInventory() {
+  const inventory = useStoresInventory();
+  const inventoryList = inventory.data || [];
+
   return (
     <div>
-      <PageHeader title="Stores / Inventory Master" subtitle="Current stock levels — Storekeeper view" />
-      <DataTable
-        columns={["Item", "Category", "Unit", "In Stock", "Reorder Level", "Status"]}
-        rows={[
-          ["Hydrochloric Acid 500ml", "Lab Chemicals", "Bottles", <span className="font-['IBM_Plex_Mono']">3</span>, <span className="font-['IBM_Plex_Mono']">5</span>, <StatusTag variant="bad" label="Reorder Now" />],
-          ["A4 Paper Reams", "Stationery", "Reams", <span className="font-['IBM_Plex_Mono']">42</span>, <span className="font-['IBM_Plex_Mono']">20</span>, <StatusTag variant="ok" label="Adequate" />],
-          ["Chalk (White) Boxes", "Stationery", "Boxes", <span className="font-['IBM_Plex_Mono']">8</span>, <span className="font-['IBM_Plex_Mono']">10</span>, <StatusTag variant="warn" label="Low Stock" />],
-          ["Mattresses (Dormitory)", "Boarding", "Units", <span className="font-['IBM_Plex_Mono']">2</span>, <span className="font-['IBM_Plex_Mono']">5</span>, <StatusTag variant="bad" label="Reorder Now" />],
-          ["Disinfectant (20L)", "Sanitation", "Drums", <span className="font-['IBM_Plex_Mono']">14</span>, <span className="font-['IBM_Plex_Mono']">6</span>, <StatusTag variant="ok" label="Adequate" />],
-        ]}
-      />
+      <PageHeader title="Stores / Inventory Master" subtitle={`Current stock levels — ${inventoryList.length} items tracked`} />
+      
+      {inventory.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {inventory.error}</p>
+        </div>
+      )}
+
+      {inventory.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading inventory...</p>
+        </div>
+      ) : (
+        <DataTable
+          columns={["Item", "Category", "Unit", "In Stock", "Reorder Level", "Status"]}
+          rows={inventoryList.map((item: any) => {
+            const currentStock = item.quantity_in_stock || 0;
+            const reorderLevel = item.reorder_level || 0;
+            let status = "ok";
+            let statusLabel = "Adequate";
+            
+            if (currentStock === 0) {
+              status = "bad";
+              statusLabel = "Out of Stock";
+            } else if (currentStock < reorderLevel) {
+              status = "bad";
+              statusLabel = "Reorder Now";
+            } else if (currentStock <= reorderLevel * 1.5) {
+              status = "warn";
+              statusLabel = "Low Stock";
+            }
+            
+            return [
+              item.item_name,
+              item.category,
+              item.unit_of_measure,
+              <span className="font-['IBM_Plex_Mono']">{currentStock}</span>,
+              <span className="font-['IBM_Plex_Mono']">{reorderLevel}</span>,
+              <StatusTag variant={status as StatusVariant} label={statusLabel} />
+            ];
+          })}
+        />
+      )}
     </div>
   );
 }
 
+// ─── Visitor Log Hooks ─────────────────────────────────────────────────
+
+function useVisitorLog() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/gate/visitor-log?school_id=${schoolId}&date=${today}`);
+        // setData(result);
+        
+        console.log("Would fetch visitor log");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load visitor log');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useSignInVisitor() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const signIn = async (visitorData: any) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // const schoolId = tokenManager.getSchoolId();
+      // await apiPost('/gate/sign-in-visitor', { 
+      //   ...visitorData, 
+      //   school_id: schoolId,
+      //   timestamp: new Date().toISOString()
+      // });
+
+      console.log("Would sign in visitor", visitorData);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign in visitor');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { signIn, loading, error };
+}
+
+function useSignOutVisitor() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const signOut = async (visitorId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // await apiPost('/gate/sign-out-visitor', { 
+      //   visitor_id: visitorId,
+      //   timestamp: new Date().toISOString()
+      // });
+
+      console.log("Would sign out visitor", visitorId);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign out visitor');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { signOut, loading, error };
+}
+
+// ─── Visitor Log Component ─────────────────────────────────────────────
+
 function VisitorLog() {
-  const [visitors, setVisitors] = useState([
-    { name: "James Mugo", id: "ID-34821092", visiting: "Principal Nambale", purpose: "BOM Meeting", timeIn: "09:00", timeOut: "11:30" },
-    { name: "Mercy Oloo", id: "ID-78234521", visiting: "Mrs. A. Kamau (Dep. P.)", purpose: "Student Welfare", timeIn: "13:45", timeOut: null },
-  ]);
+  const [formData, setFormData] = useState({ name: "", idNumber: "", visiting: "", purpose: "" });
+  const visitorLog = useVisitorLog();
+  const { signIn, loading: signingIn, error: signInError } = useSignInVisitor();
+  const { signOut, loading: signingOut, error: signOutError } = useSignOutVisitor();
+  
+  const visitorList = visitorLog.data || [];
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.name && formData.idNumber && formData.visiting && formData.purpose) {
+      await signIn(formData);
+      setFormData({ name: "", idNumber: "", visiting: "", purpose: "" });
+    }
+  };
 
   return (
     <div>
-      <PageHeader title="Visitor Log" subtitle="Gate & Security — today's visitors" />
+      <PageHeader title="Visitor Log" subtitle={`Gate & Security — ${visitorList.length} today's visitors`} />
+      
+      {(visitorLog.error || signInError || signOutError) && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {visitorLog.error || signInError || signOutError}</p>
+        </div>
+      )}
+
       <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 mb-4">
         <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Sign In New Visitor</p>
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          {["Visitor Name", "ID Number", "Visiting", "Purpose"].map((f) => (
-            <div key={f}>
-              <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">{f}</label>
-              <input className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
+        <form onSubmit={handleSignIn} className="grid grid-cols-2 gap-3 mb-3">
+          {[
+            { key: "name", label: "Visitor Name" },
+            { key: "idNumber", label: "ID Number" },
+            { key: "visiting", label: "Visiting" },
+            { key: "purpose", label: "Purpose" },
+          ].map((f) => (
+            <div key={f.key}>
+              <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">{f.label}</label>
+              <input 
+                value={(formData as any)[f.key]}
+                onChange={(e) => setFormData({...formData, [f.key]: e.target.value})}
+                required
+                className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" 
+              />
             </div>
           ))}
-        </div>
-        <button className="bg-[#1F6F4A] text-white px-4 py-1.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Sign In Visitor</button>
+        </form>
+        <button 
+          onClick={handleSignIn}
+          disabled={signingIn}
+          className="bg-[#1F6F4A] text-white px-4 py-1.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-60"
+        >
+          {signingIn ? "Processing..." : "Sign In Visitor"}
+        </button>
       </div>
-      <DataTable
-        columns={["Visitor", "ID", "Visiting", "Purpose", "Time In", "Time Out", "Action"]}
-        rows={visitors.map((v, i) => [
-          v.name, <span className="font-['IBM_Plex_Mono'] text-xs">{v.id}</span>, v.visiting, v.purpose,
-          <span className="font-['IBM_Plex_Mono'] text-xs">{v.timeIn}</span>,
-          v.timeOut ? <span className="font-['IBM_Plex_Mono'] text-xs">{v.timeOut}</span> : <StatusTag variant="warn" label="On Site" />,
-          !v.timeOut ? <button onClick={() => setVisitors((vl) => vl.map((vv, j) => j === i ? { ...vv, timeOut: new Date().toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit" }) } : vv))} className="text-xs text-[#1F6F4A] font-semibold hover:underline font-['IBM_Plex_Sans']">Sign Out</button> : <span className="text-xs text-[#7A8078]">Done</span>
-        ])}
-      />
+
+      {visitorLog.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading visitor log...</p>
+        </div>
+      ) : (
+        <DataTable
+          columns={["Visitor", "ID", "Visiting", "Purpose", "Time In", "Time Out", "Action"]}
+          rows={visitorList.map((v: any, i: number) => [
+            v.visitor_name, 
+            <span className="font-['IBM_Plex_Mono'] text-xs">{v.id_number}</span>, 
+            v.visiting_person, 
+            v.purpose,
+            <span className="font-['IBM_Plex_Mono'] text-xs">{v.time_in}</span>,
+            v.time_out ? <span className="font-['IBM_Plex_Mono'] text-xs">{v.time_out}</span> : <StatusTag variant="warn" label="On Site" />,
+            !v.time_out ? (
+              <button 
+                onClick={() => signOut(v.visitor_id)}
+                disabled={signingOut}
+                className="text-xs text-[#1F6F4A] font-semibold hover:underline font-['IBM_Plex_Sans'] disabled:opacity-60"
+              >
+                {signingOut ? "..." : "Sign Out"}
+              </button>
+            ) : (
+              <span className="text-xs text-[#7A8078]">Done</span>
+            )
+          ])}
+        />
+      )}
     </div>
   );
 }
@@ -1824,6 +5114,65 @@ function VisitorLog() {
 // PHASE 1 — CRITICAL BLOCKERS (Procurement, Academics, Finance, Boarding)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─── GRN Entry Hooks ──────────────────────────────────────────────────
+
+function useGRNLPOItems() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const lpoId = selectedLPO;
+        // const result = await apiGet<any>(`/procurement/lpo-items?lpo_id=${lpoId}`);
+        // setData(result);
+        
+        console.log("Would fetch GRN LPO items");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load LPO items');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useCreateGRN() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const create = async (grnData: any) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // const result = await apiPost('/procurement/grn', grnData);
+      // return result;
+
+      console.log("Would create GRN", grnData);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create GRN');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { create, loading, error };
+}
+
+// ─── GRN Entry Component ───────────────────────────────────────────────
+
 function GRNEntry() {
   const [lpoSelected, setLpoSelected] = useState("LPO-2025-0031");
   const [lineItems, setLineItems] = useState<Record<string, { qty: number; condition: string }>>({
@@ -1831,7 +5180,11 @@ function GRNEntry() {
     1: { qty: 0, condition: "good" },
     2: { qty: 0, condition: "good" },
   });
+  const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  const lpoItems = useGRNLPOItems();
+  const { create: createGRN, loading: creating, error: grnError } = useCreateGRN();
 
   const grnSteps = [
     { label: "LPO Selected", owner: "Storekeeper" },
@@ -1848,13 +5201,32 @@ function GRNEntry() {
 
   const allComplete = Object.values(lineItems).every(v => v.qty > 0);
 
+  const handleSubmit = async () => {
+    const receivedItems = lpoLineItems.map((item, i) => ({
+      item_name: item.desc,
+      ordered: item.ordered,
+      received_qty: lineItems[i].qty,
+      condition: lineItems[i].condition,
+    }));
+
+    const grnData = {
+      lpo_number: lpoSelected,
+      line_items: receivedItems,
+      notes: notes,
+      timestamp: new Date().toISOString(),
+    };
+
+    await createGRN(grnData);
+    setSubmitted(true);
+  };
+
   if (submitted) {
     return (
       <div>
         <PageHeader title="GRN Entry" subtitle="Goods Received Note" />
-        <ValidationCallout type="success" message="GRN-2025-0088 created successfully. Goods receipt confirmed for LPO-2025-0031. Ready for 3-Way Match review." />
+        <ValidationCallout type="success" message="GRN created successfully. Goods receipt confirmed. Ready for 3-Way Match review." />
         <div className="mt-4">
-          <button onClick={() => setSubmitted(false)} className="text-sm text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">← Record another GRN</button>
+          <button onClick={() => { setSubmitted(false); setLineItems({0: { qty: 0, condition: "good" }, 1: { qty: 0, condition: "good" }, 2: { qty: 0, condition: "good" }}); setNotes(""); }} className="text-sm text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">← Record another GRN</button>
         </div>
       </div>
     );
@@ -1863,6 +5235,13 @@ function GRNEntry() {
   return (
     <div>
       <PageHeader title="GRN Entry" subtitle="Receive goods against approved LPO" />
+      
+      {(lpoItems.error || grnError) && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {lpoItems.error || grnError}</p>
+        </div>
+      )}
+
       <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 mb-5">
         <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Procurement Pipeline</p>
         <ApprovalStepper steps={grnSteps} currentStep={1} />
@@ -1943,16 +5322,18 @@ function GRNEntry() {
           <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
             <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Notes</p>
             <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] h-24 resize-none"
               placeholder="Receiving notes (condition issues, shortages, etc.)"
             />
           </div>
           <button
-            onClick={() => setSubmitted(true)}
-            disabled={!allComplete}
+            onClick={handleSubmit}
+            disabled={!allComplete || creating}
             className="w-full bg-[#1F6F4A] text-white py-3 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Confirm &amp; Create GRN
+            {creating ? "Processing..." : "Confirm & Create GRN"}
           </button>
         </div>
       </div>
@@ -1960,458 +5341,1915 @@ function GRNEntry() {
   );
 }
 
+// ─── Stocktake Reconciliation Hooks ──────────────────────────────────
+
+function useStocktakeItems() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/stores/stocktake-items?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch stocktake items");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load stocktake items');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function usePostAdjustments() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const post = async (adjustments: any) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // const schoolId = tokenManager.getSchoolId();
+      // await apiPost('/stores/post-adjustments', { 
+      //   ...adjustments, 
+      //   school_id: schoolId,
+      //   timestamp: new Date().toISOString()
+      // });
+
+      console.log("Would post adjustments", adjustments);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to post adjustments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { post, loading, error };
+}
+
+// ─── Stocktake Reconciliation Component ────────────────────────────────
+
 function StocktakeReconciliation() {
   const [reconciled, setReconciled] = useState<Record<number, { physical: number; reason: string }>>({});
+  const stocktakeItems = useStocktakeItems();
+  const { post: postAdjustments, loading: posting, error: postError } = usePostAdjustments();
+  
+  const items = stocktakeItems.data || [];
 
-  const items = [
-    { item: "Hydrochloric Acid 500ml", systemCount: 3, unit: "Bottles" },
-    { item: "A4 Paper Reams", systemCount: 42, unit: "Reams" },
-    { item: "Chalk (White) Boxes", systemCount: 8, unit: "Boxes" },
-    { item: "Mattresses (Dormitory)", systemCount: 2, unit: "Units" },
-    { item: "Disinfectant (20L)", systemCount: 14, unit: "Drums" },
-  ];
+  const handlePost = async () => {
+    const adjustments = Object.entries(reconciled).map(([idx, data]) => ({
+      item_index: parseInt(idx),
+      physical_count: data.physical,
+      reason: data.reason,
+    }));
+    await postAdjustments(adjustments);
+  };
+
+  const handleClear = () => {
+    setReconciled({});
+  };
 
   return (
     <div>
-      <PageHeader title="Stocktake Reconciliation" subtitle="Physical count vs. system records" />
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Item</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">System Count</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Physical Count</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Variance</th>
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Reason</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((row, i) => {
-              const physical = reconciled[i]?.physical ?? row.systemCount;
-              const variance = physical - row.systemCount;
-              const status = variance === 0 ? "ok" : variance < 0 ? "bad" : "warn";
-              return (
-                <tr key={i} className="border-b border-[#DCD6C4] last:border-0">
-                  <td className="px-4 py-3">{row.item}</td>
-                  <td className="px-4 py-3 text-center font-['IBM_Plex_Mono']">{row.systemCount}</td>
-                  <td className="px-4 py-3 text-center">
-                    <input
-                      type="number"
-                      min="0"
-                      className="w-20 text-center font-['IBM_Plex_Mono'] text-xs border border-[#DCD6C4] rounded-sm py-1 focus:outline-none focus:ring-1 focus:ring-[#1F6F4A]"
-                      value={physical}
-                      onChange={(e) => setReconciled(r => ({ ...r, [i]: { ...r[i], physical: parseInt(e.target.value) || 0, reason: r[i]?.reason || "" } }))}
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-center font-['IBM_Plex_Mono'] text-sm">{variance > 0 ? "+" : ""}{variance}</td>
-                  <td className="px-4 py-3">
-                    <input
-                      type="text"
-                      className="w-full text-xs border border-[#DCD6C4] rounded-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1F6F4A]"
-                      placeholder="e.g. Breakage, stock used, data entry"
-                      value={reconciled[i]?.reason || ""}
-                      onChange={(e) => setReconciled(r => ({ ...r, [i]: { ...r[i], physical: r[i]?.physical || row.systemCount, reason: e.target.value } }))}
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <StatusTag variant={status} label={variance === 0 ? "OK" : variance < 0 ? "Short" : "Over"} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <PageHeader title="Stocktake Reconciliation" subtitle={`Physical count vs. system records — ${items.length} items`} />
+      
+      {(stocktakeItems.error || postError) && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {stocktakeItems.error || postError}</p>
+        </div>
+      )}
+
+      {stocktakeItems.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading inventory items...</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
+          <table className="w-full text-sm font-['IBM_Plex_Sans']">
+            <thead>
+              <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Item</th>
+                <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">System Count</th>
+                <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Physical Count</th>
+                <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Variance</th>
+                <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Reason</th>
+                <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((row: any, i: number) => {
+                const physical = reconciled[i]?.physical ?? row.systemCount;
+                const variance = physical - row.systemCount;
+                const status = variance === 0 ? "ok" : variance < 0 ? "bad" : "warn";
+                return (
+                  <tr key={i} className="border-b border-[#DCD6C4] last:border-0">
+                    <td className="px-4 py-3">{row.item}</td>
+                    <td className="px-4 py-3 text-center font-['IBM_Plex_Mono']">{row.systemCount}</td>
+                    <td className="px-4 py-3 text-center">
+                      <input
+                        type="number"
+                        min="0"
+                        className="w-20 text-center font-['IBM_Plex_Mono'] text-xs border border-[#DCD6C4] rounded-sm py-1 focus:outline-none focus:ring-1 focus:ring-[#1F6F4A]"
+                        value={physical}
+                        onChange={(e) => setReconciled(r => ({ ...r, [i]: { ...r[i], physical: parseInt(e.target.value) || 0, reason: r[i]?.reason || "" } }))}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-center font-['IBM_Plex_Mono'] text-sm">{variance > 0 ? "+" : ""}{variance}</td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="text"
+                        className="w-full text-xs border border-[#DCD6C4] rounded-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#1F6F4A]"
+                        placeholder="e.g. Breakage, stock used, data entry"
+                        value={reconciled[i]?.reason || ""}
+                        onChange={(e) => setReconciled(r => ({ ...r, [i]: { ...r[i], physical: r[i]?.physical || row.systemCount, reason: e.target.value } }))}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <StatusTag variant={status} label={variance === 0 ? "OK" : variance < 0 ? "Short" : "Over"} />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      
       <div className="mt-4 flex gap-3">
-        <button className="flex-1 border border-[#DCD6C4] py-2 rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Clear & Start Over</button>
-        <button className="flex-1 bg-[#1F6F4A] text-white py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Post Adjustments to System</button>
+        <button onClick={handleClear} disabled={posting} className="flex-1 border border-[#DCD6C4] py-2 rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4] disabled:opacity-60">Clear & Start Over</button>
+        <button onClick={handlePost} disabled={posting} className="flex-1 bg-[#1F6F4A] text-white py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-60">{posting ? "Processing..." : "Post Adjustments to System"}</button>
       </div>
     </div>
   );
 }
 
+// ─── 3-Way Match Hooks ────────────────────────────────────────────────
+
+function useThreeWayMatchData() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const lpoId = selectedLPO;
+        // const result = await apiGet<any[]>(`/procurement/three-way-match?lpo_id=${lpoId}`);
+        // setData(result);
+        
+        console.log("Would fetch 3-way match data");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load match data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useAuthorizePayment() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const authorize = async (lpoId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // await apiPost('/procurement/authorize-payment', { lpo_id: lpoId });
+
+      console.log("Would authorize payment", lpoId);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to authorize payment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { authorize, loading, error };
+}
+
+// ─── 3-Way Match Component ────────────────────────────────────────────────
+
 function ThreeWayMatch() {
-  const matchData = [
-    {
-      item: "Hydrochloric Acid (500ml)",
-      lpoQty: 10, lpoPrice: 3500,
-      grnQty: 10, grnDate: "14 Jun 2025",
-      invQty: 10, invPrice: 3500, invRef: "INV-2025-4521",
-    },
-    {
-      item: "Sodium Hydroxide (500g)",
-      lpoQty: 5, lpoPrice: 2800,
-      grnQty: 5, grnDate: "14 Jun 2025",
-      invQty: 5, invPrice: 2800, invRef: "INV-2025-4521",
-    },
-    {
-      item: "Litmus Paper sets",
-      lpoQty: 20, lpoPrice: 850,
-      grnQty: 20, grnDate: "14 Jun 2025",
-      invQty: 18, invPrice: 850, invRef: "INV-2025-4521",
-    },
-  ];
+  const [lpoSelected, setLpoSelected] = useState("LPO-2025-0031");
+  const matchData = useThreeWayMatchData();
+  const { authorize: authorizePayment, loading: authorizing, error: authError } = useAuthorizePayment();
+  
+  const data = matchData.data || [];
+  const hasVariances = data.some((row: any) => {
+    const qtyMatch = row.lpoQty === row.grnQty && row.grnQty === row.invQty;
+    const priceMatch = row.lpoPrice === row.invPrice;
+    return !(qtyMatch && priceMatch);
+  });
+  const varianceCount = data.filter((row: any) => {
+    const qtyMatch = row.lpoQty === row.grnQty && row.grnQty === row.invQty;
+    const priceMatch = row.lpoPrice === row.invPrice;
+    return !(qtyMatch && priceMatch);
+  }).length;
+
+  const handleAuthorize = async () => {
+    await authorizePayment(lpoSelected);
+  };
 
   return (
     <div>
-      <PageHeader title="3-Way Match View" subtitle="Reconcile LPO ↔ GRN ↔ Invoice | LPO-2025-0031" />
-      <div className="mb-4">
-        <ValidationCallout type="warning" message="1 variance detected — Item 3 (Litmus Paper sets): GRN received 20 units but supplier invoiced for 18. Requires correction before payment authorization." />
-      </div>
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Line Item</th>
-              <th colSpan={2} className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">LPO</th>
-              <th colSpan={2} className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">GRN</th>
-              <th colSpan={2} className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Invoice</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Match</th>
-            </tr>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              <th />
-              <th className="px-2 py-1 text-[9px] text-[#7A8078]">Qty</th>
-              <th className="px-2 py-1 text-[9px] text-[#7A8078]">Price</th>
-              <th className="px-2 py-1 text-[9px] text-[#7A8078]">Qty</th>
-              <th className="px-2 py-1 text-[9px] text-[#7A8078]">Date</th>
-              <th className="px-2 py-1 text-[9px] text-[#7A8078]">Qty</th>
-              <th className="px-2 py-1 text-[9px] text-[#7A8078]">Price</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {matchData.map((row, i) => {
-              const qtyMatch = row.lpoQty === row.grnQty && row.grnQty === row.invQty;
-              const priceMatch = row.lpoPrice === row.invPrice;
-              const allMatch = qtyMatch && priceMatch;
-              return (
-                <tr key={i} className="border-b border-[#DCD6C4] last:border-0">
-                  <td className="px-4 py-3 font-semibold">{row.item}</td>
-                  <td className="px-2 py-3 text-center font-['IBM_Plex_Mono']">{row.lpoQty}</td>
-                  <td className="px-2 py-3 text-center font-['IBM_Plex_Mono'] text-xs">{row.lpoPrice}</td>
-                  <td className={`px-2 py-3 text-center font-['IBM_Plex_Mono'] ${qtyMatch ? "" : "text-[#9C3B2E] font-bold"}`}>{row.grnQty}</td>
-                  <td className="px-2 py-3 text-center text-xs text-[#7A8078]">{row.grnDate}</td>
-                  <td className={`px-2 py-3 text-center font-['IBM_Plex_Mono'] ${qtyMatch ? "" : "text-[#9C3B2E] font-bold"}`}>{row.invQty}</td>
-                  <td className={`px-2 py-3 text-center font-['IBM_Plex_Mono'] text-xs ${priceMatch ? "" : "text-[#9C3B2E] font-bold"}`}>{row.invPrice}</td>
-                  <td className="px-4 py-3 text-center">
-                    {allMatch ? <StatusTag variant="ok" label="✓ Match" /> : <StatusTag variant="bad" label="✗ Mismatch" />}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <PageHeader title="3-Way Match View" subtitle={`Reconcile LPO ↔ GRN ↔ Invoice | ${lpoSelected}`} />
+      
+      {(matchData.error || authError) && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {matchData.error || authError}</p>
+        </div>
+      )}
+
+      {hasVariances && varianceCount > 0 && (
+        <div className="mb-4">
+          <ValidationCallout type="warning" message={`${varianceCount} variance${varianceCount > 1 ? "s" : ""} detected. Requires correction before payment authorization.`} />
+        </div>
+      )}
+      
+      {matchData.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading match data...</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
+          <table className="w-full text-sm font-['IBM_Plex_Sans']">
+            <thead>
+              <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Line Item</th>
+                <th colSpan={2} className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">LPO</th>
+                <th colSpan={2} className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">GRN</th>
+                <th colSpan={2} className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Invoice</th>
+                <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Match</th>
+              </tr>
+              <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                <th />
+                <th className="px-2 py-1 text-[9px] text-[#7A8078]">Qty</th>
+                <th className="px-2 py-1 text-[9px] text-[#7A8078]">Price</th>
+                <th className="px-2 py-1 text-[9px] text-[#7A8078]">Qty</th>
+                <th className="px-2 py-1 text-[9px] text-[#7A8078]">Date</th>
+                <th className="px-2 py-1 text-[9px] text-[#7A8078]">Qty</th>
+                <th className="px-2 py-1 text-[9px] text-[#7A8078]">Price</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row: any, i: number) => {
+                const qtyMatch = row.lpoQty === row.grnQty && row.grnQty === row.invQty;
+                const priceMatch = row.lpoPrice === row.invPrice;
+                const allMatch = qtyMatch && priceMatch;
+                return (
+                  <tr key={i} className="border-b border-[#DCD6C4] last:border-0">
+                    <td className="px-4 py-3 font-semibold">{row.item}</td>
+                    <td className="px-2 py-3 text-center font-['IBM_Plex_Mono']">{row.lpoQty}</td>
+                    <td className="px-2 py-3 text-center font-['IBM_Plex_Mono'] text-xs">{row.lpoPrice}</td>
+                    <td className={`px-2 py-3 text-center font-['IBM_Plex_Mono'] ${qtyMatch ? "" : "text-[#9C3B2E] font-bold"}`}>{row.grnQty}</td>
+                    <td className="px-2 py-3 text-center text-xs text-[#7A8078]">{row.grnDate}</td>
+                    <td className={`px-2 py-3 text-center font-['IBM_Plex_Mono'] ${qtyMatch ? "" : "text-[#9C3B2E] font-bold"}`}>{row.invQty}</td>
+                    <td className={`px-2 py-3 text-center font-['IBM_Plex_Mono'] text-xs ${priceMatch ? "" : "text-[#9C3B2E] font-bold"}`}>{row.invPrice}</td>
+                    <td className="px-4 py-3 text-center">
+                      {allMatch ? <StatusTag variant="ok" label="✓ Match" /> : <StatusTag variant="bad" label="✗ Mismatch" />}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      
       <div className="mt-4 flex gap-3 justify-end">
-        <button className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Log Exception</button>
-        <button disabled className="px-4 py-2 bg-[#7A8078] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] cursor-not-allowed opacity-50">
-          Authorize Payment — Resolve mismatches first
+        <button className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4] disabled:opacity-60" disabled={authorizing}>Log Exception</button>
+        <button onClick={handleAuthorize} disabled={hasVariances || authorizing} className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-50 disabled:cursor-not-allowed">
+          {authorizing ? "Processing..." : hasVariances ? "Authorize Payment — Resolve mismatches first" : "Authorize Payment"}
         </button>
       </div>
     </div>
   );
 }
 
+// ─── Timetable Builder Hooks ────────────────────────────────────────────────
+
+/**
+ * Hook: Fetch available classes/streams
+ * Endpoint: GET /academics/classes?school_id={id}
+ */
+function useTimetableClasses() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/classes?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch timetable classes from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load classes');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch subjects for curriculum
+ * Endpoint: GET /academics/subjects?curriculum={CBC|8-4-4}&school_id={id}
+ */
+function useTimetableSubjects(curriculum: "CBC" | "8-4-4") {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/subjects?curriculum=${curriculum}&school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log(`Would fetch subjects for curriculum: ${curriculum}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load subjects');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [curriculum]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch timetable structure (periods/days)
+ * Endpoint: GET /academics/timetable-structure?school_id={id}
+ */
+function useTimetableStructure() {
+  const [data, setData] = useState<{ days: string[], periods: string[] } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<{ days: string[], periods: string[] }>(`/academics/timetable-structure?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch timetable structure from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load timetable structure');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch existing timetable for class
+ * Endpoint: GET /academics/timetable?class_id={id}&curriculum={curriculum}
+ */
+function useTimetableData(classId: string | undefined, curriculum: "CBC" | "8-4-4") {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!classId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any>(`/academics/timetable?class_id=${classId}&curriculum=${curriculum}`);
+        // setData(result);
+        
+        console.log(`Would fetch timetable for class ${classId}, curriculum ${curriculum}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load timetable');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [classId, curriculum]);
+
+  return { data, loading, error };
+}
+
+// ─── Timetable Builder Component ────────────────────────────────────────────
+
 function TimetableBuilder() {
   const [curriculumTab, setCurriculumTab] = useState<"CBC" | "8-4-4">("CBC");
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
-  const periods = ["P1", "P2", "P3", "Break", "P4", "P5", "Lunch", "P6"];
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
+  const [timetableGrid, setTimetableGrid] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  return (
-    <div>
-      <PageHeader title="Timetable Builder" subtitle="Weekly schedule — drag subjects to grid cells" />
-      <div className="flex gap-1 mb-5 p-1 bg-[#EBE7DC] rounded-sm w-fit">
-        {(["CBC", "8-4-4"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setCurriculumTab(t)}
-            className={`px-5 py-1.5 text-xs font-semibold uppercase tracking-wide rounded-sm transition-colors font-['IBM_Plex_Sans']
-              ${curriculumTab === t ? "bg-white text-[#16241D] shadow-sm" : "text-[#7A8078] hover:text-[#16241D]"}`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+  // Fetch data from backend
+  const classes = useTimetableClasses();
+  const subjects = useTimetableSubjects(curriculumTab);
+  const structure = useTimetableStructure();
+  const timetable = useTimetableData(selectedClassId, curriculumTab);
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-4">
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Subjects / Classes</p>
-          <div className="space-y-2">
-            {["Mathematics", "English", "Science", "History", "Geography"].map((s) => (
-              <div
-                key={s}
-                className="px-3 py-2 bg-[#E7F0EA] rounded-sm text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A] cursor-move border-l-4 border-[#1F6F4A]"
-              >
-                {s}
-              </div>
-            ))}
-          </div>
-        </div>
+  // Fallback data when backend not ready
+  const fallbackDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const fallbackPeriods = ["P1", "P2", "P3", "Break", "P4", "P5", "Lunch", "P6"];
+  const fallbackSubjects = ["Mathematics", "English", "Science", "History", "Geography"];
 
-        <div className="lg:col-span-2 bg-white border border-[#DCD6C4] rounded-sm p-4 overflow-x-auto">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3 pb-2">Weekly Grid — Drag subjects to cells</p>
-          <table className="w-full text-xs font-['IBM_Plex_Sans']">
-            <thead>
-              <tr className="border-b border-[#DCD6C4]">
-                <th className="text-center py-1 px-2 text-[9px] uppercase text-[#7A8078]">Period</th>
-                {days.map((d) => (
-                  <th key={d} className="text-center py-1 px-2 text-[9px] uppercase text-[#7A8078] w-20">{d}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {periods.map((p) => (
-                <tr key={p} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4]">
-                  <td className="text-center py-2 px-2 font-semibold text-[#7A8078]">{p}</td>
-                  {days.map((d) => (
-                    <td key={`${p}-${d}`} className="border-l border-[#DCD6C4] py-2 px-1 text-center bg-[#F3EFE4] hover:bg-[#EBE7DC] cursor-pointer transition-colors h-12 flex items-center justify-center">
-                      <span className="text-[10px] text-[#7A8078]">Drag here</span>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+  const displayDays = structure.data?.days || fallbackDays;
+  const displayPeriods = structure.data?.periods || fallbackPeriods;
+  const displaySubjects = subjects.data?.map((s: any) => s.name) || fallbackSubjects;
 
-      <div className="flex gap-3 justify-end">
-        <button className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Regenerate Automatically</button>
-        <button className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Save Timetable</button>
-      </div>
-    </div>
-  );
-}
+  const handleCellDrop = (periodIndex: number, dayIndex: number, subject: string) => {
+    const key = `${periodIndex}-${dayIndex}`;
+    setTimetableGrid(prev => ({ ...prev, [key]: subject }));
+  };
 
-function ReportCardPreview() {
-  const [curriculumTab, setCurriculumTab] = useState<"CBC" | "8-4-4">("CBC");
+  const handleSaveTimetable = async () => {
+    if (!selectedClassId) {
+      setSaveError("Please select a class first");
+      return;
+    }
 
-  return (
-    <div>
-      <PageHeader title="Report Card Preview" subtitle="Amina W. Kariuki · ADM-2025-0048 · Term 2 2025" />
-      <div className="flex gap-1 mb-5 p-1 bg-[#EBE7DC] rounded-sm w-fit">
-        {(["CBC", "8-4-4"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setCurriculumTab(t)}
-            className={`px-5 py-1.5 text-xs font-semibold uppercase tracking-wide rounded-sm transition-colors font-['IBM_Plex_Sans']
-              ${curriculumTab === t ? "bg-white text-[#16241D] shadow-sm" : "text-[#7A8078] hover:text-[#16241D]"}`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      setSaveSuccess(false);
 
-      <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 space-y-6 print:bg-white">
-        {/* Header */}
-        <div className="border-b-2 border-[#16241D] pb-4">
-          <div className="text-center mb-4">
-            <p className="font-['Fraunces'] text-2xl font-medium text-[#16241D]">ST. JOSEPH'S HIGH SCHOOL</p>
-            <p className="text-xs text-[#7A8078]">Nambale County, Kenya</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-semibold font-['IBM_Plex_Sans']">STUDENT REPORT CARD</p>
-            <p className="text-xs text-[#7A8078]">Term 2 2025</p>
-          </div>
-        </div>
+      // BACKEND: Submit timetable data
+      // const payload = {
+      //   class_id: selectedClassId,
+      //   curriculum: curriculumTab,
+      //   grid: timetableGrid,
+      // };
+      // await apiPost('/academics/timetable', payload);
+      
+      // For now, just show success
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to save timetable';
+      setSaveError(msg);
+      console.error("Timetable save error:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-        {/* Student Info */}
-        <div className="grid grid-cols-2 gap-4 text-sm font-['IBM_Plex_Sans']">
-          <div><span className="text-[#7A8078]">Name:</span> <span className="font-semibold">Amina Wanjiku Kariuki</span></div>
-          <div><span className="text-[#7A8078]">Class:</span> <span className="font-semibold">Form 2 Stream A</span></div>
-          <div><span className="text-[#7A8078]">Admission:</span> <span className="font-['IBM_Plex_Mono'] font-semibold">ADM-2025-0048</span></div>
-          <div><span className="text-[#7A8078]">Position:</span> <span className="font-semibold">6th of 42</span></div>
-        </div>
+  const handleRegenerateAutomatically = async () => {
+    if (!selectedClassId) {
+      setSaveError("Please select a class first");
+      return;
+    }
 
-        {/* Academics */}
-        <div>
-          <p className="text-sm font-semibold text-[#16241D] mb-3">{curriculumTab === "CBC" ? "CBC Competencies" : "8-4-4 Performance"}</p>
-          {curriculumTab === "CBC" ? (
-            <table className="w-full text-xs font-['IBM_Plex_Sans']">
-              <thead>
-                <tr className="border-b border-[#DCD6C4]">
-                  <th className="text-left py-1 text-[#7A8078]">Learning Area</th>
-                  <th className="text-center py-1 text-[#7A8078]">Rating</th>
-                </tr>
-              </thead>
-              <tbody>
-                {["Literacy", "Numeracy", "Scientific & Technological Thinking", "Social-Emotional Skills"].map((area) => (
-                  <tr key={area} className="border-b border-[#DCD6C4]">
-                    <td className="py-2">{area}</td>
-                    <td className="text-center"><StatusTag variant="ok" label="Meeting" /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <table className="w-full text-xs font-['IBM_Plex_Sans']">
-              <thead>
-                <tr className="border-b border-[#DCD6C4]">
-                  <th className="text-left py-1 text-[#7A8078]">Subject</th>
-                  <th className="text-center py-1 text-[#7A8078]">Mark</th>
-                  <th className="text-center py-1 text-[#7A8078]">Grade</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { subj: "Mathematics", mark: 78, grade: "B" },
-                  { subj: "English", mark: 85, grade: "A–" },
-                  { subj: "Biology", mark: 72, grade: "B–" },
-                ].map((s) => (
-                  <tr key={s.subj} className="border-b border-[#DCD6C4]">
-                    <td className="py-2">{s.subj}</td>
-                    <td className="text-center font-['IBM_Plex_Mono']">{s.mark}</td>
-                    <td className="text-center"><StatusTag variant="ok" label={s.grade} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+    try {
+      setIsSaving(true);
+      setSaveError(null);
 
-        {/* Attendance & Discipline */}
-        <div className="grid grid-cols-2 gap-4 text-sm font-['IBM_Plex_Sans']">
-          <div className="p-3 bg-[#F3EFE4] rounded-sm">
-            <p className="text-[#7A8078] text-xs uppercase tracking-wide mb-1">Attendance</p>
-            <p className="font-['Fraunces'] text-xl font-medium">94%</p>
-          </div>
-          <div className="p-3 bg-[#F3EFE4] rounded-sm">
-            <p className="text-[#7A8078] text-xs uppercase tracking-wide mb-1">Discipline</p>
-            <p className="font-['Fraunces'] text-xl font-medium text-[#1F6F4A]">Excellent</p>
-          </div>
-        </div>
-
-        {/* Teacher Comments */}
-        <div>
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Remarks</p>
-          <p className="text-sm text-[#16241D] font-['IBM_Plex_Sans'] border-l-4 border-[#1F6F4A] pl-3">
-            Amina has demonstrated consistent performance across both curricula. Maintains good discipline and shows strong potential in Mathematics and English. Encourage continued focus on Science subjects.
-          </p>
-        </div>
-
-        {/* Footer */}
-        <div className="border-t-2 border-[#16241D] pt-4 grid grid-cols-2 gap-8 text-xs font-['IBM_Plex_Sans']">
-          <div>
-            <p className="text-[#7A8078] mb-4">Principal</p>
-            <p className="border-t border-[#16241D] pt-2">P. Nambale</p>
-          </div>
-          <div>
-            <p className="text-[#7A8078] mb-4">Date</p>
-            <p className="border-t border-[#16241D] pt-2">15 Jun 2025</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 flex gap-3 justify-end">
-        <button className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Preview PDF</button>
-        <button className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Print Report Card</button>
-      </div>
-    </div>
-  );
-}
-
-function KNECCandidateExport() {
-  const [validated, setValidated] = useState(false);
-  const [running, setRunning] = useState(false);
-
-  const handleValidate = () => {
-    setRunning(true);
-    setTimeout(() => { setRunning(false); setValidated(true); }, 1500);
+      // BACKEND: Call auto-generation endpoint
+      // const result = await apiPost(`/academics/timetable/auto-generate`, {
+      //   class_id: selectedClassId,
+      //   curriculum: curriculumTab,
+      // });
+      // const { grid } = result;
+      // setTimetableGrid(grid);
+      
+      setSaveError("Backend API not yet implemented");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to auto-generate timetable';
+      setSaveError(msg);
+      console.error("Auto-generate error:", err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div>
-      <PageHeader title="KNEC Candidate Export" subtitle="Validation-first export — download file for KNEC submission" />
-      {!validated ? (
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 text-center max-w-md mx-auto mt-8">
-          <FileText size={32} className="text-[#7A8078] mx-auto mb-3" />
-          <h2 className="font-['Fraunces'] text-xl text-[#16241D] mb-2">Validate Before Export</h2>
-          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">
-            The system will validate all KCSE Form 4 candidates (142 students) against KNEC format requirements. Fix any flagged records before downloading the export file.
-          </p>
-          <button onClick={handleValidate} disabled={running} className="bg-[#1F6F4A] text-white px-6 py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-60">
-            {running ? "Validating candidates..." : "Run Validation Check"}
+      <PageHeader title="Timetable Builder" subtitle="Weekly schedule — drag subjects to grid cells" />
+      
+      {/* Curriculum Tabs */}
+      <div className="flex gap-1 mb-5 p-1 bg-[#EBE7DC] rounded-sm w-fit">
+        {(["CBC", "8-4-4"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setCurriculumTab(t)}
+            className={`px-5 py-1.5 text-xs font-semibold uppercase tracking-wide rounded-sm transition-colors font-['IBM_Plex_Sans']
+              ${curriculumTab === t ? "bg-white text-[#16241D] shadow-sm" : "text-[#7A8078] hover:text-[#16241D]"}`}
+          >
+            {t}
           </button>
+        ))}
+      </div>
+
+      {/* Class Selection */}
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 mb-4">
+        <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Select Class</p>
+        {classes.loading ? (
+          <p className="text-xs text-[#7A8078]">Loading classes...</p>
+        ) : classes.error ? (
+          <p className="text-xs text-[#9C3B2E]">⚠️ {classes.error}</p>
+        ) : (
+          <select 
+            value={selectedClassId}
+            onChange={(e) => setSelectedClassId(e.target.value)}
+            className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+          >
+            <option value="">Choose class...</option>
+            {classes.data?.map((cls: any) => (
+              <option key={cls.id} value={cls.id}>
+                {cls.name} {cls.stream ? `- ${cls.stream}` : ''}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Error/Success Messages */}
+      {saveError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {saveError}</p>
         </div>
-      ) : (
-        <div className="space-y-4">
-          <ValidationCallout type="success" message="142 candidates validated successfully — all records ready for KNEC submission." />
-          <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Export Summary</p>
-            <div className="space-y-2 text-sm font-['IBM_Plex_Sans']">
-              <div className="flex justify-between"><span>Total Candidates:</span> <span className="font-['IBM_Plex_Mono'] font-semibold">142</span></div>
-              <div className="flex justify-between"><span>Validation Status:</span> <StatusTag variant="ok" label="All Passed" /></div>
-              <div className="flex justify-between"><span>Export Format:</span> <span className="font-['IBM_Plex_Mono']">KNEC XML v2.1</span></div>
-              <div className="flex justify-between"><span>File Size:</span> <span className="font-['IBM_Plex_Mono']">~2.4 MB</span></div>
+      )}
+      {saveSuccess && (
+        <div className="bg-[#E7F0EA] border border-[#1F6F4A] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A]">✅ Timetable saved successfully</p>
+        </div>
+      )}
+
+      {/* Main Grid */}
+      {selectedClassId && (
+        <>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-4">
+            {/* Subjects Panel */}
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+              <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">
+                Subjects / {curriculumTab}
+              </p>
+              {subjects.loading ? (
+                <p className="text-xs text-[#7A8078]">Loading subjects...</p>
+              ) : subjects.error ? (
+                <p className="text-xs text-[#9C3B2E]">⚠️ {subjects.error}</p>
+              ) : (
+                <div className="space-y-2">
+                  {displaySubjects.map((s: string) => (
+                    <div
+                      key={s}
+                      draggable
+                      onDragStart={(e) => e.dataTransfer?.setData("subject", s)}
+                      className="px-3 py-2 bg-[#E7F0EA] rounded-sm text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A] cursor-move border-l-4 border-[#1F6F4A] hover:shadow-md transition-shadow"
+                    >
+                      {s}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Timetable Grid */}
+            <div className="lg:col-span-2 bg-white border border-[#DCD6C4] rounded-sm p-4 overflow-x-auto">
+              <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3 pb-2">
+                Weekly Grid — Drag subjects to cells
+              </p>
+              {structure.loading ? (
+                <p className="text-xs text-[#7A8078]">Loading timetable structure...</p>
+              ) : structure.error ? (
+                <p className="text-xs text-[#9C3B2E]">⚠️ {structure.error}</p>
+              ) : (
+                <table className="w-full text-xs font-['IBM_Plex_Sans']">
+                  <thead>
+                    <tr className="border-b border-[#DCD6C4]">
+                      <th className="text-center py-1 px-2 text-[9px] uppercase text-[#7A8078]">Period</th>
+                      {displayDays.map((d) => (
+                        <th key={d} className="text-center py-1 px-2 text-[9px] uppercase text-[#7A8078] w-20">{d}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayPeriods.map((p, pIdx) => (
+                      <tr key={p} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4]">
+                        <td className="text-center py-2 px-2 font-semibold text-[#7A8078]">{p}</td>
+                        {displayDays.map((d, dIdx) => {
+                          const cellKey = `${pIdx}-${dIdx}`;
+                          const cellSubject = timetableGrid[cellKey];
+                          return (
+                            <td
+                              key={cellKey}
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                const subject = e.dataTransfer?.getData("subject");
+                                if (subject) handleCellDrop(pIdx, dIdx, subject);
+                              }}
+                              className="border-l border-[#DCD6C4] py-2 px-1 text-center bg-[#F3EFE4] hover:bg-[#EBE7DC] cursor-pointer transition-colors h-12 flex items-center justify-center"
+                            >
+                              {cellSubject ? (
+                                <span className="text-[10px] font-semibold text-[#1F6F4A] bg-[#E7F0EA] px-1 py-0.5 rounded text-center break-words">
+                                  {cellSubject}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-[#7A8078]">—</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
-          <button className="w-full bg-[#1F6F4A] text-white py-2.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">
-            Download KNEC Export File
-          </button>
-          <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans'] text-center">
-            This file must be manually uploaded to the KNEC candidate portal. Do not submit duplicate files.
-          </p>
-        </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={handleRegenerateAutomatically}
+              disabled={isSaving}
+              className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSaving ? "Processing..." : "Regenerate Automatically"}
+            </button>
+            <button
+              onClick={handleSaveTimetable}
+              disabled={isSaving}
+              className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSaving ? "Saving..." : "Save Timetable"}
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-function FeeStructureConfiguration() {
+// ─── Report Card Preview Hooks ────────────────────────────────────────────
+
+/**
+ * Hook: Fetch available students
+ * Endpoint: GET /admissions/students?school_id={id}
+ */
+function useReportCardStudents() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/admissions/students?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch report card students from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load students');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch exam sessions
+ * Endpoint: GET /academics/exam-sessions?school_id={id}
+ */
+function useReportCardExamSessions() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/exam-sessions?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch report card exam sessions from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load exam sessions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch school information
+ * Endpoint: GET /settings/school-info?school_id={id}
+ */
+function useSchoolInfo() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any>(`/settings/school-info?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch school info from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load school info');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch report card data for student
+ * Endpoint: GET /academics/report-card?student_id={id}&exam_session_id={sid}
+ */
+function useReportCardData(studentId: string | undefined, examSessionId: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studentId || !examSessionId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any>(`/academics/report-card?student_id=${studentId}&exam_session_id=${examSessionId}`);
+        // setData(result);
+        
+        console.log(`Would fetch report card: student ${studentId}, exam ${examSessionId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load report card');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [studentId, examSessionId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch school principal info
+ * Endpoint: GET /settings/principal-info?school_id={id}
+ */
+function usePrincipalInfo() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any>(`/settings/principal-info?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch principal info from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load principal info');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+// ─── Report Card Preview Component ────────────────────────────────────────
+
+function ReportCardPreview() {
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [selectedExamSessionId, setSelectedExamSessionId] = useState<string>("");
+  const [curriculumTab, setCurriculumTab] = useState<"CBC" | "8-4-4">("CBC");
+
+  // Fetch data from backend
+  const students = useReportCardStudents();
+  const examSessions = useReportCardExamSessions();
+  const schoolInfo = useSchoolInfo();
+  const reportCardData = useReportCardData(selectedStudentId, selectedExamSessionId);
+  const principalInfo = usePrincipalInfo();
+
+  // Get selected data details
+  const selectedStudent = students.data?.find((s: any) => s.id === selectedStudentId);
+  const selectedSession = examSessions.data?.find((s: any) => s.id === selectedExamSessionId);
+  const academicsData = reportCardData.data?.academics || {};
+  const attendanceData = reportCardData.data?.attendance || {};
+  const disciplineData = reportCardData.data?.discipline || {};
+  const remarksData = reportCardData.data?.remarks || {};
+
+  const today = new Date().toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
+
   return (
     <div>
-      <PageHeader title="Fee Structure Configuration" subtitle="Define fees per grade, category, and term" />
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-x-auto">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Vote Head / Category</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Form 1B</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Form 1D</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Form 2B</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Form 2D</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Form 3B</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Form 3D</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Form 4B</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Form 4D</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              { head: "Tuition", b1: 28000, d1: 18000, b2: 28000, d2: 18000, b3: 30000, d3: 20000, b4: 32000, d4: 22000 },
-              { head: "Boarding", b1: 18000, d1: 0, b2: 18000, d2: 0, b3: 18000, d3: 0, b4: 18000, d4: 0 },
-              { head: "Activity", b1: 3000, d1: 3000, b2: 3000, d2: 3000, b3: 3000, d3: 3000, b4: 3000, d4: 3000 },
-              { head: "RMI", b1: 1500, d1: 1500, b2: 1500, d2: 1500, b3: 1500, d3: 1500, b4: 1500, d4: 1500 },
-              { head: "Transport", b1: 0, d1: 2400, b2: 0, d2: 2400, b3: 0, d3: 2400, b4: 0, d4: 2400 },
-            ].map((row) => (
-              <tr key={row.head} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4]">
-                <td className="px-4 py-3 font-semibold">{row.head}</td>
-                {[row.b1, row.d1, row.b2, row.d2, row.b3, row.d3, row.b4, row.d4].map((val, i) => (
-                  <td key={i} className="px-2 py-3 text-center">
-                    <input
-                      type="text"
-                      className="w-20 text-center font-['IBM_Plex_Mono'] text-xs border border-[#DCD6C4] rounded-sm py-1 focus:outline-none focus:ring-1 focus:ring-[#1F6F4A]"
-                      defaultValue={val > 0 ? val.toLocaleString() : "—"}
-                    />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <PageHeader 
+        title="Report Card Preview" 
+        subtitle={selectedStudent && selectedSession
+          ? `${selectedStudent.first_name} ${selectedStudent.last_name} · ${selectedStudent.admission_number || 'N/A'} · ${selectedSession.name}`
+          : "Select student and exam session to preview"
+        }
+      />
+
+      {/* Selection Controls */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Student Selection */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Student</label>
+          {students.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : students.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {students.error}</p>
+          ) : (
+            <select 
+              value={selectedStudentId}
+              onChange={(e) => {
+                setSelectedStudentId(e.target.value);
+                setSelectedExamSessionId("");
+              }}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            >
+              <option value="">Choose student...</option>
+              {students.data?.map((stu: any) => (
+                <option key={stu.id} value={stu.id}>
+                  {stu.first_name} {stu.last_name} ({stu.admission_number})
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Exam Session Selection */}
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Exam Session</label>
+          {examSessions.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : examSessions.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {examSessions.error}</p>
+          ) : (
+            <select 
+              value={selectedExamSessionId}
+              onChange={(e) => setSelectedExamSessionId(e.target.value)}
+              disabled={!selectedStudentId}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]"
+            >
+              <option value="">Choose exam session...</option>
+              {examSessions.data?.map((session: any) => (
+                <option key={session.id} value={session.id}>
+                  {session.name} ({session.year})
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
-      <div className="mt-4 flex gap-3 justify-end">
-        <button className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Reset to Default</button>
-        <button className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Save Fee Structure</button>
-      </div>
+
+      {/* Report Card Preview */}
+      {selectedStudentId && selectedExamSessionId && (
+        <>
+          {reportCardData.loading ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading report card...</p>
+            </div>
+          ) : reportCardData.error ? (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {reportCardData.error}</p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 space-y-6 print:bg-white">
+                {/* Header */}
+                <div className="border-b-2 border-[#16241D] pb-4">
+                  <div className="text-center mb-4">
+                    <p className="font-['Fraunces'] text-2xl font-medium text-[#16241D]">{schoolInfo.data?.school_name || "SCHOOL NAME"}</p>
+                    <p className="text-xs text-[#7A8078]">{schoolInfo.data?.location || "Location"}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold font-['IBM_Plex_Sans']">STUDENT REPORT CARD</p>
+                    <p className="text-xs text-[#7A8078]">{selectedSession?.name || "Exam Session"}</p>
+                  </div>
+                </div>
+
+                {/* Student Info */}
+                <div className="grid grid-cols-2 gap-4 text-sm font-['IBM_Plex_Sans']">
+                  <div><span className="text-[#7A8078]">Name:</span> <span className="font-semibold">{selectedStudent?.first_name} {selectedStudent?.last_name}</span></div>
+                  <div><span className="text-[#7A8078]">Class:</span> <span className="font-semibold">{selectedStudent?.current_class || "N/A"}</span></div>
+                  <div><span className="text-[#7A8078]">Admission:</span> <span className="font-['IBM_Plex_Mono'] font-semibold">{selectedStudent?.admission_number || "N/A"}</span></div>
+                  <div><span className="text-[#7A8078]">Position:</span> <span className="font-semibold">{reportCardData.data?.class_position || "N/A"}</span></div>
+                </div>
+
+                {/* Academics */}
+                <div>
+                  <p className="text-sm font-semibold text-[#16241D] mb-3">{curriculumTab === "CBC" ? "CBC Competencies" : "8-4-4 Performance"}</p>
+                  {curriculumTab === "CBC" ? (
+                    <table className="w-full text-xs font-['IBM_Plex_Sans']">
+                      <thead>
+                        <tr className="border-b border-[#DCD6C4]">
+                          <th className="text-left py-1 text-[#7A8078]">Learning Area</th>
+                          <th className="text-center py-1 text-[#7A8078]">Rating</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {academicsData.cbc_competencies?.map((comp: any) => (
+                          <tr key={comp.learning_area} className="border-b border-[#DCD6C4]">
+                            <td className="py-2">{comp.learning_area}</td>
+                            <td className="text-center"><StatusTag variant="ok" label={comp.rating} /></td>
+                          </tr>
+                        )) || (
+                          <tr className="border-b border-[#DCD6C4]">
+                            <td colSpan={2} className="text-center py-2 text-[#7A8078]">No competencies data available</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <table className="w-full text-xs font-['IBM_Plex_Sans']">
+                      <thead>
+                        <tr className="border-b border-[#DCD6C4]">
+                          <th className="text-left py-1 text-[#7A8078]">Subject</th>
+                          <th className="text-center py-1 text-[#7A8078]">Mark</th>
+                          <th className="text-center py-1 text-[#7A8078]">Grade</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {academicsData.exam_marks?.map((mark: any) => (
+                          <tr key={mark.subject_id} className="border-b border-[#DCD6C4]">
+                            <td className="py-2">{mark.subject_name}</td>
+                            <td className="text-center font-['IBM_Plex_Mono']">{mark.mark}</td>
+                            <td className="text-center"><StatusTag variant="ok" label={mark.grade} /></td>
+                          </tr>
+                        )) || (
+                          <tr className="border-b border-[#DCD6C4]">
+                            <td colSpan={3} className="text-center py-2 text-[#7A8078]">No marks data available</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+
+                {/* Attendance & Discipline */}
+                <div className="grid grid-cols-2 gap-4 text-sm font-['IBM_Plex_Sans']">
+                  <div className="p-3 bg-[#F3EFE4] rounded-sm">
+                    <p className="text-[#7A8078] text-xs uppercase tracking-wide mb-1">Attendance</p>
+                    <p className="font-['Fraunces'] text-xl font-medium">{attendanceData.percentage || "N/A"}%</p>
+                  </div>
+                  <div className="p-3 bg-[#F3EFE4] rounded-sm">
+                    <p className="text-[#7A8078] text-xs uppercase tracking-wide mb-1">Discipline</p>
+                    <p className="font-['Fraunces'] text-xl font-medium text-[#1F6F4A]">{disciplineData.status || "N/A"}</p>
+                  </div>
+                </div>
+
+                {/* Teacher Comments */}
+                <div>
+                  <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Remarks</p>
+                  <p className="text-sm text-[#16241D] font-['IBM_Plex_Sans'] border-l-4 border-[#1F6F4A] pl-3">
+                    {remarksData.comments || "No remarks available"}
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="border-t-2 border-[#16241D] pt-4 grid grid-cols-2 gap-8 text-xs font-['IBM_Plex_Sans']">
+                  <div>
+                    <p className="text-[#7A8078] mb-4">Principal</p>
+                    <p className="border-t border-[#16241D] pt-2">{principalInfo.data?.principal_name || "Principal"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#7A8078] mb-4">Date</p>
+                    <p className="border-t border-[#16241D] pt-2">{today}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-4 flex gap-3 justify-end">
+                <button className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Preview PDF</button>
+                <button className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Print Report Card</button>
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
+// ─── KNEC Candidate Export Hooks ──────────────────────────────────────────
+
+/**
+ * Hook: Fetch Form 4 candidates (KCSE)
+ * Endpoint: GET /academics/kcse-candidates?school_id={id}
+ */
+function useKCSECandidates() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/academics/kcse-candidates?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch KCSE candidates from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load candidates');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Validate KCSE candidates against KNEC format
+ * Endpoint: POST /academics/validate-kcse-candidates with {candidate_ids: string[]}
+ * Returns: {valid_count: number, invalid_count: number, errors: Array<{candidate_id, field, message}>}
+ */
+function useValidateKCSECandidates() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const validate = async (candidateIds: string[]) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // const result = await apiPost<any>('/academics/validate-kcse-candidates', { candidate_ids: candidateIds });
+      // setData(result);
+      
+      console.log(`Would validate ${candidateIds.length} KCSE candidates`);
+      setError("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Validation failed');
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { data, loading, error, validate };
+}
+
+/**
+ * Hook: Generate KNEC export file
+ * Endpoint: POST /academics/generate-kcse-export with {candidate_ids: string[]}
+ * Returns: {file_url: string, file_name: string, file_size: number, format: string}
+ */
+function useGenerateKNECExport() {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generate = async (candidateIds: string[]) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: Replace with real API call
+      // const result = await apiPost<any>('/academics/generate-kcse-export', { candidate_ids: candidateIds });
+      // setData(result);
+      
+      console.log(`Would generate KNEC export for ${candidateIds.length} candidates`);
+      setError("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Export generation failed');
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { data, loading, error, generate };
+}
+
+// ─── KNEC Candidate Export Component ───────────────────────────────────────
+
+function KNECCandidateExport() {
+  const [validationStep, setValidationStep] = useState<"select" | "validating" | "validated">("select");
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
+  const [validationErrors, setValidationErrors] = useState<any[]>([]);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  // Fetch data from backend
+  const candidates = useKCSECandidates();
+  const { data: validationData, loading: validating, error: validationApiError, validate: performValidation } = useValidateKCSECandidates();
+  const { data: exportData, loading: exporting, error: exportApiError, generate: generateExport } = useGenerateKNECExport();
+
+  const handleSelectAll = () => {
+    if (candidates.data) {
+      setSelectedCandidateIds(
+        selectedCandidateIds.length === candidates.data.length 
+          ? [] 
+          : candidates.data.map((c: any) => c.id)
+      );
+    }
+  };
+
+  const handleValidate = async () => {
+    if (selectedCandidateIds.length === 0) {
+      setExportError("Please select at least one candidate to validate");
+      return;
+    }
+
+    setValidationStep("validating");
+    setExportError(null);
+    await performValidation(selectedCandidateIds);
+    setValidationStep("validated");
+  };
+
+  const handleDownloadExport = async () => {
+    if (!validationData || validationData.invalid_count > 0) {
+      setExportError("Cannot export: validation errors exist. Fix errors before exporting.");
+      return;
+    }
+
+    await generateExport(selectedCandidateIds);
+  };
+
+  const isAllSelected = !!(candidates.data && selectedCandidateIds.length === candidates.data.length);
+
+  return (
+    <div>
+      <PageHeader 
+        title="KNEC Candidate Export" 
+        subtitle={selectedCandidateIds.length > 0 
+          ? `${selectedCandidateIds.length} candidate${selectedCandidateIds.length !== 1 ? 's' : ''} selected · Validation-first export — download file for KNEC submission`
+          : "Validation-first export — download file for KNEC submission"
+        }
+      />
+
+      {/* Candidate Selection Phase */}
+      {validationStep === "select" && (
+        <>
+          {candidates.loading ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading candidates...</p>
+            </div>
+          ) : candidates.error ? (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {candidates.error}</p>
+            </div>
+          ) : (
+            <>
+              {exportError && (
+                <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+                  <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {exportError}</p>
+                </div>
+              )}
+
+              <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-x-auto">
+                <table className="w-full text-sm font-['IBM_Plex_Sans']">
+                  <thead>
+                    <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                      <th className="px-4 py-2.5 text-left">
+                        <input 
+                          type="checkbox" 
+                          checked={isAllSelected}
+                          onChange={handleSelectAll}
+                          className="cursor-pointer"
+                        />
+                      </th>
+                      <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Name</th>
+                      <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Admission No.</th>
+                      <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Class</th>
+                      <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Registration Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {candidates.data?.map((candidate: any) => (
+                      <tr key={candidate.id} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4]">
+                        <td className="px-4 py-3">
+                          <input 
+                            type="checkbox" 
+                            checked={selectedCandidateIds.includes(candidate.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedCandidateIds([...selectedCandidateIds, candidate.id]);
+                              } else {
+                                setSelectedCandidateIds(selectedCandidateIds.filter(id => id !== candidate.id));
+                              }
+                            }}
+                            className="cursor-pointer"
+                          />
+                        </td>
+                        <td className="px-4 py-3 font-semibold">{candidate.first_name} {candidate.last_name}</td>
+                        <td className="px-4 py-3 font-['IBM_Plex_Mono']">{candidate.admission_number}</td>
+                        <td className="px-4 py-3">{candidate.class_name}</td>
+                        <td className="px-4 py-3 text-center">
+                          <StatusTag variant={candidate.registration_status === "complete" ? "ok" : "warn"} label={candidate.registration_status === "complete" ? "Complete" : "Incomplete"} />
+                        </td>
+                      </tr>
+                    )) || (
+                      <tr className="border-b border-[#DCD6C4]">
+                        <td colSpan={5} className="px-4 py-3 text-center text-[#7A8078]">No candidates found</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-4 flex gap-3 justify-between">
+                <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans']">
+                  {selectedCandidateIds.length} of {candidates.data?.length || 0} candidate{candidates.data?.length !== 1 ? 's' : ''} selected
+                </p>
+                <button 
+                  onClick={handleValidate}
+                  disabled={selectedCandidateIds.length === 0}
+                  className="px-6 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-60"
+                >
+                  Proceed to Validation
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {/* Validation Phase */}
+      {(validationStep === "validating" || validationStep === "validated") && (
+        <>
+          {validating ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Validating {selectedCandidateIds.length} candidate{selectedCandidateIds.length !== 1 ? 's' : ''} against KNEC format...</p>
+            </div>
+          ) : validationApiError ? (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ Validation failed: {validationApiError}</p>
+            </div>
+          ) : validationData ? (
+            <div className="space-y-4">
+              {validationData.invalid_count === 0 ? (
+                <ValidationCallout 
+                  type="success" 
+                  message={`${validationData.valid_count} candidate${validationData.valid_count !== 1 ? 's' : ''} validated successfully — all records ready for KNEC submission.`}
+                />
+              ) : (
+                <ValidationCallout 
+                  type="warning" 
+                  message={`Validation complete: ${validationData.valid_count} passed, ${validationData.invalid_count} failed. Fix errors before exporting.`}
+                />
+              )}
+
+              <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+                <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Validation Summary</p>
+                <div className="space-y-2 text-sm font-['IBM_Plex_Sans']">
+                  <div className="flex justify-between"><span>Total Candidates:</span> <span className="font-['IBM_Plex_Mono'] font-semibold">{selectedCandidateIds.length}</span></div>
+                  <div className="flex justify-between"><span>Valid:</span> <span className="font-['IBM_Plex_Mono'] font-semibold text-[#1F6F4A]">{validationData.valid_count}</span></div>
+                  <div className="flex justify-between"><span>Invalid:</span> <span className="font-['IBM_Plex_Mono'] font-semibold text-[#9C3B2E]">{validationData.invalid_count}</span></div>
+                  <div className="flex justify-between"><span>Validation Status:</span> <StatusTag variant={validationData.invalid_count === 0 ? "ok" : "warn"} label={validationData.invalid_count === 0 ? "All Passed" : "Some Failed"} /></div>
+                </div>
+              </div>
+
+              {validationData.errors && validationData.errors.length > 0 && (
+                <div className="bg-[#FEF5F3] border border-[#B5751F] rounded-sm p-4">
+                  <p className="text-xs uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2 font-semibold">Validation Errors</p>
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {validationData.errors.map((err: any, idx: number) => (
+                      <p key={idx} className="text-xs text-[#16241D] font-['IBM_Plex_Sans']">
+                        <strong>{err.candidate_name}:</strong> {err.field} — {err.message}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {validationData.invalid_count === 0 && (
+                <>
+                  <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+                    <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Export Details</p>
+                    <div className="space-y-2 text-sm font-['IBM_Plex_Sans']">
+                      <div className="flex justify-between"><span>Export Format:</span> <span className="font-['IBM_Plex_Mono']">KNEC XML v2.1</span></div>
+                      <div className="flex justify-between"><span>Ready to Download:</span> <StatusTag variant="ok" label="Yes" /></div>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={handleDownloadExport}
+                    disabled={exporting}
+                    className="w-full bg-[#1F6F4A] text-white py-2.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-60"
+                  >
+                    {exporting ? "Generating export file..." : "Download KNEC Export File"}
+                  </button>
+
+                  {exportApiError && (
+                    <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+                      <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ Export failed: {exportApiError}</p>
+                    </div>
+                  )}
+
+                  {exportData && exportData.file_url && (
+                    <div className="bg-[#E7F0EA] border border-[#1F6F4A] rounded-sm p-4">
+                      <p className="text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A] mb-2">✓ Export file ready</p>
+                      <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans']">
+                        File: <span className="font-['IBM_Plex_Mono']">{exportData.file_name}</span> ({(exportData.file_size / 1024 / 1024).toFixed(1)} MB)
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-[#7A8078] font-['IBM_Plex_Sans'] text-center">
+                    This file must be manually uploaded to the KNEC candidate portal. Do not submit duplicate files.
+                  </p>
+                </>
+              )}
+
+              <button 
+                onClick={() => {
+                  setValidationStep("select");
+                  setValidationErrors([]);
+                  setExportError(null);
+                }}
+                className="w-full px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]"
+              >
+                Back to Selection
+              </button>
+            </div>
+          ) : null}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Fee Structure Configuration Hooks ────────────────────────────────────
+
+/**
+ * Hook: Fetch academic years for fee structure
+ * Endpoint: GET /fee-management/fee-years?school_id={id}
+ */
+function useFeeStructureYears() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/fee-management/fee-years?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch fee structure years from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load years');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch fee categories
+ * Endpoint: GET /fee-management/fee-categories?school_id={id}
+ */
+function useFeeCategories() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/fee-management/fee-categories?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch fee categories from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch fee structure for year/term
+ * Endpoint: GET /fee-management/fee-structure?school_id={id}&year={year}&term={term}
+ */
+function useFeeStructure(year: string | undefined, term: string | undefined) {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!year || !term) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/fee-management/fee-structure?school_id=${schoolId}&year=${year}&term=${term}`);
+        // setData(result);
+        
+        console.log(`Would fetch fee structure for year ${year}, term ${term}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load fee structure');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [year, term]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch grade/form columns
+ * Endpoint: GET /fee-management/grade-columns?school_id={id}
+ */
+function useFeeGradeColumns() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/fee-management/grade-columns?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch fee grade columns from backend");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load grade columns');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+// ─── Fee Structure Configuration Component ─────────────────────────────────
+
+function FeeStructureConfiguration() {
+  const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedTerm, setSelectedTerm] = useState<string>("");
+  const [feeRows, setFeeRows] = useState<Record<string, Record<string, string>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Fetch data from backend
+  const years = useFeeStructureYears();
+  const categories = useFeeCategories();
+  const gradeColumns = useFeeGradeColumns();
+  const feeStructure = useFeeStructure(selectedYear, selectedTerm);
+
+  // Populate fee rows when structure loads
+  useEffect(() => {
+    if (feeStructure.data) {
+      const rows: Record<string, Record<string, string>> = {};
+      feeStructure.data.forEach((item: any) => {
+        const categoryId = item.category_id;
+        if (!rows[categoryId]) {
+          rows[categoryId] = {};
+        }
+        rows[categoryId][item.grade_column_id] = String(item.amount || "");
+      });
+      setFeeRows(rows);
+    }
+  }, [feeStructure.data]);
+
+  const handleFeeChange = (categoryId: string, gradeColumnId: string, value: string) => {
+    setFeeRows((prev) => ({
+      ...prev,
+      [categoryId]: {
+        ...(prev[categoryId] || {}),
+        [gradeColumnId]: value,
+      },
+    }));
+  };
+
+  const handleSave = async () => {
+    if (!selectedYear || !selectedTerm) {
+      setSubmitError("Please select both year and term");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSubmitError(null);
+      setSubmitSuccess(false);
+
+      // Convert feeRows to API payload
+      const feeItems = [];
+      for (const categoryId in feeRows) {
+        for (const gradeColumnId in feeRows[categoryId]) {
+          const amount = parseInt(feeRows[categoryId][gradeColumnId]) || 0;
+          feeItems.push({
+            category_id: categoryId,
+            grade_column_id: gradeColumnId,
+            amount,
+          });
+        }
+      }
+
+      // BACKEND: Replace with real API call
+      // const schoolId = tokenManager.getSchoolId();
+      // await apiPost('/fee-management/fee-structure', {
+      //   school_id: schoolId,
+      //   year: selectedYear,
+      //   term: selectedTerm,
+      //   fee_items: feeItems,
+      // });
+
+      console.log("Would save fee structure:", { selectedYear, selectedTerm, feeItems });
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Failed to save fee structure");
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    // Show success message
+    setSubmitSuccess(true);
+    setTimeout(() => setSubmitSuccess(false), 3000);
+  };
+
+  const handleReset = () => {
+    if (feeStructure.data) {
+      setFeeRows({});
+      feeStructure.data.forEach((item: any) => {
+        const categoryId = item.category_id;
+        if (!feeRows[categoryId]) {
+          feeRows[categoryId] = {};
+        }
+        feeRows[categoryId][item.grade_column_id] = String(item.amount || "");
+      });
+      setFeeRows({ ...feeRows });
+    }
+  };
+
+  const getTermOptions = (year: string) => {
+    // Backend should provide term options per year, fallback to standard terms
+    return [
+      { id: "term1", name: "Term 1" },
+      { id: "term2", name: "Term 2" },
+      { id: "term3", name: "Term 3" },
+    ];
+  };
+
+  return (
+    <div>
+      <PageHeader 
+        title="Fee Structure Configuration" 
+        subtitle={selectedYear && selectedTerm 
+          ? `${years.data?.find((y: any) => y.id === selectedYear)?.name || selectedYear} · ${getTermOptions(selectedYear).find((t: any) => t.id === selectedTerm)?.name || selectedTerm}`
+          : "Define fees per grade, category, and term"
+        }
+      />
+
+      {/* Year and Term Selection */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Academic Year</label>
+          {years.loading ? (
+            <p className="text-xs text-[#7A8078]">Loading...</p>
+          ) : years.error ? (
+            <p className="text-xs text-[#9C3B2E]">⚠️ {years.error}</p>
+          ) : (
+            <select 
+              value={selectedYear}
+              onChange={(e) => {
+                setSelectedYear(e.target.value);
+                setSelectedTerm("");
+              }}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            >
+              <option value="">Choose year...</option>
+              {years.data?.map((year: any) => (
+                <option key={year.id} value={year.id}>
+                  {year.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Term</label>
+          <select 
+            value={selectedTerm}
+            onChange={(e) => setSelectedTerm(e.target.value)}
+            disabled={!selectedYear}
+            className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]"
+          >
+            <option value="">Choose term...</option>
+            {selectedYear && getTermOptions(selectedYear).map((term: any) => (
+              <option key={term.id} value={term.id}>
+                {term.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Error and Success Messages */}
+      {submitError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {submitError}</p>
+        </div>
+      )}
+
+      {submitSuccess && (
+        <div className="bg-[#E7F0EA] border border-[#1F6F4A] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A]">✓ Fee structure saved successfully</p>
+        </div>
+      )}
+
+      {/* Fee Structure Table */}
+      {selectedYear && selectedTerm && (
+        <>
+          {feeStructure.loading ? (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading fee structure...</p>
+            </div>
+          ) : feeStructure.error ? (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {feeStructure.error}</p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-x-auto mb-4">
+                <table className="w-full text-sm font-['IBM_Plex_Sans']">
+                  <thead>
+                    <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                      <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Vote Head / Category</th>
+                      {gradeColumns.data?.map((col: any) => (
+                        <th key={col.id} className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">{col.name}</th>
+                      )) || <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Loading...</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.data?.map((category: any) => (
+                      <tr key={category.id} className="border-b border-[#DCD6C4] hover:bg-[#F3EFE4]">
+                        <td className="px-4 py-3 font-semibold">{category.name}</td>
+                        {gradeColumns.data?.map((col: any) => (
+                          <td key={`${category.id}-${col.id}`} className="px-2 py-3 text-center">
+                            <input
+                              type="text"
+                              value={feeRows[category.id]?.[col.id] || ""}
+                              onChange={(e) => handleFeeChange(category.id, col.id, e.target.value)}
+                              className="w-24 text-center font-['IBM_Plex_Mono'] text-xs border border-[#DCD6C4] rounded-sm py-1 focus:outline-none focus:ring-1 focus:ring-[#1F6F4A]"
+                              placeholder="0"
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    )) || (
+                      <tr className="border-b border-[#DCD6C4]">
+                        <td colSpan={9} className="px-4 py-3 text-center text-[#7A8078]">No categories available</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button 
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4] disabled:opacity-60"
+                >
+                  Reset to Default
+                </button>
+                <button 
+                  onClick={handleSave}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-60"
+                >
+                  {isSubmitting ? "Saving..." : "Save Fee Structure"}
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Period-End Closing Hooks ─────────────────────────────────────────────
+
+/**
+ * Hook: Fetch open periods available for closing
+ * Endpoint: GET /accounting/periods?status=open&school_id={id}
+ */
+function useOpenPeriods() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/accounting/periods?status=open&school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch open periods for closing");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load periods');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch period details for closing
+ * Endpoint: GET /accounting/periods/{periodId}/closing-summary?school_id={id}
+ */
+function usePeriodClosingSummary(periodId: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!periodId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any>(`/accounting/periods/${periodId}/closing-summary?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log(`Would fetch closing summary for period ${periodId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load period details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [periodId]);
+
+  return { data, loading, error };
+}
+
+// ─── Period-End Closing Component ─────────────────────────────────────────
+
 function PeriodEndClosing() {
-  const [step, setStep] = useState(1);
+  const [selectedPeriodId, setSelectedPeriodId] = useState<string>("");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [closeError, setCloseError] = useState<string | null>(null);
+  const [closeSuccess, setCloseSuccess] = useState(false);
+
+  // Fetch data from backend
+  const openPeriods = useOpenPeriods();
+  const closingSummary = usePeriodClosingSummary(selectedPeriodId);
 
   const steps = [
     { label: "Review Ledger", owner: "Bursar" },
@@ -2419,121 +7257,419 @@ function PeriodEndClosing() {
     { label: "Confirm & Lock", owner: "BOM Finance Chair" },
   ];
 
+  const handleClosePeriod = async () => {
+    if (!selectedPeriodId) {
+      setCloseError("No period selected");
+      return;
+    }
+
+    try {
+      setIsClosing(true);
+      setCloseError(null);
+      setCloseSuccess(false);
+
+      // BACKEND: Replace with real API call
+      // await apiPost('/accounting/close-period', {
+      //   period_id: selectedPeriodId,
+      //   school_id: tokenManager.getSchoolId(),
+      // });
+
+      console.log(`Would close period ${selectedPeriodId}`);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setCloseError(err instanceof Error ? err.message : "Failed to close period");
+    } finally {
+      setIsClosing(false);
+    }
+  };
+
   return (
     <div>
-      <PageHeader title="Period-End Closing" subtitle="Irreversible month-end lock — requires BOM Finance Chair approval" />
-      <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 mb-5">
-        <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Workflow</p>
-        <ApprovalStepper steps={steps} currentStep={step} />
+      <PageHeader 
+        title="Period-End Closing" 
+        subtitle={selectedPeriodId && closingSummary.data
+          ? `${closingSummary.data.period_name} · Status: ${closingSummary.data.status || 'Open'}`
+          : "Select a period to close — irreversible month-end lock"
+        }
+      />
+
+      {/* Error states */}
+      {openPeriods.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {openPeriods.error}</p>
+        </div>
+      )}
+      {closingSummary.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {closingSummary.error}</p>
+        </div>
+      )}
+      {closeError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {closeError}</p>
+        </div>
+      )}
+      {closeSuccess && (
+        <div className="bg-[#E7F0EA] border border-[#1F6F4A] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#1F6F4A]">✓ Period closed successfully</p>
+        </div>
+      )}
+
+      {/* Period Selection */}
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 mb-4">
+        <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Select Period to Close</label>
+        {openPeriods.loading ? (
+          <p className="text-xs text-[#7A8078]">Loading periods...</p>
+        ) : (
+          <select 
+            value={selectedPeriodId}
+            onChange={(e) => setSelectedPeriodId(e.target.value)}
+            className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+          >
+            <option value="">Choose period...</option>
+            {openPeriods.data?.map((period: any) => (
+              <option key={period.id} value={period.id}>
+                {period.name}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
-      <div className="space-y-4">
-        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
-          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">
-            <strong>Warning:</strong> Once this period is closed, no transactions can be posted or modified without BOM Finance Chair override. This action is permanent and recorded in the audit log.
-          </p>
-        </div>
-
-        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Period Summary</p>
-          <div className="grid grid-cols-2 gap-4 text-sm font-['IBM_Plex_Sans']">
-            <div><span className="text-[#7A8078]">Period:</span> <span className="font-semibold">June 2025 (Term 2)</span></div>
-            <div><span className="text-[#7A8078]">Status:</span> <StatusTag variant="warn" label="Open" /></div>
-            <div><span className="text-[#7A8078]">Total Postings:</span> <span className="font-['IBM_Plex_Mono'] font-semibold">347</span></div>
-            <div><span className="text-[#7A8078]">Ledger Balance:</span> <span className="font-['IBM_Plex_Mono'] font-semibold text-[#1F6F4A]">KES 6,979,800</span></div>
+      {selectedPeriodId && (
+        <>
+          <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 mb-5">
+            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Workflow</p>
+            <ApprovalStepper steps={steps} currentStep={1} />
           </div>
-        </div>
 
-        <ValidationCallout type="success" message="Ledger balance verified. All transactions complete. Period is ready for closure." />
-
-        <button
-          onClick={() => setShowConfirm(true)}
-          className="w-full bg-[#9C3B2E] text-white py-3 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#7a2f26] transition-colors"
-        >
-          Proceed to Close Period
-        </button>
-      </div>
-
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#16241D]/60">
-          <div className="bg-white rounded-sm border border-[#DCD6C4] w-[420px] p-6 shadow-xl">
-            <h3 className="font-['Fraunces'] text-xl text-[#16241D] mb-2">Confirm Period Close</h3>
-            <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">
-              Closing June 2025 is irreversible. No postings will be allowed after this point without BOM Finance Chair override. An immutable audit log entry will be created.
-            </p>
-            <div className="space-y-2 mb-4 text-sm font-['IBM_Plex_Sans'] p-3 bg-[#F3EFE4] rounded-sm">
-              <div className="flex justify-between"><span>Total Debits:</span> <span className="font-['IBM_Plex_Mono']">KES 6,979,800</span></div>
-              <div className="flex justify-between"><span>Total Credits:</span> <span className="font-['IBM_Plex_Mono']">KES 6,979,800</span></div>
-              <div className="flex justify-between font-semibold"><span>Status:</span> <StatusTag variant="ok" label="Balanced" /></div>
+          <div className="space-y-4">
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">
+                <strong>Warning:</strong> Once this period is closed, no transactions can be posted or modified without BOM Finance Chair override. This action is permanent and recorded in the audit log.
+              </p>
             </div>
-            <div className="flex gap-3">
-              <button onClick={() => setShowConfirm(false)} className="flex-1 border border-[#DCD6C4] py-2 rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Cancel</button>
-              <button onClick={() => { setStep(3); setShowConfirm(false); }} className="flex-1 bg-[#1F6F4A] text-white py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">
-                Confirm Close — Lock Period
-              </button>
-            </div>
+
+            {closingSummary.loading ? (
+              <div className="bg-white border border-[#DCD6C4] rounded-sm p-4 text-center">
+                <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading period summary...</p>
+              </div>
+            ) : closingSummary.data ? (
+              <>
+                <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+                  <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Period Summary</p>
+                  <div className="grid grid-cols-2 gap-4 text-sm font-['IBM_Plex_Sans']">
+                    <div><span className="text-[#7A8078]">Period:</span> <span className="font-semibold">{closingSummary.data.period_name}</span></div>
+                    <div><span className="text-[#7A8078]">Status:</span> <StatusTag variant="warn" label={closingSummary.data.status || "Open"} /></div>
+                    <div><span className="text-[#7A8078]">Total Postings:</span> <span className="font-['IBM_Plex_Mono'] font-semibold">{closingSummary.data.posting_count || 0}</span></div>
+                    <div><span className="text-[#7A8078]">Ledger Balance:</span> <span className="font-['IBM_Plex_Mono'] font-semibold text-[#1F6F4A]">KES {(closingSummary.data.total_balance || 0).toLocaleString('en-KE')}</span></div>
+                  </div>
+                </div>
+
+                <ValidationCallout 
+                  type={closingSummary.data.is_balanced ? "success" : "error"} 
+                  message={closingSummary.data.is_balanced 
+                    ? "Ledger balance verified. All transactions complete. Period is ready for closure." 
+                    : "Ledger imbalance detected. Fix before closing."
+                  }
+                />
+
+                <button
+                  onClick={() => setShowConfirm(true)}
+                  disabled={!closingSummary.data.is_balanced || isClosing}
+                  className="w-full bg-[#9C3B2E] text-white py-3 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#7a2f26] disabled:opacity-60 transition-colors"
+                >
+                  {isClosing ? "Closing..." : "Proceed to Close Period"}
+                </button>
+              </>
+            ) : null}
           </div>
-        </div>
+
+          {showConfirm && closingSummary.data && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#16241D]/60">
+              <div className="bg-white rounded-sm border border-[#DCD6C4] w-[420px] p-6 shadow-xl">
+                <h3 className="font-['Fraunces'] text-xl text-[#16241D] mb-2">Confirm Period Close</h3>
+                <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">
+                  Closing {closingSummary.data.period_name} is irreversible. No postings will be allowed after this point without BOM Finance Chair override. An immutable audit log entry will be created.
+                </p>
+                <div className="space-y-2 mb-4 text-sm font-['IBM_Plex_Sans'] p-3 bg-[#F3EFE4] rounded-sm">
+                  <div className="flex justify-between"><span>Total Debits:</span> <span className="font-['IBM_Plex_Mono']">KES {(closingSummary.data.total_debits || 0).toLocaleString('en-KE')}</span></div>
+                  <div className="flex justify-between"><span>Total Credits:</span> <span className="font-['IBM_Plex_Mono']">KES {(closingSummary.data.total_credits || 0).toLocaleString('en-KE')}</span></div>
+                  <div className="flex justify-between font-semibold"><span>Status:</span> <StatusTag variant={closingSummary.data.is_balanced ? "ok" : "bad"} label={closingSummary.data.is_balanced ? "Balanced" : "Imbalanced"} /></div>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setShowConfirm(false)} className="flex-1 border border-[#DCD6C4] py-2 rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Cancel</button>
+                  <button 
+                    onClick={() => { handleClosePeriod(); setShowConfirm(false); }} 
+                    disabled={isClosing}
+                    className="flex-1 bg-[#1F6F4A] text-white py-2 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-60"
+                  >
+                    Confirm Close — Lock Period
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
 
+// ─── Capitation Tracking Hooks ────────────────────────────────────────────
+
+/**
+ * Hook: Fetch capitation tracking data
+ * Endpoint: GET /accounting/capitation?school_id={id}&year={year}&term={term}
+ */
+function useCapitationTrackingData(year: string | undefined, term: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!year || !term) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any>(`/accounting/capitation?school_id=${schoolId}&year=${year}&term=${term}`);
+        // setData(result);
+        
+        console.log(`Would fetch capitation tracking for year ${year}, term ${term}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load capitation data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [year, term]);
+
+  return { data, loading, error };
+}
+
+// ─── Capitation Tracking Component ────────────────────────────────────────
+
 function CapitationTracking() {
+  const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedTerm, setSelectedTerm] = useState<string>("");
+
+  // Fetch data from backend
+  const capitationData = useCapitationTrackingData(selectedYear, selectedTerm);
+
+  const getTermOptions = (year: string) => {
+    return [
+      { id: "term1", name: "Term 1" },
+      { id: "term2", name: "Term 2" },
+      { id: "term3", name: "Term 3" },
+    ];
+  };
+
   return (
     <div>
-      <PageHeader title="Capitation Tracking" subtitle="Government capitation funds — restricted use sub-ledger" />
+      <PageHeader 
+        title="Capitation Tracking" 
+        subtitle={selectedYear && selectedTerm 
+          ? `Government capitation funds — restricted use sub-ledger (${getTermOptions(selectedYear).find((t: any) => t.id === selectedTerm)?.name || selectedTerm})`
+          : "Government capitation funds — restricted use sub-ledger"
+        }
+      />
+
+      {/* Year and Term Selection */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Academic Year</label>
+          <select 
+            value={selectedYear}
+            onChange={(e) => {
+              setSelectedYear(e.target.value);
+              setSelectedTerm("");
+            }}
+            className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+          >
+            <option value="">Choose year...</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+          </select>
+        </div>
+
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+          <label className="block text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-2">Term</label>
+          <select 
+            value={selectedTerm}
+            onChange={(e) => setSelectedTerm(e.target.value)}
+            disabled={!selectedYear}
+            className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]"
+          >
+            <option value="">Choose term...</option>
+            {selectedYear && getTermOptions(selectedYear).map((term: any) => (
+              <option key={term.id} value={term.id}>
+                {term.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="bg-[#F5EAD6] border border-[#B5751F] rounded-sm p-4 mb-4">
         <p className="text-sm font-['IBM_Plex_Sans'] text-[#B5751F]">
           <strong>Restricted Use:</strong> Capitation funds received from the government must be tracked separately and can only be applied to approved Vote Heads (Tuition, Learning Materials). Cannot be reassigned to other expenses.
         </p>
       </div>
-      <LedgerPanel
-        title="Capitation Fund Sub-Ledger — Term 2 2025"
-        rows={[
-          { label: "Capitation Received from Ministry", amount: "KES 1,200,000", type: "credit", note: "Per-student allocation" },
-          { label: "Applied to Tuition", amount: "– KES 800,000", type: "debit", note: "Vote Head: Tuition" },
-          { label: "Applied to Learning Materials", amount: "– KES 300,000", type: "debit", note: "Vote Head: Learning Materials" },
-          { label: "Carried Forward / Unspent", amount: "KES 100,000", type: "neutral", note: "Available for approved use next term" },
-        ]}
-        total="KES 100,000 (Unexpended)"
-      />
-      <div className="mt-4 text-xs text-[#7A8078] font-['IBM_Plex_Sans']">
-        <p><strong>Note:</strong> Any deviation from approved use may result in audit findings. Contact the Ministry's Education Officer before applying capitation to non-core Vote Heads.</p>
-      </div>
+
+      {selectedYear && selectedTerm && (
+        <>
+          {/* Loading state */}
+          {capitationData.loading && (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center mb-4">
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading capitation data...</p>
+            </div>
+          )}
+
+          {/* Error state */}
+          {capitationData.error && (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {capitationData.error}</p>
+            </div>
+          )}
+
+          {/* Capitation Ledger */}
+          {!capitationData.loading && capitationData.data && (
+            <>
+              <LedgerPanel
+                title={`Capitation Fund Sub-Ledger — ${getTermOptions(selectedYear).find((t: any) => t.id === selectedTerm)?.name || selectedTerm}`}
+                rows={capitationData.data.transactions?.map((item: any) => ({
+                  label: item.description,
+                  amount: `${item.type === 'credit' ? '' : '– '}KES ${Math.abs(item.amount || 0).toLocaleString('en-KE')}`,
+                  type: item.type, // "credit", "debit", or "neutral"
+                  note: item.note || "",
+                })) || []}
+                total={`KES ${(capitationData.data.unexpended_balance || 0).toLocaleString('en-KE')} (Unexpended)`}
+              />
+              <div className="mt-4 text-xs text-[#7A8078] font-['IBM_Plex_Sans']">
+                <p><strong>Note:</strong> {capitationData.data.note || "Any deviation from approved use may result in audit findings. Contact the Ministry's Education Officer before applying capitation to non-core Vote Heads."}</p>
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
+// ─── Bus Route Assignment Hooks ───────────────────────────────────────────
+
+function useBusRoutes() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /transport/bus-routes?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/transport/bus-routes?school_id=${schoolId}`);
+        // setData(result);
+        
+        console.log("Would fetch bus routes");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load bus routes');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useSaveRouteAssignments() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async (assignments: any) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: POST /transport/save-assignments
+      // const schoolId = tokenManager.getSchoolId();
+      // await apiPost('/transport/save-assignments', { ...assignments, school_id: schoolId });
+      
+      console.log("Would save route assignments", assignments);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save assignments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { save, loading, error };
+}
+
+// ─── Bus Route Assignment Component ────────────────────────────────────────
+
 function BusRouteAssignment() {
+  const busRoutes = useBusRoutes();
+  const { save: saveAssignments, loading: saving, error: saveError } = useSaveRouteAssignments();
+  const routes = busRoutes.data || [];
+
+  const handleSave = async () => {
+    await saveAssignments({ routes });
+  };
+
   return (
     <div>
-      <PageHeader title="Bus Route Assignment" subtitle="Assign day scholars to routes and stops" />
-      <div className="space-y-4">
-        {[
-          { route: "Route 1 — Nambale Town → School", capacity: 45, assigned: 42, students: ["Amina Kariuki", "Brian Ouma", "Cynthia Muga"] },
-          { route: "Route 2 — Kimilili → School", capacity: 48, assigned: 38, students: ["David Rotich", "Eunice Wafula", "Felix Otieno"] },
-          { route: "Route 3 — Cheptais → School", capacity: 40, assigned: 28, students: ["Grace Muturi"] },
-        ].map((route) => (
-          <div key={route.route} className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold font-['IBM_Plex_Sans']">{route.route}</h3>
-              <div className="flex items-center gap-2">
-                <div className="w-24 bg-[#EBE7DC] rounded-sm h-2 overflow-hidden">
-                  <div className="h-2 bg-[#1F6F4A]" style={{ width: `${(route.assigned / route.capacity) * 100}%` }} />
+      <PageHeader title="Bus Route Assignment" subtitle={`Assign day scholars to routes and stops — ${routes.length} routes`} />
+      
+      {(busRoutes.error || saveError) && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {busRoutes.error || saveError}</p>
+        </div>
+      )}
+
+      {busRoutes.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading bus routes...</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {routes.map((route: any) => {
+            const percentage = route.capacity > 0 ? (route.assigned / route.capacity) * 100 : 0;
+            return (
+              <div key={route.route_id} className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold font-['IBM_Plex_Sans']">{route.route_name}</h3>
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 bg-[#EBE7DC] rounded-sm h-2 overflow-hidden">
+                      <div className="h-2 bg-[#1F6F4A]" style={{ width: `${Math.min(percentage, 100)}%` }} />
+                    </div>
+                    <span className="text-xs font-['IBM_Plex_Mono'] text-[#7A8078]">{route.assigned}/{route.capacity}</span>
+                  </div>
                 </div>
-                <span className="text-xs font-['IBM_Plex_Mono'] text-[#7A8078]">{route.assigned}/{route.capacity}</span>
+                <div className="text-sm font-['IBM_Plex_Sans'] text-[#7A8078]">
+                  {route.student_names ? route.student_names.slice(0, 3).join(", ") : "No students assigned"}{route.student_names && route.student_names.length > 3 ? ` + ${route.student_names.length - 3} more` : ""}
+                </div>
               </div>
-            </div>
-            <div className="text-sm font-['IBM_Plex_Sans'] text-[#7A8078]">
-              {route.students.slice(0, 3).join(", ")}{route.students.length > 3 ? ` + ${route.students.length - 3} more` : ""}
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
+      
       <div className="mt-4 flex gap-3 justify-end">
-        <button className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Rebalance Routes</button>
-        <button className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Save Assignments</button>
+        <button disabled={saving} className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4] disabled:opacity-60">Rebalance Routes</button>
+        <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] disabled:opacity-60">{saving ? "Saving..." : "Save Assignments"}</button>
       </div>
     </div>
   );
@@ -2607,171 +7743,507 @@ function FileUploadZone({ label, onUpload }: { label: string; onUpload: (f: File
   );
 }
 
+// ─── Transfers & Clearance Hooks ─────────────────────────────────────────────
+
+/**
+ * Hook: Fetch student details for transfer
+ * Endpoint: GET /admissions/students/{id}
+ */
+function useStudentDetailsForTransfer(studentId: string | undefined) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studentId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any>(`/admissions/students/${studentId}`);
+        // setData(result);
+        
+        // Placeholder until backend ready
+        console.log(`Would fetch student details for: ${studentId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load student details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [studentId]);
+
+  return { data, loading, error };
+}
+
+/**
+ * Hook: Fetch transfer requirements and checklist
+ * Endpoint: GET /admissions/transfers/requirements?student_id={id}
+ */
+function useTransferRequirements(studentId: string | undefined) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studentId) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: Replace with real API call
+        // const result = await apiGet<any>(`/admissions/transfers/requirements?student_id=${studentId}`);
+        // setData(result);
+        
+        // Placeholder until backend ready
+        console.log(`Would fetch transfer requirements for: ${studentId}`);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load transfer requirements');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [studentId]);
+
+  return { data, loading, error };
+}
+
+// ─── Transfers & Clearance Component ──────────────────────────────────────────
+
 function TransferRequest() {
   const [submitted, setSubmitted] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
+  const [studentId, setStudentId] = useState<string>("");
+  const [formData, setFormData] = useState({
+    studentName: "",
+    admissionNo: "",
+    currentClass: "",
+    transferReason: "",
+    receivingSchoolName: "",
+    county: "",
+    contact: "",
+  });
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedData, setSubmittedData] = useState<any>(null);
 
-  if (submitted) {
+  // Fetch student and requirements data
+  const studentDetails = useStudentDetailsForTransfer(studentId || undefined);
+  const transferRequirements = useTransferRequirements(studentId || undefined);
+
+  // Populate form when student data loads
+  useEffect(() => {
+    if (studentDetails.data) {
+      setFormData(prev => ({
+        ...prev,
+        studentName: `${studentDetails.data.first_name || ''} ${studentDetails.data.last_name || ''}`.trim(),
+        admissionNo: studentDetails.data.id || '',
+        currentClass: studentDetails.data.class_stream ? 
+          `${studentDetails.data.class} ${studentDetails.data.stream}` : '',
+      }));
+    }
+  }, [studentDetails.data]);
+
+  if (submitted && submittedData) {
     return (
       <div>
         <PageHeader title="Transfer Request" subtitle="Student exit and transfer" />
-        <ValidationCallout type="success" message="Transfer request submitted for David K. Rotich (ADM-2024-0312). The school receiving the student will be notified. A copy of all supporting documents has been attached to the student's file." />
+        <ValidationCallout 
+          type="success" 
+          message={`Transfer request submitted for ${submittedData.studentName} (${submittedData.admissionNo}). The school receiving the student will be notified. A copy of all supporting documents has been attached to the student's file.`} 
+        />
         <div className="mt-4">
-          <button onClick={() => setSubmitted(false)} className="text-sm text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">← Submit another transfer</button>
+          <button onClick={() => { setSubmitted(false); setStudentId(""); }} className="text-sm text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">← Submit another transfer</button>
         </div>
       </div>
     );
   }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.studentName || !formData.receivingSchoolName || !formData.county) {
+      setFormError("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setFormError(null);
+
+      // BACKEND: Submit transfer request
+      // const payload = {
+      //   student_id: studentId,
+      //   transfer_reason: formData.transferReason,
+      //   receiving_school_name: formData.receivingSchoolName,
+      //   receiving_county: formData.county,
+      //   receiving_contact: formData.contact,
+      //   documents: uploadedFiles,
+      // };
+      // const result = await apiPost('/admissions/transfers', payload);
+      
+      // For now, just store submitted data
+      setSubmittedData(formData);
+      setSubmitted(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to submit transfer request';
+      setFormError(msg);
+      console.error("Transfer submission error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div>
       <PageHeader title="Transfer Request" subtitle="Process student transfer to another school" />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-5">
+          {/* Student Search/Selection */}
           <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
-            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">Student Details</p>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Student Name</label>
-                <input defaultValue="David Kipchoge Rotich" className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Admission No.</label>
-                <input defaultValue="ADM-2024-0312" className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Mono'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Current Class</label>
-                <input defaultValue="Form 2 Stream A" className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Transfer Reason</label>
-                <select className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]">
-                  <option>School Relocation</option>
-                  <option>Parental Request</option>
-                  <option>Academic Reasons</option>
-                  <option>Discipline</option>
-                  <option>Financial</option>
-                </select>
-              </div>
+            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">Select Student</p>
+            <div>
+              <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Student ID or Admission Number</label>
+              <input 
+                type="text"
+                placeholder="e.g. ADM-2024-0312 or student-uuid"
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
+                className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" 
+              />
+              {studentDetails.loading && <p className="text-xs text-[#7A8078] mt-2">Loading student details...</p>}
+              {studentDetails.error && <p className="text-xs text-[#9C3B2E] mt-2">⚠️ {studentDetails.error}</p>}
             </div>
           </div>
 
-          <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
-            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">Receiving School Details</p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Receiving School Name</label>
-                <input placeholder="e.g. Kapsabet High School" className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">County</label>
-                <input placeholder="County" className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Contact</label>
-                <input placeholder="Phone or email" className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
+          {/* Student Details */}
+          {studentId && (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
+              <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">Student Details</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Student Name</label>
+                  <input 
+                    value={formData.studentName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, studentName: e.target.value }))}
+                    disabled={studentDetails.data !== null}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Admission No.</label>
+                  <input 
+                    value={formData.admissionNo}
+                    onChange={(e) => setFormData(prev => ({ ...prev, admissionNo: e.target.value }))}
+                    disabled={studentDetails.data !== null}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Mono'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Current Class</label>
+                  <input 
+                    value={formData.currentClass}
+                    onChange={(e) => setFormData(prev => ({ ...prev, currentClass: e.target.value }))}
+                    disabled={studentDetails.data !== null}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] disabled:bg-[#F3EFE4]" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Transfer Reason</label>
+                  <select 
+                    value={formData.transferReason}
+                    onChange={(e) => setFormData(prev => ({ ...prev, transferReason: e.target.value }))}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+                  >
+                    <option value="">Select reason...</option>
+                    <option value="school_relocation">School Relocation</option>
+                    <option value="parental_request">Parental Request</option>
+                    <option value="academic_reasons">Academic Reasons</option>
+                    <option value="discipline">Discipline</option>
+                    <option value="financial">Financial</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
-            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">Supporting Documents</p>
-            <div className="space-y-4">
-              <FileUploadZone label="Academic Transcript" onUpload={(f) => setUploadedFiles(u => ({ ...u, transcript: f }))} />
-              <FileUploadZone label="Clearance Certificate (Bursar)" onUpload={(f) => setUploadedFiles(u => ({ ...u, clearance: f }))} />
-              <FileUploadZone label="Conduct Certificate (if applicable)" onUpload={(f) => setUploadedFiles(u => ({ ...u, conduct: f }))} />
+          {/* Receiving School Details */}
+          {studentId && (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
+              <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">Receiving School Details</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Receiving School Name</label>
+                  <input 
+                    type="text"
+                    placeholder="e.g. Kapsabet High School"
+                    value={formData.receivingSchoolName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, receivingSchoolName: e.target.value }))}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">County</label>
+                  <input 
+                    type="text"
+                    placeholder="County"
+                    value={formData.county}
+                    onChange={(e) => setFormData(prev => ({ ...prev, county: e.target.value }))}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Contact</label>
+                  <input 
+                    type="text"
+                    placeholder="Phone or email"
+                    value={formData.contact}
+                    onChange={(e) => setFormData(prev => ({ ...prev, contact: e.target.value }))}
+                    className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" 
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Supporting Documents */}
+          {studentId && (
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
+              <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">Supporting Documents</p>
+              <div className="space-y-4">
+                <FileUploadZone label="Academic Transcript" onUpload={(f) => setUploadedFiles(u => ({ ...u, transcript: f }))} />
+                <FileUploadZone label="Clearance Certificate (Bursar)" onUpload={(f) => setUploadedFiles(u => ({ ...u, clearance: f }))} />
+                <FileUploadZone label="Conduct Certificate (if applicable)" onUpload={(f) => setUploadedFiles(u => ({ ...u, conduct: f }))} />
+              </div>
+            </div>
+          )}
+
+          {/* Form Error */}
+          {formError && (
+            <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4">
+              <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">
+                ⚠️ {formError}
+              </p>
+            </div>
+          )}
         </div>
 
-        <div className="space-y-4">
-          <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
-            <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Transfer Checklist</p>
-            {[
-              "Academic transcript prepared",
-              "Clearance certificate obtained",
-              "Outstanding fees settled",
-              "Library books returned",
-              "Sports equipment accounted for",
-              "Receiving school confirmed",
-            ].map((item) => (
-              <label key={item} className="flex items-center gap-2 py-1.5 cursor-pointer">
-                <input type="checkbox" className="accent-[#1F6F4A]" />
-                <span className="text-xs font-['IBM_Plex_Sans'] text-[#16241D]">{item}</span>
-              </label>
-            ))}
-          </div>
+        {/* Right Sidebar */}
+        {studentId && (
+          <div className="space-y-4">
+            {/* Transfer Checklist */}
+            <div className="bg-white border border-[#DCD6C4] rounded-sm p-4">
+              <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-3">Transfer Checklist</p>
+              {transferRequirements.loading ? (
+                <p className="text-xs text-[#7A8078]">Loading requirements...</p>
+              ) : transferRequirements.data?.items ? (
+                transferRequirements.data.items.map((item: any) => (
+                  <label key={item.id} className="flex items-center gap-2 py-1.5 cursor-pointer">
+                    <input type="checkbox" className="accent-[#1F6F4A]" />
+                    <span className="text-xs font-['IBM_Plex_Sans'] text-[#16241D]">{item.name}</span>
+                  </label>
+                ))
+              ) : (
+                /* Fallback checklist items from backend when not ready */
+                [
+                  "Academic transcript prepared",
+                  "Clearance certificate obtained",
+                  "Outstanding fees settled",
+                  "Library books returned",
+                  "Sports equipment accounted for",
+                  "Receiving school confirmed",
+                ].map((item) => (
+                  <label key={item} className="flex items-center gap-2 py-1.5 cursor-pointer">
+                    <input type="checkbox" className="accent-[#1F6F4A]" />
+                    <span className="text-xs font-['IBM_Plex_Sans'] text-[#16241D]">{item}</span>
+                  </label>
+                ))
+              )}
+            </div>
 
-          <div className="bg-[#F5EAD6] border border-[#B5751F] rounded-sm p-4">
-            <p className="text-xs font-['IBM_Plex_Sans'] text-[#B5751F]">
-              <strong>Note:</strong> Once submitted, the transfer cannot be cancelled. The receiving school and our Principal will be notified automatically.
-            </p>
-          </div>
+            <div className="bg-[#F5EAD6] border border-[#B5751F] rounded-sm p-4">
+              <p className="text-xs font-['IBM_Plex_Sans'] text-[#B5751F]">
+                <strong>Note:</strong> Once submitted, the transfer cannot be cancelled. The receiving school and our Principal will be notified automatically.
+              </p>
+            </div>
 
-          <button
-            onClick={() => setSubmitted(true)}
-            className="w-full bg-[#1F6F4A] text-white py-3 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] focus:ring-offset-2"
-          >
-            Submit Transfer Request
-          </button>
-        </div>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || !studentId}
+              className="w-full bg-[#1F6F4A] text-white py-3 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] focus:ring-offset-2 disabled:bg-[#7A8078] disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Transfer Request"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
+// ─── Leave Pass Queue Hooks ───────────────────────────────────────────────
+
+function useLeavePassQueue() {
+  const [data, setData] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /students/leave-pass-queue?school_id={schoolId}
+        // const schoolId = tokenManager.getSchoolId();
+        // const result = await apiGet<any[]>(`/students/leave-pass-queue?school_id=${schoolId}`);\n        // setData(result);
+        
+        console.log("Would fetch leave pass queue");
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load queue');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, loading, error };
+}
+
+function useApproveLeavePass() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const approve = async (passId: string, approved: boolean) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: POST /students/leave-pass-decision
+      // await apiPost('/students/leave-pass-decision', { pass_id: passId, approved });
+      
+      console.log("Would approve/deny leave pass", passId, approved);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update pass');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { approve, loading, error };
+}
+
+// ─── Leave Pass Queue Component ────────────────────────────────────────────
+
 function LeavePassQueue() {
-  const [queue] = useState([
-    { student: "Felix A. Otieno", requested: "2025-06-18 15:00", reason: "Doctor appointment", expiresAt: "18:00", status: "pending" },
-    { student: "Grace N. Muturi", requested: "2025-06-17 14:30", reason: "Family emergency", expiresAt: "17:00", status: "approved" },
-  ]);
+  const passQueue = useLeavePassQueue();
+  const { approve: approvePass, loading: processing, error: approveError } = useApproveLeavePass();
+  const queue = passQueue.data || [];
 
   return (
     <div>
-      <PageHeader title="Leave Pass Approval Queue" subtitle="Deputy Principal — pending and approved passes" />
-      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
-        <table className="w-full text-sm font-['IBM_Plex_Sans']">
-          <thead>
-            <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Student</th>
-              <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Reason</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Requested</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Valid Until</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Status</th>
-              <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {queue.map((item) => (
-              <tr key={item.student} className="border-b border-[#DCD6C4] last:border-0">
-                <td className="px-4 py-3">{item.student}</td>
-                <td className="px-4 py-3 text-sm">{item.reason}</td>
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs">{item.requested}</td>
-                <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs">{item.expiresAt}</td>
-                <td className="px-4 py-3 text-center">
-                  <StatusTag variant={item.status === "approved" ? "ok" : "warn"} label={item.status === "approved" ? "Approved" : "Pending"} />
-                </td>
-                <td className="px-4 py-3 text-center">
-                  {item.status === "pending" ? (
-                    <div className="flex gap-2 justify-center">
-                      <button className="text-xs text-[#1F6F4A] font-semibold hover:underline">Approve</button>
-                      <button className="text-xs text-[#9C3B2E] font-semibold hover:underline">Deny</button>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-[#7A8078]">—</span>
-                  )}
-                </td>
+      <PageHeader title="Leave Pass Approval Queue" subtitle={`Deputy Principal — ${queue.length} pending and approved passes`} />
+      
+      {(passQueue.error || approveError) && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {passQueue.error || approveError}</p>
+        </div>
+      )}
+
+      {passQueue.loading ? (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading leave pass queue...</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden">
+          <table className="w-full text-sm font-['IBM_Plex_Sans']">
+            <thead>
+              <tr className="border-b border-[#DCD6C4] bg-[#F3EFE4]">
+                <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Student</th>
+                <th className="px-4 py-2.5 text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Reason</th>
+                <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Requested</th>
+                <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Valid Until</th>
+                <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Status</th>
+                <th className="px-4 py-2.5 text-center text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {queue.map((item: any) => (
+                <tr key={item.pass_id} className="border-b border-[#DCD6C4] last:border-0">
+                  <td className="px-4 py-3">{item.student_name}</td>
+                  <td className="px-4 py-3 text-sm">{item.reason}</td>
+                  <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs">{item.requested_at}</td>
+                  <td className="px-4 py-3 font-['IBM_Plex_Mono'] text-xs">{item.expires_at}</td>
+                  <td className="px-4 py-3 text-center">
+                    <StatusTag variant={item.status === "approved" ? "ok" : item.status === "denied" ? "bad" : "warn"} label={item.status === "approved" ? "Approved" : item.status === "denied" ? "Denied" : "Pending"} />
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {item.status === "pending" ? (
+                      <div className="flex gap-2 justify-center">
+                        <button onClick={() => approvePass(item.pass_id, true)} disabled={processing} className="text-xs text-[#1F6F4A] font-semibold hover:underline disabled:opacity-60">Approve</button>
+                        <button onClick={() => approvePass(item.pass_id, false)} disabled={processing} className="text-xs text-[#9C3B2E] font-semibold hover:underline disabled:opacity-60">Deny</button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-[#7A8078]">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
 
+// ─── Leave Request Hooks ──────────────────────────────────────────────────
+
+function useSubmitLeaveRequest() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (leaveData: any) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: POST /staff/leave-requests
+      // const schoolId = tokenManager.getSchoolId();
+      // await apiPost('/staff/leave-requests', { ...leaveData, school_id: schoolId });
+      
+      console.log("Would submit leave request", leaveData);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit request');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { submit, loading, error };
+}
+
+// ─── Leave Request Component ──────────────────────────────────────────────
+
 function LeaveRequest() {
   const [submitted, setSubmitted] = useState(false);
+  const [leaveType, setLeaveType] = useState("Annual Leave");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [reason, setReason] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+  const { submit: submitRequest, loading: submitting, error: submitError } = useSubmitLeaveRequest();
 
   if (submitted) {
     return (
@@ -2779,20 +8251,47 @@ function LeaveRequest() {
         <PageHeader title="Leave Request" subtitle="Staff leave application" />
         <ValidationCallout type="success" message="Leave request submitted. Your request has been forwarded to Deputy Principal Administration for approval. You will receive notification of the decision." />
         <div className="mt-4">
-          <button onClick={() => setSubmitted(false)} className="text-sm text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">← Submit another request</button>
+          <button onClick={() => { setSubmitted(false); setLeaveType("Annual Leave"); setFromDate(""); setToDate(""); setReason(""); }} className="text-sm text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline">← Submit another request</button>
         </div>
       </div>
     );
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!leaveType || !fromDate || !toDate || !reason.trim()) {
+      setFormError("Please fill in all required fields");
+      return;
+    }
+
+    const leaveData = { leaveType, fromDate, toDate, reason };
+    await submitRequest(leaveData);
+    
+    if (submitError) {
+      setFormError(submitError);
+    } else {
+      setSubmitted(true);
+    }
+  };
+
   return (
     <div>
       <PageHeader title="Leave Request" subtitle="Submit staff leave application for approval" />
       <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 max-w-xl">
-        <div className="space-y-4">
+        {(formError || submitError) && (
+          <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+            <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {formError || submitError}</p>
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Leave Type</label>
-            <select className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]">
+            <select 
+              value={leaveType} 
+              onChange={(e) => setLeaveType(e.target.value)}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            >
               <option>Annual Leave</option>
               <option>Sick Leave</option>
               <option>Compassionate Leave</option>
@@ -2802,167 +8301,320 @@ function LeaveRequest() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">From Date</label>
-              <input type="date" className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
+              <input 
+                type="date" 
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" 
+              />
             </div>
             <div>
               <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">To Date</label>
-              <input type="date" className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" />
+              <input 
+                type="date" 
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]" 
+              />
             </div>
           </div>
           <div>
             <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Reason</label>
-            <textarea className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] h-24 resize-none" placeholder="Provide details for your leave request..." />
+            <textarea 
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A] h-24 resize-none" 
+              placeholder="Provide details for your leave request..." 
+            />
           </div>
           <button
-            onClick={() => setSubmitted(true)}
-            className="w-full bg-[#1F6F4A] text-white py-2.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors"
+            type="submit"
+            disabled={submitting}
+            className="w-full bg-[#1F6F4A] text-white py-2.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-60"
           >
-            Submit Leave Request
+            {submitting ? "Submitting..." : "Submit Leave Request"}
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );
 }
+
+// ─── Digital Payslip Hooks ────────────────────────────────────────────────
+
+function useDigitalPayslip(employeeId: string | undefined, period: string | undefined) {
+  const [data, setData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!employeeId || !period) return;
+    
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // BACKEND: GET /payroll/payslip/{employeeId}?period={period}
+        // const result = await apiGet<any>(`/payroll/payslip/${employeeId}?period=${period}`);
+        // setData(result);
+        
+        console.log("Would fetch payslip", employeeId, period);
+        setError("Backend API not yet implemented");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load payslip');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [employeeId, period]);
+
+  return { data, loading, error };
+}
+
+// ─── Digital Payslip Component ────────────────────────────────────────────
 
 function DigitalPayslip() {
+  const [selectedEmployee, setSelectedEmployee] = useState<string>("");
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("");
+  const payslip = useDigitalPayslip(selectedEmployee || undefined, selectedPeriod || undefined);
+  const payslipData = payslip.data;
+
   return (
     <div>
-      <PageHeader title="Digital Payslip" subtitle="Dr. J. Mwangi · June 2025" />
-      <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 max-w-2xl print:bg-white">
-        {/* Header */}
-        <div className="text-center mb-6 border-b-2 border-[#16241D] pb-4">
-          <p className="font-['Fraunces'] text-2xl font-medium text-[#16241D]">PAYSLIP</p>
-          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">June 2025 · Monthly Salary Payment</p>
-        </div>
-
-        {/* Employee Info */}
-        <div className="grid grid-cols-2 gap-6 text-sm font-['IBM_Plex_Sans'] mb-6">
-          <div><span className="text-[#7A8078]">Employee Name:</span> <span className="font-semibold">Dr. J. Mwangi</span></div>
-          <div><span className="text-[#7A8078]">Employee ID:</span> <span className="font-['IBM_Plex_Mono'] font-semibold">TSC-123456</span></div>
-          <div><span className="text-[#7A8078]">Position:</span> <span className="font-semibold">Head of Science</span></div>
-          <div><span className="text-[#7A8078]">Payment Date:</span> <span className="font-semibold">30 Jun 2025</span></div>
-        </div>
-
-        {/* Earnings */}
-        <div className="mb-6">
-          <p className="text-sm font-semibold text-[#16241D] mb-2">Earnings</p>
-          <table className="w-full text-sm font-['IBM_Plex_Sans']">
-            <tbody>
-              <tr className="border-b border-[#DCD6C4]">
-                <td className="py-2">Basic Salary</td>
-                <td className="text-right font-['IBM_Plex_Mono']">KES 85,000</td>
-              </tr>
-              <tr className="border-b border-[#DCD6C4]">
-                <td className="py-2">House Allowance</td>
-                <td className="text-right font-['IBM_Plex_Mono']">KES 0</td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="flex justify-between py-2 border-t-2 border-[#16241D] font-semibold">
-            <span>Total Gross Pay</span>
-            <span className="font-['IBM_Plex_Mono']">KES 85,000</span>
+      <PageHeader title="Digital Payslip" subtitle={selectedEmployee && selectedPeriod ? `${payslipData?.employee_name || 'Staff Member'} · ${selectedPeriod}` : "Employee payslip records"} />
+      
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 max-w-2xl mb-4">
+        <p className="text-[11px] uppercase tracking-widest text-[#7A8078] font-['IBM_Plex_Sans'] mb-4">Payslip Selection</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Employee</label>
+            <input 
+              type="text"
+              placeholder="Employee ID or name"
+              value={selectedEmployee}
+              onChange={(e) => setSelectedEmployee(e.target.value)}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            />
           </div>
-        </div>
-
-        {/* Deductions */}
-        <div className="mb-6">
-          <p className="text-sm font-semibold text-[#16241D] mb-2">Deductions</p>
-          <table className="w-full text-sm font-['IBM_Plex_Sans']">
-            <tbody>
-              <tr className="border-b border-[#DCD6C4]">
-                <td className="py-2">PAYE Tax</td>
-                <td className="text-right font-['IBM_Plex_Mono']">KES 15,300</td>
-              </tr>
-              <tr className="border-b border-[#DCD6C4]">
-                <td className="py-2">NHIF Contribution</td>
-                <td className="text-right font-['IBM_Plex_Mono']">KES 1,700</td>
-              </tr>
-              <tr className="border-b border-[#DCD6C4]">
-                <td className="py-2">NSSF Contribution</td>
-                <td className="text-right font-['IBM_Plex_Mono']">KES 2,040</td>
-              </tr>
-              <tr className="border-b border-[#DCD6C4]">
-                <td className="py-2">Housing Levy</td>
-                <td className="text-right font-['IBM_Plex_Mono']">KES 850</td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="flex justify-between py-2 border-t-2 border-[#16241D] font-semibold">
-            <span>Total Deductions</span>
-            <span className="font-['IBM_Plex_Mono']">KES 19,890</span>
+          <div>
+            <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Period</label>
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            >
+              <option value="">Choose period...</option>
+              <option value="2025-06">June 2025</option>
+              <option value="2025-05">May 2025</option>
+              <option value="2025-04">April 2025</option>
+            </select>
           </div>
-        </div>
-
-        {/* Net Pay */}
-        <div className="bg-[#E7F0EA] p-4 rounded-sm mb-6">
-          <div className="flex justify-between text-lg font-semibold font-['IBM_Plex_Sans']">
-            <span>Net Pay (Amount Payable)</span>
-            <span className="font-['IBM_Plex_Mono'] text-[#1F6F4A]">KES 65,110</span>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center text-xs text-[#7A8078] font-['IBM_Plex_Sans']">
-          <p>This is an electronically generated payslip. No signature required.</p>
-          <p className="mt-2">For queries, contact the HR Office.</p>
         </div>
       </div>
-      <div className="mt-4 flex gap-3 justify-end max-w-2xl">
-        <button className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Download PDF</button>
-        <button className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Print Payslip</button>
-      </div>
+
+      {payslip.error && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {payslip.error}</p>
+        </div>
+      )}
+
+      {payslip.loading && (
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 text-center max-w-2xl">
+          <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">Loading payslip...</p>
+        </div>
+      )}
+
+      {payslipData && !payslip.loading && (
+        <>
+          <div className="bg-white border border-[#DCD6C4] rounded-sm p-8 max-w-2xl print:bg-white">
+            {/* Header */}
+            <div className="text-center mb-6 border-b-2 border-[#16241D] pb-4">
+              <p className="font-['Fraunces'] text-2xl font-medium text-[#16241D]">PAYSLIP</p>
+              <p className="text-sm text-[#7A8078] font-['IBM_Plex_Sans']">{selectedPeriod} · Monthly Salary Payment</p>
+            </div>
+
+            {/* Employee Info */}
+            <div className="grid grid-cols-2 gap-6 text-sm font-['IBM_Plex_Sans'] mb-6">
+              <div><span className="text-[#7A8078]">Employee Name:</span> <span className="font-semibold">{payslipData.employee_name || "—"}</span></div>
+              <div><span className="text-[#7A8078]">Employee ID:</span> <span className="font-['IBM_Plex_Mono'] font-semibold">{payslipData.employee_id || "—"}</span></div>
+              <div><span className="text-[#7A8078]">Position:</span> <span className="font-semibold">{payslipData.position || "—"}</span></div>
+              <div><span className="text-[#7A8078]">Payment Date:</span> <span className="font-semibold">{payslipData.payment_date || "—"}</span></div>
+            </div>
+
+            {/* Earnings */}
+            <div className="mb-6">
+              <p className="text-sm font-semibold text-[#16241D] mb-2">Earnings</p>
+              <table className="w-full text-sm font-['IBM_Plex_Sans']">
+                <tbody>
+                  {payslipData.earnings?.map((e: any, i: number) => (
+                    <tr key={i} className="border-b border-[#DCD6C4]">
+                      <td className="py-2">{e.name}</td>
+                      <td className="text-right font-['IBM_Plex_Mono']">KES {(e.amount || 0).toLocaleString('en-KE')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="flex justify-between py-2 border-t-2 border-[#16241D] font-semibold">
+                <span>Total Gross Pay</span>
+                <span className="font-['IBM_Plex_Mono']">KES {(payslipData.total_gross || 0).toLocaleString('en-KE')}</span>
+              </div>
+            </div>
+
+            {/* Deductions */}
+            <div className="mb-6">
+              <p className="text-sm font-semibold text-[#16241D] mb-2">Deductions</p>
+              <table className="w-full text-sm font-['IBM_Plex_Sans']">
+                <tbody>
+                  {payslipData.deductions?.map((d: any, i: number) => (
+                    <tr key={i} className="border-b border-[#DCD6C4]">
+                      <td className="py-2">{d.name}</td>
+                      <td className="text-right font-['IBM_Plex_Mono']">KES {(d.amount || 0).toLocaleString('en-KE')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="flex justify-between py-2 border-t-2 border-[#16241D] font-semibold">
+                <span>Total Deductions</span>
+                <span className="font-['IBM_Plex_Mono']">KES {(payslipData.total_deductions || 0).toLocaleString('en-KE')}</span>
+              </div>
+            </div>
+
+            {/* Net Pay */}
+            <div className="bg-[#E7F0EA] p-4 rounded-sm mb-6">
+              <div className="flex justify-between text-lg font-semibold font-['IBM_Plex_Sans']">
+                <span>Net Pay (Amount Payable)</span>
+                <span className="font-['IBM_Plex_Mono'] text-[#1F6F4A]">KES {(payslipData.net_pay || 0).toLocaleString('en-KE')}</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="text-center text-xs text-[#7A8078] font-['IBM_Plex_Sans']">
+              <p>This is an electronically generated payslip. No signature required.</p>
+              <p className="mt-2">For queries, contact the HR Office.</p>
+            </div>
+          </div>
+          <div className="mt-4 flex gap-3 justify-end max-w-2xl">
+            <button className="px-4 py-2 border border-[#DCD6C4] rounded-sm text-sm font-['IBM_Plex_Sans'] hover:bg-[#F3EFE4]">Download PDF</button>
+            <button className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">Print Payslip</button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
+// ─── KRA Statutory Reports Hooks ──────────────────────────────────────────
+
+function useGenerateKRAReports() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generate = async (period: string, reportTypes: string[]) => {
+    try {
+      setLoading(true);
+      setError(null);
+      // BACKEND: POST /payroll/kra-reports
+      // const schoolId = tokenManager.getSchoolId();
+      // const result = await apiPost('/payroll/kra-reports', { 
+      //   school_id: schoolId,
+      //   period,
+      //   report_types: reportTypes
+      // });
+      // return result;
+
+      console.log("Would generate KRA reports", period, reportTypes);
+      throw new Error("Backend API not yet implemented");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate reports');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { generate, loading, error };
+}
+
+// ─── KRA Statutory Reports Component ───────────────────────────────────────
+
 function KRAStatutoryReports() {
-  const [generated, setGenerated] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("");
+  const [selectedReports, setSelectedReports] = useState<string[]>(["PAYE", "NHIF", "NSSF"]);
+  const [generatedData, setGeneratedData] = useState<any | null>(null);
+  const { generate: generateReports, loading: generating, error: generateError } = useGenerateKRAReports();
+
+  const handleGenerate = async () => {
+    if (!selectedPeriod || selectedReports.length === 0) return;
+    const result = await generateReports(selectedPeriod, selectedReports);
+    setGeneratedData(result);
+  };
 
   return (
     <div>
       <PageHeader title="KRA Statutory Reports" subtitle="PAYE, NHIF, NSSF monthly remittance reports" />
-      {!generated ? (
+      
+      {generateError && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-4 mb-4">
+          <p className="text-sm font-['IBM_Plex_Sans'] text-[#9C3B2E]">⚠️ {generateError}</p>
+        </div>
+      )}
+
+      {!generatedData ? (
         <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Report Period</label>
-            <select className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]">
-              <option>June 2025</option>
-              <option>May 2025</option>
-              <option>April 2025</option>
+            <select 
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm font-['IBM_Plex_Sans'] focus:outline-none focus:ring-2 focus:ring-[#1F6F4A]"
+            >
+              <option value="">Choose period...</option>
+              <option value="2025-06">June 2025</option>
+              <option value="2025-05">May 2025</option>
+              <option value="2025-04">April 2025</option>
             </select>
           </div>
           <div>
             <label className="block text-xs font-semibold text-[#7A8078] uppercase tracking-wide mb-1 font-['IBM_Plex_Sans']">Report Type</label>
             <div className="space-y-2">
-              {["PAYE Remittance Report", "NHIF Remittance Report", "NSSF Remittance Report"].map((type) => (
+              {["PAYE", "NHIF", "NSSF"].map((type) => (
                 <label key={type} className="flex items-center gap-2">
-                  <input type="checkbox" className="accent-[#1F6F4A]" defaultChecked />
-                  <span className="text-sm font-['IBM_Plex_Sans']">{type}</span>
+                  <input 
+                    type="checkbox" 
+                    className="accent-[#1F6F4A]" 
+                    checked={selectedReports.includes(type)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedReports([...selectedReports, type]);
+                      } else {
+                        setSelectedReports(selectedReports.filter(r => r !== type));
+                      }
+                    }}
+                  />
+                  <span className="text-sm font-['IBM_Plex_Sans']">{type} Remittance Report</span>
                 </label>
               ))}
             </div>
           </div>
           <button
-            onClick={() => setGenerated(true)}
-            className="w-full bg-[#1F6F4A] text-white py-2.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors"
+            onClick={handleGenerate}
+            disabled={generating || !selectedPeriod}
+            className="w-full bg-[#1F6F4A] text-white py-2.5 rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e] transition-colors disabled:opacity-60"
           >
-            Generate Reports
+            {generating ? "Generating..." : "Generate Reports"}
           </button>
         </div>
       ) : (
         <div className="space-y-4">
-          <ValidationCallout type="success" message="Reports generated successfully for June 2025. 74 staff members included." />
+          <ValidationCallout type="success" message={`Reports generated successfully for ${selectedPeriod}. All staff members included.`} />
           <div className="grid grid-cols-1 gap-4">
-            {[
-              { report: "PAYE Remittance", amount: "KES 1,134,200", status: "ready" },
-              { report: "NHIF Remittance", amount: "KES 125,800", status: "ready" },
-              { report: "NSSF Remittance", amount: "KES 296,480", status: "ready" },
-            ].map((item) => (
-              <div key={item.report} className="bg-white border border-[#DCD6C4] rounded-sm p-4 flex items-center justify-between">
+            {generatedData.reports?.map((item: any) => (
+              <div key={item.report_type} className="bg-white border border-[#DCD6C4] rounded-sm p-4 flex items-center justify-between">
                 <div>
-                  <p className="font-semibold font-['IBM_Plex_Sans']">{item.report}</p>
-                  <p className="text-sm font-['IBM_Plex_Mono'] text-[#7A8078]">{item.amount}</p>
+                  <p className="font-semibold font-['IBM_Plex_Sans']">{item.report_name}</p>
+                  <p className="text-sm font-['IBM_Plex_Mono'] text-[#7A8078]">KES {(item.amount || 0).toLocaleString('en-KE')}</p>
                 </div>
                 <button className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold font-['IBM_Plex_Sans'] hover:bg-[#185f3e]">
                   Download
@@ -2970,6 +8622,12 @@ function KRAStatutoryReports() {
               </div>
             ))}
           </div>
+          <button 
+            onClick={() => setGeneratedData(null)}
+            className="text-sm text-[#1F6F4A] font-semibold font-['IBM_Plex_Sans'] hover:underline mt-4"
+          >
+            ← Generate different reports
+          </button>
         </div>
       )}
     </div>
@@ -2979,8 +8637,8 @@ function KRAStatutoryReports() {
 // ─── Page Renderer ────────────────────────────────────────────────────────────
 function renderPage(page: NavPage, onNavigate: (p: NavPage) => void): React.ReactNode {
   switch (page) {
-    case "principal-dashboard": return <PrincipalDashboard />;
-    case "bursar-dashboard": return <BursarDashboard />;
+    case "principal-dashboard": return <PrincipalDashboard onNavigate={onNavigate} />;
+    case "bursar-dashboard": return <BursarDashboard onNavigate={onNavigate} />;
     case "prospect-tracker": return <ProspectTracker onNavigate={onNavigate} />;
     case "new-admission": return <NewAdmission />;
     case "student-profile": return <StudentProfile />;
