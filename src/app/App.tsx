@@ -6331,7 +6331,9 @@ function ReportCardPreview() {
                   <div><span className="text-[#7A8078]">Name:</span> <span className="font-semibold">{selectedStudent?.first_name} {selectedStudent?.last_name}</span></div>
                   <div><span className="text-[#7A8078]">Class:</span> <span className="font-semibold">{selectedStudent?.current_class || "N/A"}</span></div>
                   <div><span className="text-[#7A8078]">Admission:</span> <span className="font-['IBM_Plex_Mono'] font-semibold">{selectedStudent?.admission_number || "N/A"}</span></div>
-                  <div><span className="text-[#7A8078]">Position:</span> <span className="font-semibold">{reportCardData.data?.class_position || "N/A"}</span></div>
+                  <div><span className="text-[#7A8078]">Stream Position:</span> <span className="font-semibold">{reportCardData.data?.rankings ? `${reportCardData.data.rankings.stream_rank} / ${reportCardData.data.rankings.stream_total}` : (reportCardData.data?.class_position || "N/A")}</span></div>
+                  <div><span className="text-[#7A8078]">Overall Class Position:</span> <span className="font-semibold">{reportCardData.data?.rankings ? `${reportCardData.data.rankings.class_rank} / ${reportCardData.data.rankings.class_total}` : "N/A"}</span></div>
+
                 </div>
 
                 {/* Academics */}
