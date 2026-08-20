@@ -56,6 +56,7 @@ class BoardingStatus(str, Enum):
 
 class StudentActiveStatus(str, Enum):
     """Student active status."""
+    PENDING_APPROVAL = "PENDING_APPROVAL"
     ACTIVE = "ACTIVE"
     SUSPENDED = "SUSPENDED"
     WITHDRAWN = "WITHDRAWN"
@@ -361,3 +362,13 @@ class StudentTransfer(AuditableBase, TenantMixin):
 # These are populated by actual imports in the services
 StudentClassEnrollment = None
 FeeAccount = None
+
+
+class StudentChecklistRecord(AuditableBase, TenantMixin):
+    __tablename__ = "student_checklist_records"
+    
+    student_id: Mapped[UUID] = mapped_column(ForeignKey("students.id"), nullable=False)
+    checklist_item_id: Mapped[UUID] = mapped_column(nullable=False) 
+    is_submitted: Mapped[bool] = mapped_column(default=False)
+    
+    student: Mapped["Student"] = relationship("Student", back_populates="checklist_records")

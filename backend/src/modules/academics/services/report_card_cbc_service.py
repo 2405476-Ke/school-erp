@@ -33,7 +33,7 @@ from src.modules.academics.models.cbc import (
     CbcAssessment,
     CbcLearningArea,
     CbcRubricScore,
-    CbcStrand,
+    CbcStrand, CbcSubStrand,
 )
 from src.modules.academics.models.core import ClassLevel, Stream, StudentClassEnrollment, Term
 from src.modules.academics.schemas.cbc import (
@@ -55,6 +55,24 @@ SCORE_LEVELS = {
 
 
 class ReportCardServiceCbc:
+
+    @staticmethod
+    def _calculate_competency(scores: list[int]) -> int:
+        """
+        FRD-ACA004: Accurate CBC termly aggregation.
+        Uses multimode to find the true mode. If there's a tie, 
+        it deterministically calculates the mean and rounds half-up.
+        """
+        if not scores:
+            return 1
+            
+        modes = statistics.multimode(scores)
+        if len(modes) == 1:
+            return modes[0]
+            
+        # Tie-breaker: strict mathematical mean rounded half-up
+        mean_score = sum(scores) / len(scores)
+        return math.floor(mean_score + 0.5)
     """
     Service for generating CBC report cards with KICD-compliant formatting.
 
@@ -223,6 +241,8 @@ class ReportCardServiceCbc:
             CbcRubricScore.assessment_id,
             CbcRubricScore.created_at,
             CbcStrand.id.label("strand_id"),
+                CbcSubStrand.id.label("sub_strand_id"),
+                CbcSubStrand.name.label("sub_strand_name"),
             CbcStrand.code.label("strand_code"),
             CbcStrand.name.label("strand_name"),
             CbcLearningArea.id.label("learning_area_id"),
@@ -230,7 +250,8 @@ class ReportCardServiceCbc:
             CbcLearningArea.name.label("learning_area_name"),
         ).join(
             CbcRubricScore,
-            CbcRubricScore.strand_id == CbcStrand.id,
+            CbcRubricScore.sub_strand_id == CbcSubStrand.id,
+                CbcSubStrand.strand_id == CbcStrand.id,
         ).join(
             CbcAssessment,
             CbcRubricScore.assessment_id == CbcAssessment.id,
@@ -268,7 +289,7 @@ class ReportCardServiceCbc:
 
         for row in score_rows:
             la_id = row.learning_area_id
-            strand_id = row.strand_id
+            strand_id = row.sub_strand_id
             score = row.score
 
             if la_id not in learning_areas_dict:
@@ -281,7 +302,7 @@ class ReportCardServiceCbc:
             if strand_id not in learning_areas_dict[la_id]["strands"]:
                 learning_areas_dict[la_id]["strands"][strand_id] = {
                     "strand_code": row.strand_code,
-                    "strand_name": row.strand_name,
+                    "strand_name": row.sub_strand_name,
                     "scores": [],
                     "remarks": row.teacher_remarks or "",
                 }
@@ -307,12 +328,8 @@ class ReportCardServiceCbc:
                 strand_scores = strand_data["scores"]
                 all_strand_scores.extend(strand_scores)
 
-                # Calculate mode for this strand
-                try:
-                    strand_mode = mode(strand_scores)
-                except StatisticsError:
-                    # If no clear mode, use median or mean
-                    strand_mode = int(sum(strand_scores) / len(strand_scores))
+                # Calculate mode for this strand (Deterministically handles ties)
+                strand_mode = self._calculate_competency(strand_scores)
 
                 strand_perf = StrandPerformance(
                     strand_id=strand_id,
@@ -448,8 +465,9 @@ class ReportCardServiceCbc:
             CbcLearningArea.name,
             func.avg(CbcRubricScore.score).label("avg_score"),
         ).join(
-            CbcStrand,
-            CbcRubricScore.strand_id == CbcStrand.id,
+            CbcStrand, CbcSubStrand,
+            CbcRubricScore.sub_strand_id == CbcSubStrand.id,
+                CbcSubStrand.strand_id == CbcStrand.id,
         ).join(
             CbcLearningArea,
             CbcStrand.learning_area_id == CbcLearningArea.id,

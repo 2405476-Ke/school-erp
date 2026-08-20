@@ -85,6 +85,12 @@ class CbcStrand(AuditableBase, TenantMixin):
     is_active: Mapped[bool] = mapped_column(default=True)
 
     # Relationships
+    sub_strands: Mapped[List["CbcSubStrand"]] = relationship(
+        "CbcSubStrand",
+        back_populates="strand",
+        cascade="all, delete-orphan",
+    )
+
     learning_area: Mapped["CbcLearningArea"] = relationship(
         "CbcLearningArea",
         back_populates="strands",
@@ -104,6 +110,31 @@ class CbcStrand(AuditableBase, TenantMixin):
             name="uq_strand_learning_area_code",
         ),
         Index("idx_strand_learning_area", "learning_area_id"),
+    )
+
+
+
+class CbcSubStrand(AuditableBase, TenantMixin):
+    """
+    Sub-strand under a Strand (e.g., Length, Mass under Measurement).
+    This is the level where KICD rubric assessments are actually recorded.
+    """
+    __tablename__ = "cbc_sub_strands"
+
+    strand_id: Mapped[UUID] = mapped_column(ForeignKey("cbc_strands.id", ondelete="CASCADE"))
+    code: Mapped[str] = mapped_column(comment="Sub-strand code (e.g., LEN, MAS)")
+    name: Mapped[str] = mapped_column(comment="Sub-strand name")
+    description: Mapped[str] = mapped_column(default="", nullable=True)
+
+    # Relationships
+    strand: Mapped["CbcStrand"] = relationship(
+        "CbcStrand",
+        back_populates="sub_strands"
+    )
+    rubric_scores: Mapped[List["CbcRubricScore"]] = relationship(
+        "CbcRubricScore",
+        back_populates="sub_strand",
+        cascade="all, delete-orphan",
     )
 
 
@@ -176,7 +207,7 @@ class CbcRubricScore(AuditableBase, TenantMixin):
 
     student_id: Mapped[UUID] = mapped_column(ForeignKey("students.id", ondelete="CASCADE"))
     assessment_id: Mapped[UUID] = mapped_column(ForeignKey("cbc_assessments.id", ondelete="CASCADE"))
-    strand_id: Mapped[UUID] = mapped_column(ForeignKey("cbc_strands.id", ondelete="RESTRICT"))
+    sub_strand_id: Mapped[UUID] = mapped_column(ForeignKey("cbc_sub_strands.id", ondelete="RESTRICT"))
     score: Mapped[int] = mapped_column(
         comment="Competency level (1=Below, 2=Approaching, 3=Meeting, 4=Exceeding)"
     )
@@ -191,8 +222,8 @@ class CbcRubricScore(AuditableBase, TenantMixin):
         "CbcAssessment",
         back_populates="rubric_scores",
     )
-    strand: Mapped["CbcStrand"] = relationship(
-        "CbcStrand",
+    sub_strand: Mapped["CbcSubStrand"] = relationship(
+        "CbcSubStrand",
         back_populates="rubric_scores",
     )
 
@@ -206,12 +237,12 @@ class CbcRubricScore(AuditableBase, TenantMixin):
             "school_id",
             "student_id",
             "assessment_id",
-            "strand_id",
+            "sub_strand_id",
             name="uq_rubric_score_student_strand",
         ),
         Index("idx_rubric_score_student", "student_id"),
         Index("idx_rubric_score_assessment", "assessment_id"),
-        Index("idx_rubric_score_strand", "strand_id"),
+        Index("idx_rubric_score_substrand", "sub_strand_id"),
         Index("idx_rubric_score_score", "score"),
         # For aggregations
         Index(

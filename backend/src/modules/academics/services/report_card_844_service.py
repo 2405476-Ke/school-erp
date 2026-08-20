@@ -479,8 +479,33 @@ class ReportCardService844:
         result = await self.db.execute(grade_dist_query)
         grade_distribution = {row[0]: row[1] for row in result}
 
+
+        # Overall Class Mean Score
+        class_mean_query = select(
+            func.avg(ExamResult844.mark_score).label("average_mean_mark")
+        ).join(
+            StudentClassEnrollment,
+            ExamResult844.student_id == StudentClassEnrollment.student_id,
+        ).where(
+            and_(
+                StudentClassEnrollment.class_level_id == class_level_id,
+                StudentClassEnrollment.term_id == term_id,
+                ExamResult844.exam_id == exam_id,
+                ExamResult844.school_id == school_id,
+            )
+        )
+        
+        result = await self.db.execute(class_mean_query)
+        average_mean_mark = result.scalar()
+        if average_mean_mark is not None:
+            average_mean_mark = float(round(average_mean_mark, 2))
+        else:
+            average_mean_mark = 0.0
+
         return {
+            "average_mean_mark": average_mean_mark,
             "subject_averages": subject_averages,
             "grade_distribution": grade_distribution,
             "total_students": sum(grade_distribution.values()),
         }
+

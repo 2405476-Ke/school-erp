@@ -102,7 +102,7 @@ class RubricScoreInput(BaseModel):
     """Single rubric score for batch input."""
 
     student_id: UUID
-    strand_id: UUID
+    sub_strand_id: UUID
     score: int = Field(..., ge=1, le=4, description="1=Below, 2=Approaching, 3=Meeting, 4=Exceeding")
     teacher_remarks: Optional[str] = None
 
@@ -120,7 +120,7 @@ class CbcRubricScoreResponse(BaseModel):
     id: UUID
     student_id: UUID
     assessment_id: UUID
-    strand_id: UUID
+    sub_strand_id: UUID
     score: int
     teacher_remarks: Optional[str]
     is_validated: bool
@@ -135,9 +135,10 @@ class CbcRubricScoreResponse(BaseModel):
 class StrandPerformance(BaseModel):
     """Performance on a single strand."""
 
-    strand_id: UUID
+    sub_strand_id: UUID
     strand_code: str
     strand_name: str
+    sub_strand_name: str
     score: int  # 1-4
     score_level: str  # "Below", "Approaching", "Meeting", "Exceeding"
     teacher_remarks: Optional[str]

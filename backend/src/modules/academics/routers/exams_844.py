@@ -207,6 +207,53 @@ async def get_grading_system(
         )
 
 
+
+@router.delete("/grading-system/entries/{entry_id}", response_model=APIResponse)
+async def delete_grading_entry(
+    entry_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    school_id: UUID = Depends(lambda: UUID("00000000-0000-0000-0000-000000000000")),
+) -> APIResponse:
+    """
+    Delete a custom grading entry.
+    
+    Allows schools to modify their custom grade boundaries by removing old ones.
+    """
+    try:
+        # Check if entry exists and belongs to school
+        query = select(GradingSystem).where(
+            and_(
+                GradingSystem.id == entry_id,
+                GradingSystem.school_id == school_id,
+            )
+        )
+        entry = await db.scalar(query)
+        
+        if not entry:
+            return APIResponse.error(
+                error="Not found",
+                message="Grading entry not found",
+                status_code=404,
+            )
+            
+        db.delete(entry)
+        await db.commit()
+        
+        return APIResponse.success(
+            data={"entry_id": str(entry_id)},
+            message=f"Grading entry {entry.grade} successfully deleted",
+            status_code=200,
+        )
+        
+    except Exception as e:
+        logger.error(f"Error deleting grading entry: {e}")
+        return APIResponse.error(
+            error=str(e),
+            message="Failed to delete grading entry",
+            status_code=500,
+        )
+
+
 # ============================================================================
 # EXAM MANAGEMENT
 # ============================================================================

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Integer, JSON
-from src.shared.base_model import BaseModel
+from src.shared.base_model import AuditableBase
 
-class SchoolSettings(BaseModel):
+class SchoolSettings(AuditableBase):
     __tablename__ = "school_settings"
 
     school_name = Column(String, nullable=False, default="Default High School")
@@ -15,3 +15,16 @@ class SchoolSettings(BaseModel):
     
     # Store dynamic dropdowns or configuration arrays here if needed
     dynamic_config = Column(JSON, default={})
+    admission_number_format = Column(String, nullable=False, default="ADM-{YYYY}-{NNNN}")
+    last_admission_sequence = Column(Integer, nullable=False, default=0)
+
+
+
+from sqlalchemy import Boolean
+class AdmissionChecklistItem(AuditableBase):
+    __tablename__ = "admission_checklist_items"
+    
+    school_id = Column(String, nullable=False) # Or UUID depending on your TenantMixin
+    item_name = Column(String, nullable=False)
+    target_status = Column(String, nullable=False) # 'BOARDING', 'DAY', 'ALL'
+    is_mandatory = Column(Boolean, default=True)

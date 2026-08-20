@@ -27,6 +27,13 @@ from src.modules.academics.models.core import (
     Subject,
     Term,
 )
+
+from typing import Optional
+from src.modules.academics.services.enrollment_service import EnrollmentService
+from src.modules.academics.services.report_card_844_service import ReportCardService844
+from src.modules.academics.services.report_card_cbc_service import ReportCardServiceCbc
+from src.modules.academics.models.core import CurriculumEnum
+
 from src.modules.academics.schemas.core import (
     AcademicYearCreate,
     AcademicYearDetailResponse,
@@ -735,3 +742,78 @@ async def create_stream(
             message="Failed to create stream",
             status_code=500,
         )
+
+
+@router.get(
+    "/reports/unified/{student_id}",
+    response_model=APIResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Generate Unified Report Card (Handles 8-4-4 and CBC automatically)",
+)
+async def generate_unified_report_card(
+    student_id: UUID,
+    term_id: UUID,
+    exam_id: Optional[UUID] = None,
+    request: Request = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    FRD-ACA001: Unified Reporting Engine.
+    Automatically detects student's curriculum and generates the correct report card type.
+    """
+    user = getattr(request.state, "user", None) if request else None
+    school_id = user.school_id if user else "00000000-0000-0000-0000-000000000000" # fallback if testing without auth
+
+    enrollment_service = EnrollmentService(db)
+    
+    try:
+        # 1. Fetch student's active enrollment to determine curriculum
+        enrollment = await enrollment_service.get_student_enrollment_by_term(
+            school_id=school_id,
+            student_id=student_id,
+            term_id=term_id,
+        )
+        
+        if not enrollment or not enrollment.class_level:
+            raise HTTPException(status_code=400, detail="Student has no active class enrollment for this term")
+            
+        curriculum_type = enrollment.class_level.curriculum_type
+        
+        # 2. Delegate to the correct Reporting Service Factory
+        if curriculum_type == CurriculumEnum.OLD_8_4_4:
+            if not exam_id:
+                raise HTTPException(status_code=400, detail="exam_id is required for 8-4-4 report cards")
+                
+            service_844 = ReportCardService844(db)
+            report = await service_844.generate_termly_report_card(
+                school_id=school_id,
+                student_id=student_id,
+                exam_id=exam_id,
+            )
+            report_type = "8-4-4"
+            
+        elif curriculum_type == CurriculumEnum.CBC:
+            service_cbc = ReportCardServiceCbc(db)
+            report = await service_cbc.generate_cbc_report(
+                school_id=school_id,
+                student_id=student_id,
+                term_id=term_id,
+            )
+            report_type = "CBC"
+            
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown curriculum type: {curriculum_type}")
+            
+        return APIResponse(
+            status="success",
+            data={
+                "curriculum": report_type,
+                "report_card": report
+            },
+            message=f"Successfully generated {report_type} report card for student"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating unified report: {e}", exc_info=True)
+        # Using 400 for business logic errors instead of raw 500s
+        raise HTTPException(status_code=400, detail=str(e))

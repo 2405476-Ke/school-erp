@@ -7,6 +7,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
 from src.core.config import settings
@@ -145,12 +147,12 @@ def create_app() -> FastAPI:
     from src.modules.dashboard.routers import router as dashboard_router
     app.include_router(settings_router, prefix=settings.API_V1_STR)
     app.include_router(dashboard_router, prefix=settings.API_V1_STR)
-    app.include_router(auth_router, prefix=settings.API_V1_STR)
-    app.include_router(ledger_router, prefix=settings.API_V1_STR)
-    app.include_router(fees_router, prefix=settings.API_V1_STR)
-    app.include_router(reporting_router, prefix=settings.API_V1_STR)
-    app.include_router(periods_router, prefix=settings.API_V1_STR)
-    app.include_router(mpesa_router, prefix=settings.API_V1_STR)
+    # app.include_router(auth_router, prefix=settings.API_V1_STR)
+    # app.include_router(ledger_router, prefix=settings.API_V1_STR)
+    # app.include_router(fees_router, prefix=settings.API_V1_STR)
+    # app.include_router(reporting_router, prefix=settings.API_V1_STR)
+    # app.include_router(periods_router, prefix=settings.API_V1_STR)
+    # app.include_router(mpesa_router, prefix=settings.API_V1_STR)
 
     logger.info(f"FastAPI app created: {settings.PROJECT_NAME}")
     return app
@@ -169,4 +171,5 @@ if __name__ == "__main__":
         reload=settings.DEBUG,
         log_level="debug" if settings.DEBUG else "info",
     )
+
 

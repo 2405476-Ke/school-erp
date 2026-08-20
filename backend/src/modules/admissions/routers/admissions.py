@@ -690,3 +690,67 @@ async def get_clearance(
             message="Failed to retrieve clearance",
             status_code=500,
         )
+
+
+@router.post(
+    "/students/{student_id}/transfer",
+    response_model=StudentTransferResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Process student transfer",
+)
+async def process_student_transfer(
+    student_id: UUID,
+    transfer_data: StudentTransferCreate,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Process an inter-school student transfer."""
+    user = getattr(request.state, "user", None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    admission_service = AdmissionService(db)
+    clearance_service = ClearanceService(db)
+    
+    try:
+        transfer = await admission_service.transfer_student(
+            school_id=user.school_id,
+            student_id=student_id,
+            transfer_to_school=transfer_data.transfer_to_school,
+            transfer_date=transfer_data.transfer_date,
+            reason=transfer_data.reason if hasattr(transfer_data, "reason") else "Parent Request",
+            clearance_service=clearance_service,
+            performed_by_id=user.id,
+        )
+        return transfer
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get(
+    "/students/{student_id}/leaving-certificate",
+    status_code=status.HTTP_200_OK,
+    summary="Generate leaving certificate and transcript",
+)
+async def get_leaving_certificate(
+    student_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate a digital leaving certificate with academic transcript."""
+    user = getattr(request.state, "user", None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    admission_service = AdmissionService(db)
+    enrollment_service = EnrollmentService(db)
+    
+    try:
+        certificate = await admission_service.generate_leaving_certificate(
+            school_id=user.school_id,
+            student_id=student_id,
+            enrollment_service=enrollment_service,
+        )
+        return {"data": certificate}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

@@ -20,7 +20,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.exceptions import NotFoundError, ValidationError
-from src.modules.academics.models.cbc import CbcAssessment, CbcRubricScore, CbcStrand
+from src.modules.academics.models.cbc import CbcAssessment, CbcRubricScore, CbcSubStrand
 from src.modules.students.models import Student
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ class CbcAssessmentService:
         school_id: UUID,
         student_id: UUID,
         assessment_id: UUID,
-        strand_id: UUID,
+        sub_strand_id: UUID,
         score: int,
         teacher_remarks: str = None,
     ) -> CbcRubricScore:
@@ -91,7 +91,7 @@ class CbcAssessmentService:
             school_id: School context
             student_id: Student ID
             assessment_id: Assessment ID
-            strand_id: Strand ID
+            sub_strand_id: Strand ID
             score: Rubric score (1, 2, 3, or 4) - MUST BE INT
             teacher_remarks: Optional teacher notes
 
@@ -103,7 +103,7 @@ class CbcAssessmentService:
             NotFoundError: If student, assessment, or strand not found
         """
         logger.info(
-            f"Recording rubric score: student={student_id}, strand={strand_id}, "
+            f"Recording rubric score: student={student_id}, sub_strand={sub_strand_id}, "
             f"assessment={assessment_id}, score={score}"
         )
 
@@ -160,17 +160,17 @@ class CbcAssessmentService:
         logger.debug(f"Assessment verified: {assessment.name} ({assessment.assessment_type})")
 
         # 4. VERIFY STRAND EXISTS & IS ACTIVE
-        strand_query = select(CbcStrand).where(
+        strand_query = select(CbcSubStrand).where(
             and_(
-                CbcStrand.id == strand_id,
-                CbcStrand.school_id == school_id,
-                CbcStrand.is_active == True,
+                CbcSubStrand.id == sub_strand_id,
+                CbcSubStrand.school_id == school_id,
+                CbcSubStrand.is_active == True,
             )
         )
         strand = await self.db.scalar(strand_query)
 
         if not strand:
-            raise NotFoundError(f"Strand {strand_id} not found or inactive")
+            raise NotFoundError(f"Strand {sub_strand_id} not found or inactive")
 
         logger.debug(f"Strand verified: {strand.name}")
 
@@ -180,7 +180,7 @@ class CbcAssessmentService:
                 CbcRubricScore.school_id == school_id,
                 CbcRubricScore.student_id == student_id,
                 CbcRubricScore.assessment_id == assessment_id,
-                CbcRubricScore.strand_id == strand_id,
+                CbcRubricScore.sub_strand_id == sub_strand_id,
             )
         )
         existing_score = await self.db.scalar(existing_query)
@@ -205,7 +205,7 @@ class CbcAssessmentService:
                 school_id=school_id,
                 student_id=student_id,
                 assessment_id=assessment_id,
-                strand_id=strand_id,
+                sub_strand_id=sub_strand_id,
                 score=score,
                 teacher_remarks=teacher_remarks or "",
                 is_validated=False,
@@ -252,7 +252,7 @@ class CbcAssessmentService:
         self,
         school_id: UUID,
         assessment_id: UUID,
-        strand_id: UUID = None,
+        sub_strand_id: UUID = None,
     ) -> list[CbcRubricScore]:
         """
         Get all rubric scores for an assessment (optionally filtered by strand).
@@ -260,7 +260,7 @@ class CbcAssessmentService:
         Args:
             school_id: School context
             assessment_id: Assessment ID
-            strand_id: Optional strand filter
+            sub_strand_id: Optional strand filter
 
         Returns:
             List of CbcRubricScore
@@ -272,11 +272,11 @@ class CbcAssessmentService:
             )
         )
 
-        if strand_id:
-            query = query.where(CbcRubricScore.strand_id == strand_id)
+        if sub_strand_id:
+            query = query.where(CbcRubricScore.sub_strand_id == sub_strand_id)
 
         query = query.order_by(
-            CbcRubricScore.strand_id,
+            CbcRubricScore.sub_strand_id,
             CbcRubricScore.student_id,
         )
 

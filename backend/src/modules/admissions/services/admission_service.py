@@ -16,6 +16,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.core.exceptions import NotFoundError, ValidationError
+
+from src.modules.admissions.models.students import StudentTransfer, ClearanceStatus
+from src.modules.admissions.services.clearance_service import ClearanceService
+from datetime import datetime
+from src.modules.settings.models import SchoolSettings
 from src.modules.admissions.models.students import (
     StudentProspect,
     Student,
@@ -45,41 +50,30 @@ class AdmissionService:
         year: int,
     ) -> str:
         """
-        Generate sequential admission number.
-        
-        Format: ADM-{YEAR}-{SEQUENCE}
-        Example: ADM-2024-001, ADM-2024-002, etc.
-        
-        ALGORITHM:
-        1. Query existing StudentClassEnrollment for this school and year
-        2. Find max sequence number
-        3. Increment and pad with leading zeros
-        4. Return formatted string
-        
-        Args:
-            school_id: Tenant ID
-            year: Academic year
-            
-        Returns:
-            Formatted admission number (e.g., ADM-2024-001)
+        Generate sequential admission number with atomic locks (BR-ADM-002, FRD-ADM005).
+        Format uses customizable setting from SchoolSettings.
         """
-        # Query max admission number for this year
-        query = select(func.count(Student.id)).where(
-            and_(
-                Student.school_id == school_id,
-                func.extract("year", Student.admission_date) == year,
-            )
-        )
+        # Query settings with FOR UPDATE to prevent race conditions
+        query = select(SchoolSettings).where(
+            SchoolSettings.id == school_id
+        ).with_for_update()
         
-        count_result = await self.db.scalar(query)
-        count = count_result or 0
+        settings = await self.db.scalar(query)
+        if not settings:
+            raise NotFoundError("School settings not found")
+            
+        # Increment sequence safely
+        settings.last_admission_sequence += 1
+        seq = settings.last_admission_sequence
         
-        # Generate next sequence
-        sequence = count + 1
-        admission_number = f"ADM-{year}-{sequence:03d}"
+        # Format string e.g. "ADM-{YYYY}-{NNNN}"
+        fmt = settings.admission_number_format or "ADM-{YYYY}-{NNNN}"
         
-        logger.debug(f"Generated admission number: {admission_number}")
-        return admission_number
+        adm_number = fmt.replace("{YYYY}", str(year)).replace("{NNNN}", f"{seq:04d}").replace("{NNN}", f"{seq:03d}")
+        
+        logger.debug(f"Generated robust admission number: {adm_number}")
+        # Not committing here because this should be part of the larger transaction in admit_student
+        return adm_number
     
     async def admit_student(
         self,
@@ -89,8 +83,6 @@ class AdmissionService:
         stream_id: UUID | None,
         boarding_status: str,
         enrollment_service: "EnrollmentService",
-        fee_account_service: "FeeAccountService",
-        billing_service: "BillingService",
     ) -> dict:
         """
         CRITICAL ALGORITHM: Admit student from prospect.
@@ -158,6 +150,20 @@ class AdmissionService:
         # Validate prospect status is PENDING
         if prospect.status != ProspectStatus.PENDING:
             raise ValidationError(f"Cannot admit prospect with status {prospect.status}. Must be PENDING.")
+        
+        # BR-ADM-002: Zero duplicate UPIs (Validate UPI Uniqueness)
+        target_upi = prospect.email or None  # TODO: Replace prospect.email with actual UPI when MoE integration is ready
+        if target_upi:
+            existing_upi = await self.db.scalar(
+                select(Student).where(
+                    and_(
+                        Student.school_id == school_id,
+                        Student.upi_nemis_number == target_upi
+                    )
+                )
+            )
+            if existing_upi:
+                raise ValidationError(f"A student with UPI/NEMIS number {target_upi} is already registered.")
         
         logger.info(f"✓ Found prospect: {prospect.first_name} {prospect.last_name}")
         
@@ -227,9 +233,9 @@ class AdmissionService:
             gender=prospect.gender,
             date_of_birth=prospect.date_of_birth,
             boarding_status=boarding_status,
-            active_status=StudentActiveStatus.ACTIVE,
+            active_status=StudentActiveStatus.PENDING_APPROVAL,
             admission_date=date.today(),
-            is_active=True,
+            is_active=False,
         )
         
         self.db.add(student)
@@ -258,42 +264,6 @@ class AdmissionService:
             await self.db.rollback()
             raise ValidationError(f"Failed to enroll student in class: {str(e)}")
         
-        # Step 7: Initialize FeeAccount via Finance service
-        try:
-            fee_account = await fee_account_service.initialize_account(
-                school_id=school_id,
-                student_id=student.id,
-                student_name=f"{student.first_name} {student.last_name}",
-                opening_balance=Decimal("0.00"),
-            )
-            
-            fee_account_id = fee_account.id if fee_account else None
-            logger.info(f"✓ Created FeeAccount: {fee_account_id}")
-            
-        except Exception as e:
-            logger.error(f"Error initializing fee account: {e}", exc_info=True)
-            await self.db.rollback()
-            raise ValidationError(f"Failed to initialize fee account: {str(e)}")
-        
-        # Step 8: Generate initial invoice via Billing service
-        invoice_id = None
-        try:
-            invoice = await billing_service.generate_initial_invoice(
-                school_id=school_id,
-                student_id=student.id,
-                fee_account_id=fee_account_id,
-                boarding_status=boarding_status,
-                class_level_id=class_level_id,
-            )
-            
-            invoice_id = invoice.id if invoice else None
-            logger.info(f"✓ Generated initial invoice: {invoice_id}")
-            
-        except Exception as e:
-            logger.error(f"Error generating initial invoice: {e}", exc_info=True)
-            await self.db.rollback()
-            raise ValidationError(f"Failed to generate initial invoice: {str(e)}")
-        
         # Step 9: Commit entire transaction atomically
         try:
             await self.db.commit()
@@ -311,8 +281,6 @@ class AdmissionService:
             "first_name": student.first_name,
             "last_name": student.last_name,
             "enrollment_id": str(enrollment_id),
-            "fee_account_id": str(fee_account_id),
-            "initial_invoice_id": str(invoice_id) if invoice_id else None,
             "class_level": class_level.name,
             "stream": stream.name,
             "boarding_status": boarding_status,
@@ -426,3 +394,190 @@ class AdmissionService:
         
         logger.info(f"Updated student {student.admission_number} status to {active_status}")
         return student
+
+    async def approve_admission(
+        self,
+        school_id: UUID,
+        student_id: UUID,
+        approved_by_id: UUID,
+        fee_account_service: "FeeAccountService",
+        billing_service: "BillingService",
+    ) -> dict:
+        """
+        FRD-ADM006 and FRD-ADM007: Principal Approval Workflow and Auto-Billing.
+        Moves student from PENDING_APPROVAL to ACTIVE and triggers billing.
+        """
+        student = await self.get_student(school_id, student_id)
+        
+        if student.active_status != StudentActiveStatus.PENDING_APPROVAL:
+            raise ValidationError(f"Cannot approve student with status {student.active_status}")
+            
+        # BR/FRD-ADM009: Checklist Completion Enforced
+        from src.modules.settings.models import AdmissionChecklistItem
+        from src.modules.admissions.models.students import StudentChecklistRecord
+        
+        # 1. Fetch mandatory checklist criteria for this student's boarding status
+        mandatory_criteria = await self.db.scalars(
+            select(AdmissionChecklistItem).where(
+                and_(
+                    AdmissionChecklistItem.school_id == str(school_id),
+                    AdmissionChecklistItem.is_mandatory == True,
+                    AdmissionChecklistItem.target_status.in_([student.boarding_status, "ALL"])
+                )
+            )
+        )
+        mandatory_items = mandatory_criteria.all()
+        
+        # 2. Fetch student's submitted checklist records
+        submitted_records = await self.db.scalars(
+            select(StudentChecklistRecord).where(
+                and_(
+                    StudentChecklistRecord.student_id == student_id,
+                    StudentChecklistRecord.is_submitted == True
+                )
+            )
+        )
+        submitted_item_ids = {str(record.checklist_item_id) for record in submitted_records.all()}
+        
+        # 3. Cross-reference
+        missing_items = []
+        for item in mandatory_items:
+            if str(item.id) not in submitted_item_ids:
+                missing_items.append(item.item_name)
+                
+        if missing_items:
+            raise ValidationError(
+                f"Cannot approve admission. Missing mandatory checklist items for {student.boarding_status} student: " + 
+                ", ".join(missing_items)
+            )
+
+            
+        student.active_status = StudentActiveStatus.ACTIVE
+        student.is_active = True
+        
+        # FRD-ADM007: Trigger Term 1 Fee Invoice upon Active status transition
+        try:
+            # 1. Initialize Fee Account
+            fee_account = await fee_account_service.initialize_account(
+                school_id=school_id,
+                student_id=student.id,
+                student_name=f"{student.first_name} {student.last_name}",
+                opening_balance=Decimal("0.00"),
+            )
+            fee_account_id = fee_account.id if fee_account else None
+            
+            # Get the enrollment to know which class to bill
+            class_level_id = None
+            if student.class_enrollments:
+                class_level_id = student.class_enrollments[0].class_level_id
+                
+            if not class_level_id:
+                raise ValidationError("Cannot bill a student with no class enrollment")
+
+            # 2. Generate Initial Invoice
+            invoice = await billing_service.generate_initial_invoice(
+                school_id=school_id,
+                student_id=student.id,
+                fee_account_id=fee_account_id,
+                boarding_status=student.boarding_status,
+                class_level_id=class_level_id,
+            )
+            invoice_id = invoice.id if invoice else None
+            
+        except Exception as e:
+            logger.error(f"Error during approval auto-billing: {e}", exc_info=True)
+            await self.db.rollback()
+            raise ValidationError(f"Failed to generate fee invoice: {str(e)}")
+            
+        await self.db.commit()
+        await self.db.refresh(student)
+        
+        logger.info(f"Student {student.admission_number} approved by {approved_by_id} and billed.")
+        return {
+            "student_id": str(student.id),
+            "status": student.active_status.value,
+            "fee_account_id": str(fee_account_id) if fee_account_id else None,
+            "invoice_id": str(invoice_id) if invoice_id else None,
+        }
+
+    async def transfer_student(
+        self,
+        school_id: UUID,
+        student_id: UUID,
+        transfer_to_school: str,
+        transfer_date: date,
+        reason: str,
+        clearance_service: ClearanceService,
+        performed_by_id: UUID,
+    ) -> StudentTransfer:
+        """
+        FRD-ADM008: Process student transfer.
+        """
+        student = await self.get_student(school_id, student_id)
+        
+        # Check clearance status
+        clearances = await clearance_service.get_student_clearances(school_id, student_id)
+        if not clearances or clearances[0].status != ClearanceStatus.CLEARED:
+            raise ValidationError(f"Student {student.admission_number} must be fully cleared before transfer.")
+            
+        # Create transfer record
+        transfer = StudentTransfer(
+            school_id=school_id,
+            student_id=student_id,
+            transfer_to_school=transfer_to_school,
+            transfer_date=transfer_date,
+            reason=reason,
+            status="APPROVED",
+            created_by_id=performed_by_id,
+        )
+        self.db.add(transfer)
+        
+        # Update student status to halt billing
+        student.active_status = StudentActiveStatus.WITHDRAWN
+        student.is_active = False
+        
+        await self.db.commit()
+        await self.db.refresh(transfer)
+        logger.info(f"Student {student.admission_number} transferred to {transfer_to_school}")
+        
+        return transfer
+
+    async def generate_leaving_certificate(
+        self,
+        school_id: UUID,
+        student_id: UUID,
+        enrollment_service: "EnrollmentService",
+    ) -> dict:
+        """
+        FRD-ADM008: Generate leaving certificate with transcript.
+        """
+        student = await self.get_student(school_id, student_id)
+        
+        # Get transfer record
+        query = select(StudentTransfer).where(
+            and_(
+                StudentTransfer.school_id == school_id,
+                StudentTransfer.student_id == student_id,
+            )
+        ).order_by(StudentTransfer.created_at.desc())
+        transfer = await self.db.scalar(query)
+        
+        if not transfer:
+            raise ValidationError(f"No transfer record found for student {student.admission_number}")
+            
+        # Get transcript summary
+        transcript = await enrollment_service.get_student_transcript(school_id, student_id)
+        
+        return {
+            "certificate_id": f"LC-{student.admission_number}",
+            "issue_date": datetime.utcnow().date().isoformat(),
+            "student_name": f"{student.first_name} {student.last_name}",
+            "admission_number": student.admission_number,
+            "upi_nemis_number": student.upi_nemis_number,
+            "admission_date": student.admission_date.isoformat(),
+            "leaving_date": transfer.transfer_date.isoformat(),
+            "destination_school": transfer.transfer_to_school,
+            "reason_for_leaving": transfer.reason,
+            "academic_transcript": transcript,
+            "status": "VALID",
+        }

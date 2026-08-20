@@ -431,7 +431,7 @@ async def batch_input_rubric_scores(
         "scores": [
             {
                 "student_id": "660e8400-e29b-41d4-a716-446655440001",
-                "strand_id": "770e8400-e29b-41d4-a716-446655440002",
+                "sub_strand_id": "770e8400-e29b-41d4-a716-446655440002",
                 "score": 3,
                 "teacher_remarks": "Good progress in this strand"
             }
@@ -470,7 +470,7 @@ async def batch_input_rubric_scores(
                     school_id=school_id,
                     student_id=score_input.student_id,
                     assessment_id=request.assessment_id,
-                    strand_id=score_input.strand_id,
+                    sub_strand_id=score_input.sub_strand_id,
                     score=score_input.score,
                     teacher_remarks=score_input.teacher_remarks,
                 )
@@ -485,7 +485,7 @@ async def batch_input_rubric_scores(
                 errors.append({
                     "index": idx,
                     "student_id": str(score_input.student_id),
-                    "strand_id": str(score_input.strand_id),
+                    "sub_strand_id": str(score_input.sub_strand_id),
                     "error": str(e),
                 })
                 failed_count += 1
@@ -495,7 +495,7 @@ async def batch_input_rubric_scores(
                 errors.append({
                     "index": idx,
                     "student_id": str(score_input.student_id),
-                    "strand_id": str(score_input.strand_id),
+                    "sub_strand_id": str(score_input.sub_strand_id),
                     "error": str(e),
                 })
                 failed_count += 1
@@ -505,7 +505,7 @@ async def batch_input_rubric_scores(
                 errors.append({
                     "index": idx,
                     "student_id": str(score_input.student_id),
-                    "strand_id": str(score_input.strand_id),
+                    "sub_strand_id": str(score_input.sub_strand_id),
                     "error": str(e),
                 })
                 failed_count += 1
