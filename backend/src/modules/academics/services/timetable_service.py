@@ -163,9 +163,26 @@ class TimetableGeneratorService:
                 )
             )
 
-        # 4. Check for constraints (Basic manual validation)
-        # e.g., if a teacher is already booked, we could raise an error here.
-        
+        # 4. Strict Clash Detection (BR-ACA-010)
+        # Check if the selected teacher is already booked for this (day, period) in ANOTHER stream for this timetable
+        for alloc in new_allocations:
+            clash_query = select(LessonAllocation).where(
+                and_(
+                    LessonAllocation.timetable_id == timetable.id,
+                    LessonAllocation.teacher_id == alloc.teacher_id,
+                    LessonAllocation.day_of_week == alloc.day_of_week,
+                    LessonAllocation.period_number == alloc.period_number,
+                    LessonAllocation.stream_id != stream_id
+                )
+            )
+            clash = (await self.db.execute(clash_query)).scalars().first()
+            if clash:
+                # Need to fetch teacher name for human-readable error
+                teacher_query = select(Staff).where(Staff.id == alloc.teacher_id)
+                teacher = (await self.db.execute(teacher_query)).scalars().first()
+                t_name = f"{teacher.first_name} {teacher.last_name}" if teacher else str(alloc.teacher_id)
+                raise ValidationError(f"Clash Detected: {t_name} is already assigned to another class on Day {alloc.day_of_week} Period {alloc.period_number}.")
+
         self.db.add_all(new_allocations)
         await self.db.commit()
         return new_allocations

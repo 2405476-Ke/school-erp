@@ -47,12 +47,20 @@ async def get_stream_timetable_endpoint(
     allocations = await service.get_stream_timetable(school_id=school_id, stream_id=stream_id)
     
     # Format for visual grid
+    # Fetch subject names to send to frontend
+    from sqlalchemy import select
+    from src.modules.academics.models.core import Subject
+    subjects_query = select(Subject).where(Subject.school_id == school_id)
+    subjects = (await db.execute(subjects_query)).scalars().all()
+    sub_map = {str(s.id): s.name for s in subjects}
+
     grid = []
     for a in allocations:
         grid.append({
             "day": a.day_of_week,
             "period": a.period_number,
             "subject_id": str(a.subject_id),
+            "subject_name": sub_map.get(str(a.subject_id), "Unknown"),
             "teacher_id": str(a.teacher_id),
         })
         

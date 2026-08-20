@@ -5773,7 +5773,7 @@ function useTimetableData(classId: string | undefined, curriculum: "CBC" | "8-4-
         setLoading(true);
         setError(null);
         // BACKEND: Replace with real API call
-        const result = await apiGet<any>(`/academics/timetable?class_id=${classId}&curriculum=${curriculum}`);
+        const result = await apiGet<any>(`/timetable/stream/${classId}`);
         setData(result);
         
         console.log(`Would fetch timetable for class ${classId}, curriculum ${curriculum}`);
@@ -5806,6 +5806,20 @@ function TimetableBuilder() {
   const subjects = useTimetableSubjects(curriculumTab);
   const structure = useTimetableStructure();
   const timetable = useTimetableData(selectedClassId, curriculumTab);
+
+    // Initialize grid when fetching an existing timetable
+    useEffect(() => {
+      if (timetable.data && timetable.data.grid) {
+        const initialGrid: Record<string, string> = {};
+        timetable.data.grid.forEach((alloc: any) => {
+          // Both period and day are 1-indexed from backend, frontend is 0-indexed strings
+          initialGrid[`${alloc.period - 1}-${alloc.day - 1}`] = alloc.subject_name;
+        });
+        setTimetableGrid(initialGrid);
+      } else {
+        setTimetableGrid({});
+      }
+    }, [timetable.data]);
 
   // Fallback data when backend not ready
   const fallbackDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -5888,9 +5902,9 @@ function TimetableBuilder() {
       // 2. Fetch the newly generated visual grid for this specific stream
       const gridResult = await apiGet<any>(`/timetable/stream/${selectedClassId}`);
       if (gridResult && gridResult.grid) {
-        const newGrid = Array(5).fill(null).map(() => Array(8).fill(""));
+        const newGrid: Record<string, string> = {};
         gridResult.grid.forEach((alloc: any) => {
-          newGrid[alloc.day - 1][alloc.period - 1] = "Assigned";
+          newGrid[`${alloc.period - 1}-${alloc.day - 1}`] = alloc.subject_name;
         });
         setTimetableGrid(newGrid);
         setSaveSuccess(true);
