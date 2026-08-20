@@ -5863,14 +5863,26 @@ function TimetableBuilder() {
       setSaveError(null);
 
       // BACKEND: Call auto-generation endpoint
-      // const result = await apiPost(`/academics/timetable/auto-generate`, {
-      //   class_id: selectedClassId,
-      //   curriculum: curriculumTab,
-      // });
-      // const { grid } = result;
-      // setTimetableGrid(grid);
+      const termId = "00000000-0000-0000-0000-000000000000"; // Mock current term ID
+      const schoolId = "00000000-0000-0000-0000-000000000000"; // Mock school ID
       
-      setSaveError("Backend API not yet implemented");
+      // 1. Trigger the backtracking algorithm for the whole school
+      await apiPost(`/timetable/generate`, {
+        school_id: schoolId,
+        term_id: termId
+      });
+      
+      // 2. Fetch the newly generated visual grid for this specific stream
+      const gridResult = await apiGet<any>(`/timetable/stream/${selectedClassId}`);
+      if (gridResult && gridResult.grid) {
+        const newGrid = Array(5).fill(null).map(() => Array(8).fill(""));
+        gridResult.grid.forEach((alloc: any) => {
+          newGrid[alloc.day - 1][alloc.period - 1] = "Assigned";
+        });
+        setTimetableGrid(newGrid);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to auto-generate timetable';
       setSaveError(msg);
