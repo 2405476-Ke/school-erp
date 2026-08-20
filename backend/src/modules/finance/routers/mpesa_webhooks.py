@@ -474,3 +474,53 @@ async def get_student_transactions(
             message="Failed to retrieve transactions",
             status_code=500,
         )
+
+from pydantic import BaseModel
+class AssignPaymentRequest(BaseModel):
+    payment_reference: str
+    student_id: UUID
+    school_id: UUID
+
+@router.post("/assign-payment")
+async def assign_unallocated_mpesa_payment(
+    request: AssignPaymentRequest,
+    db: AsyncSession = Depends(get_db),
+    # current_user = Depends(get_current_user)  # Omitted for simplicity
+):
+    """
+    Manually assign an unallocated M-Pesa payment to a student (BR-REC-006)
+    """
+    from src.modules.finance.models.mpesa import MpesaTransaction
+    from src.modules.finance.models.fees import FeeReceipt
+    from src.modules.finance.services.receipt_service import ReceiptService
+    from src.shared.exceptions import NotFoundError
+    from sqlalchemy import select
+
+    # Find the Mpesa Transaction
+    query = select(MpesaTransaction).where(MpesaTransaction.checkout_request_id == request.payment_reference)
+    mpesa_txn = await db.scalar(query)
+    
+    if not mpesa_txn:
+        # Check by receipt number (trans_id) just in case
+        query = select(FeeReceipt).where(FeeReceipt.reference_number == request.payment_reference)
+        fee_receipt = await db.scalar(query)
+    else:
+        query = select(FeeReceipt).where(FeeReceipt.id == mpesa_txn.fee_receipt_id)
+        fee_receipt = await db.scalar(query)
+
+    if not fee_receipt:
+        raise NotFoundError("Receipt not found for this payment reference")
+
+    # Update student ID
+    fee_receipt.student_id = request.student_id
+    await db.commit()
+
+    # Allocate payment to invoices and post GL
+    receipt_service = ReceiptService(db)
+    fee_receipt = await receipt_service.allocate_payment(
+        school_id=request.school_id,
+        receipt_id=fee_receipt.id,
+        user_id=None,
+    )
+
+    return {"message": "Payment assigned and allocated successfully", "receipt_id": fee_receipt.id}

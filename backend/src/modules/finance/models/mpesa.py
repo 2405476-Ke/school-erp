@@ -1,3 +1,4 @@
+from typing import Optional
 """
 M-Pesa Transaction Models
 
@@ -40,8 +41,8 @@ class MpesaTransaction(AuditableBase, TenantMixin):
     )  # M-Pesa receipt (e.g., LHR12345ABC)
 
     # Transaction details
-    student_id: Mapped[UUID] = mapped_column(
-        nullable=False,
+    student_id: Mapped[Optional[UUID]] = mapped_column(
+        nullable=True,
         index=True,
     )  # Who paid
     phone_number: Mapped[str] = mapped_column(

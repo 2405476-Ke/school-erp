@@ -395,11 +395,12 @@ class MpesaService:
                     pass
 
             if not student:
-                logger.error(f"Student not found for admission_number/ID: {bill_ref}")
-                raise NotFoundError(f"Student {bill_ref} not found")
+                # Goal 1: Unallocated Suspense matching (BR-REC-005)
+                logger.warning(f"Student not found for admission_number: {bill_ref}. Placing in suspense.")
+                student_id = None
+            else:
+                student_id = student.id
             
-            student_id = student.id
-
             # Create receipt and allocate payment
             fee_receipt = await self.receipt_service.create_receipt(
                 school_id=student.school_id,

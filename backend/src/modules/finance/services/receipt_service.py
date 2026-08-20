@@ -56,7 +56,7 @@ class ReceiptService:
     async def create_receipt(
         self,
         school_id: UUID,
-        student_id: UUID,
+        student_id: Optional[UUID],
         receipt_date: date,
         amount: Decimal,
         payment_method: str,
@@ -100,7 +100,7 @@ class ReceiptService:
         student_result = await self.db.execute(student_query)
         student = student_result.scalar_one_or_none()
 
-        if not student:
+        if student_id and not student:
             raise NotFoundError(f"Student {student_id} not found")
 
         # Generate receipt number
