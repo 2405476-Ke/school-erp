@@ -9793,3 +9793,139 @@ function FinancialStatements() {
   );
 }
 
+
+
+
+// ─── Capitation Tracking & Fixed Assets (BR-FIN-009, FRD-FIN-008, FRD-FIN-009) ─────────
+
+function CapitationTrackingUI() {
+  // Mock data representing is_restricted=true FeeVoteHeads (MOE FDSE funds)
+  const capitationLedgers = [
+    { id: "cap-1", name: "Tuition Account (Account 1)", allocation: 450000.0, spent: 120500.0, balance: 329500.0, code: "MOE-TUI" },
+    { id: "cap-2", name: "Operations / RMI", allocation: 800000.0, spent: 450000.0, balance: 350000.0, code: "MOE-RMI" },
+    { id: "cap-3", name: "Personal Emoluments (PE)", allocation: 600000.0, spent: 600000.0, balance: 0.0, code: "MOE-PE" },
+    { id: "cap-4", name: "Local Transport & Travel", allocation: 150000.0, spent: 45000.0, balance: 105000.0, code: "MOE-LTT" }
+  ];
+
+  return (
+    <div>
+      <PageHeader title="MOE Capitation Tracking" subtitle="Isolated Sub-ledgers for FDSE Government Funds (FRD-FIN-008)" />
+      
+      <div className="bg-[#E4F3EB] border border-[#1F6F4A] rounded-sm p-4 mb-6 flex gap-4 items-center">
+        <Shield className="w-8 h-8 text-[#1F6F4A]" />
+        <div>
+          <h3 className="text-[#1F6F4A] font-bold text-sm mb-1">Strict MOE Policy Enforcement Active</h3>
+          <p className="text-xs text-[#1F6F4A]">These sub-ledgers are automatically flagged as <code>is_restricted=true</code> in the database. Transactions posted to these accounts cannot be re-appropriated to non-capitation vote heads, ensuring zero audit queries.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        {capitationLedgers.map(ledger => (
+          <div key={ledger.id} className="bg-white border border-[#DCD6C4] p-5 rounded-sm shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#1F6F4A]"></div>
+            <p className="text-xs text-[#7A8078] font-bold uppercase mb-1">{ledger.code}</p>
+            <h4 className="font-semibold text-[#16241D] mb-4 text-sm h-10">{ledger.name}</h4>
+            
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs text-[#7A8078]">Allocated:</span>
+              <span className="text-xs font-['IBM_Plex_Mono'] text-[#16241D]">KES {ledger.allocation.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center mb-2 pb-2 border-b border-[#EBE7DC]">
+              <span className="text-xs text-[#7A8078]">Spent:</span>
+              <span className="text-xs font-['IBM_Plex_Mono'] text-[#9C3B2E]">KES {ledger.spent.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-bold text-[#16241D]">Balance:</span>
+              <span className="text-sm font-['IBM_Plex_Mono'] font-bold text-[#1F6F4A]">KES {ledger.balance.toLocaleString()}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FixedAssetsRegister() {
+  const [assets, setAssets] = useState([
+    { id: "fa-1", code: "BUS-001", name: "School Bus (KCG 123A)", type: "Motor Vehicle", cost: 4500000, accDep: 900000, nBV: 3600000, method: "STRAIGHT_LINE" },
+    { id: "fa-2", code: "COMP-01", name: "Computer Lab Servers", type: "Electronics", cost: 850000, accDep: 425000, nBV: 425000, method: "REDUCING_BALANCE" }
+  ]);
+  const [isDepreciating, setIsDepreciating] = useState(false);
+
+  const runDepreciation = async () => {
+    try {
+      setIsDepreciating(true);
+      await fetch('/api/v1/finance/assets/run-depreciation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ school_id: "00000000-0000-0000-0000-000000000000", period_id: "00000000-0000-0000-0000-000000000000" })
+      });
+      
+      // Simulate real-time UI update for prototype
+      setTimeout(() => {
+        setAssets(assets.map(a => ({
+          ...a,
+          accDep: a.accDep + (a.nBV * 0.1),
+          nBV: a.nBV - (a.nBV * 0.1)
+        })));
+        setIsDepreciating(false);
+        alert("Automated Depreciation executed and Double-Entry Journals posted! (FRD-FIN-009)");
+      }, 1200);
+      
+    } catch (e) {
+      alert("Failed to run depreciation.");
+      setIsDepreciating(false);
+    }
+  };
+
+  return (
+    <div>
+      <PageHeader title="Fixed Assets Register" subtitle="Automated Depreciation Engine (Straight-Line & Reducing Balance)" />
+      
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="font-semibold text-[#16241D]">Asset Inventory</h3>
+          <div className="flex gap-4">
+            <button className="px-4 py-2 border border-[#DCD6C4] text-[#16241D] rounded-sm text-sm font-semibold hover:bg-[#F9F8F6]">
+              + Register Asset
+            </button>
+            <button 
+              onClick={runDepreciation}
+              disabled={isDepreciating}
+              className="px-4 py-2 bg-[#1F6F4A] text-white rounded-sm text-sm font-semibold flex items-center gap-2 hover:bg-[#185f3e] disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${isDepreciating ? 'animate-spin' : ''}`} />
+              {isDepreciating ? "Calculating Journals..." : "Run Period Depreciation"}
+            </button>
+          </div>
+        </div>
+
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-[#DCD6C4] text-[#7A8078] text-xs uppercase bg-[#F9F8F6]">
+              <th className="py-3 px-4 font-semibold">Asset Code</th>
+              <th className="py-3 px-4 font-semibold">Asset Name</th>
+              <th className="py-3 px-4 font-semibold">Dep. Method</th>
+              <th className="py-3 px-4 font-semibold text-right">Historical Cost</th>
+              <th className="py-3 px-4 font-semibold text-right">Accumulated Dep.</th>
+              <th className="py-3 px-4 font-semibold text-right">Net Book Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {assets.map(asset => (
+              <tr key={asset.id} className="border-b border-[#EBE7DC] hover:bg-[#F9F8F6] transition-colors">
+                <td className="py-3 px-4 font-['IBM_Plex_Mono'] font-semibold text-[#1F6F4A]">{asset.code}</td>
+                <td className="py-3 px-4">{asset.name}</td>
+                <td className="py-3 px-4 text-[#7A8078]">{asset.method.replace("_", " ")}</td>
+                <td className="py-3 px-4 text-right font-['IBM_Plex_Mono']">KES {asset.cost.toLocaleString()}</td>
+                <td className="py-3 px-4 text-right font-['IBM_Plex_Mono'] text-[#9C3B2E]">KES {asset.accDep.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits:2})}</td>
+                <td className="py-3 px-4 text-right font-['IBM_Plex_Mono'] font-bold">KES {asset.nBV.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits:2})}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+

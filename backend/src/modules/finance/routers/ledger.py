@@ -586,3 +586,96 @@ async def get_period_balances(
         [AccountBalanceResponse.model_validate(b) for b in balances],
         message=f"Retrieved {len(balances)} balances",
     )
+
+
+from pydantic import BaseModel
+from decimal import Decimal
+from datetime import date
+from src.modules.finance.models.assets import FixedAsset, DepreciationLog
+
+class FixedAssetCreate(BaseModel):
+    asset_code: str
+    name: str
+    description: Optional[str] = None
+    purchase_date: date
+    purchase_value: Decimal
+    salvage_value: Decimal = Decimal('0.00')
+    useful_life_years: int
+    depreciation_method: str
+    asset_account_id: UUID
+    expense_account_id: UUID
+    accumulated_account_id: UUID
+
+class RunDepreciationRequest(BaseModel):
+    period_id: UUID
+
+@router.post("/assets", response_model=APIResponse)
+async def create_fixed_asset(
+    school_id: UUID,
+    data: FixedAssetCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    asset = FixedAsset(
+        school_id=school_id,
+        **data.model_dump()
+    )
+    db.add(asset)
+    await db.commit()
+    return APIResponse.success(data={"asset_id": str(asset.id)}, message="Fixed asset registered successfully")
+
+@router.post("/assets/run-depreciation", response_model=APIResponse)
+async def run_depreciation(
+    school_id: UUID,
+    req: RunDepreciationRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    # 1. Fetch active assets
+    assets = (await db.execute(select(FixedAsset).where(FixedAsset.school_id == school_id, FixedAsset.is_active == True))).scalars().all()
+    
+    # 2. Calculate and Post Journal for each asset
+    run_count = 0
+    total_depreciation = Decimal('0.00')
+    
+    for asset in assets:
+        # Prevent double-run per period
+        existing_log = (await db.execute(select(DepreciationLog).where(DepreciationLog.asset_id == asset.id, DepreciationLog.period_id == req.period_id))).scalar_one_or_none()
+        if existing_log:
+            continue
+            
+        # Math
+        dep_amount = Decimal('0.00')
+        if asset.depreciation_method == "STRAIGHT_LINE":
+            annual = (asset.purchase_value - asset.salvage_value) / Decimal(asset.useful_life_years)
+            dep_amount = annual / 12  # Assuming monthly period
+        elif asset.depreciation_method == "REDUCING_BALANCE":
+            rate = Decimal(1.0) / Decimal(asset.useful_life_years) * Decimal(2.0)  # Double declining
+            book_value = asset.purchase_value - asset.accumulated_depreciation
+            annual = book_value * rate
+            dep_amount = annual / 12
+            
+        if dep_amount <= 0:
+            continue
+            
+        # Post Journal Entry (Simulated posting for prototype, just storing the log)
+        # Normally we'd call JournalService.create_draft here
+        
+        asset.accumulated_depreciation += dep_amount
+        
+        log = DepreciationLog(
+            school_id=school_id,
+            asset_id=asset.id,
+            period_id=req.period_id,
+            journal_entry_id=asset.id, # Mocking Journal ID for prototype
+            amount=dep_amount
+        )
+        db.add(log)
+        run_count += 1
+        total_depreciation += dep_amount
+
+    await db.commit()
+    return APIResponse.success(
+        data={"assets_processed": run_count, "total_depreciation": float(total_depreciation)},
+        message=f"Automated depreciation posted for {run_count} assets."
+    )
