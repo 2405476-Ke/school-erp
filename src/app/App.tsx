@@ -4929,7 +4929,18 @@ function useStoresInventory() {
         const result = await apiGet<any[]>(`/stores/inventory?school_id=${schoolId}`);
         setData(result);
         
-        console.log("Would fetch stores inventory");
+        // MOCK: Item master catalogue with reorder status (BR-INV-001, BR-INV-002)
+          const result = [
+            { item_name: "Maize (White)", category: "Food Stores", unit_of_measure: "KG", quantity_in_stock: 320, reorder_level: 500, unit_cost: 55, code: "FOOD-001" },
+            { item_name: "Rice (Long Grain)", category: "Food Stores", unit_of_measure: "KG", quantity_in_stock: 120, reorder_level: 200, unit_cost: 110, code: "FOOD-002" },
+            { item_name: "Cooking Oil", category: "Food Stores", unit_of_measure: "LITRES", quantity_in_stock: 45, reorder_level: 80, unit_cost: 210, code: "FOOD-003" },
+            { item_name: "Sugar", category: "Food Stores", unit_of_measure: "KG", quantity_in_stock: 85, reorder_level: 60, unit_cost: 130, code: "FOOD-004" },
+            { item_name: "A4 Paper (Reams)", category: "Stationery", unit_of_measure: "REAMS", quantity_in_stock: 14, reorder_level: 10, unit_cost: 550, code: "STAT-001" },
+            { item_name: "Hydrochloric Acid 500ml", category: "Lab Chemicals", unit_of_measure: "BOTTLES", quantity_in_stock: 3, reorder_level: 8, unit_cost: 2200, code: "CHEM-001" },
+            { item_name: "Biology Textbooks F4", category: "Textbooks", unit_of_measure: "PIECES", quantity_in_stock: 87, reorder_level: 50, unit_cost: 850, code: "TEXT-001" },
+            { item_name: "Exercise Books (Ruled)", category: "Stationery", unit_of_measure: "DOZENS", quantity_in_stock: 28, reorder_level: 20, unit_cost: 480, code: "STAT-002" },
+          ];
+          setData(result);
         
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load inventory');
@@ -8818,6 +8829,9 @@ function renderPage(page: NavPage, onNavigate: (p: NavPage) => void): React.Reac
     case "dorm-allocation": return <DormAllocation />;
     case "sickbay": return <SickbayAdmissions />;
     case "discipline-log": return <DisciplinaryLog />;
+    case "gin-issue": return <GINIssue />;
+    case "kitchen-req": return <KitchenRequisitionPage />;
+    case "stocktake": return <StocktakeReconciliation />;
     case "stores": return <StockIssuance />;
     case "stocktake": return <StocktakeReconciliation />;
     case "staff-directory": return <StaffDirectory />;
@@ -10631,6 +10645,231 @@ function DisciplinaryLog() {
           </>)}
         </div>
       </div>
+    </div>
+  );
+}
+
+
+// ─── Goods Issue Note — GIN (BR-INV-003) ───────────────────────
+function GINIssue() {
+  const [dept, setDept] = useState("Kitchen");
+  const [lines, setLines] = useState([{ item: "", qty: "" }]);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const items = [
+    "Maize (White) — FOOD-001", "Rice (Long Grain) — FOOD-002",
+    "Cooking Oil — FOOD-003", "Sugar — FOOD-004",
+    "A4 Paper (Reams) — STAT-001", "Hydrochloric Acid — CHEM-001",
+  ];
+
+  const handleAdd = () => setLines([...lines, { item: "", qty: "" }]);
+  const handleChange = (i: number, k: string, v: string) => {
+    const next = [...lines]; (next[i] as any)[k] = v; setLines(next);
+  };
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    await new Promise(r => setTimeout(r, 700));
+    // Real: await apiPost('/inventory/gin', { department: dept, lines })
+    setSubmitted(true); setSubmitting(false);
+  };
+
+  if (submitted) return (
+    <div>
+      <PageHeader title="Goods Issue Note" subtitle="GIN mandatory before stock deduction (BR-INV-003)" />
+      <ValidationCallout type="success" message="GIN created and submitted. Storekeeper will review and issue goods. Stock will deduct only upon approval." />
+    </div>
+  );
+
+  return (
+    <div>
+      <PageHeader title="Goods Issue Note (GIN)" subtitle="Create a GIN — stock deduction requires this document (BR-INV-003)" />
+      <div className="bg-white border border-[#DCD6C4] rounded-sm p-6 max-w-2xl">
+        <div className="mb-4">
+          <label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">Issuing To (Department)</label>
+          <select value={dept} onChange={e => setDept(e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm">
+            {["Kitchen","Science Lab","Administration","Maintenance","Laundry"].map(d => <option key={d}>{d}</option>)}
+          </select>
+        </div>
+        <table className="w-full text-sm mb-4">
+          <thead><tr className="border-b border-[#DCD6C4]">
+            <th className="text-left text-xs uppercase text-[#7A8078] py-2 pr-4">Item</th>
+            <th className="text-left text-xs uppercase text-[#7A8078] py-2">Qty Requested</th>
+          </tr></thead>
+          <tbody>
+            {lines.map((l, i) => (
+              <tr key={i} className="border-b border-[#EDE8DA]">
+                <td className="pr-4 py-2">
+                  <select value={l.item} onChange={e => handleChange(i, 'item', e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-2 py-1.5 text-sm">
+                    <option value="">— Select item —</option>
+                    {items.map(it => <option key={it}>{it}</option>)}
+                  </select>
+                </td>
+                <td className="py-2"><input type="number" value={l.qty} onChange={e => handleChange(i, 'qty', e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-2 py-1.5 text-sm" placeholder="0" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <button onClick={handleAdd} className="text-xs text-[#1F6F4A] font-semibold mb-5 hover:underline">+ Add line item</button>
+        <div className="flex gap-3">
+          <button onClick={handleSubmit} disabled={submitting || lines.every(l => !l.item)} className="bg-[#1F6F4A] text-white px-5 py-2 rounded-sm text-sm font-semibold disabled:opacity-50">
+            {submitting ? "Submitting..." : "Create GIN"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Kitchen Requisition (BR-INV-004) ──────────────────────────
+function KitchenRequisitionPage() {
+  const [studentCount, setStudentCount] = useState("165");
+  const [meal, setMeal] = useState("Lunch");
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const today = new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const perStudent = { "Breakfast": { maize: 0.15, sugar: 0.02 }, "Lunch": { maize: 0.25, rice: 0.20, oil: 0.01 }, "Supper": { maize: 0.30, rice: 0.15 } };
+  const count = parseInt(studentCount) || 0;
+
+  const pending = [
+    { ref: "KR-20260821-A3F2", date: "2026-08-21", meal: "Breakfast", count: 165, status: "PENDING", submitted: "06:12" },
+    { ref: "KR-20260820-B7C1", date: "2026-08-20", meal: "Supper", count: 165, status: "APPROVED", submitted: "17:45" },
+  ];
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    await new Promise(r => setTimeout(r, 700));
+    // Real: await apiPost('/inventory/kitchen-requisitions', { meal, student_count: count, date: today })
+    setSubmitted(true); setSubmitting(false);
+  };
+
+  return (
+    <div>
+      <PageHeader title="Kitchen Daily Requisition" subtitle="Food requisitions must be approved before goods are issued (BR-INV-004)" badge={today} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="bg-white border border-[#DCD6C4] rounded-sm mb-4">
+            <div className="p-4 border-b border-[#DCD6C4]"><p className="text-[11px] uppercase tracking-widest font-semibold text-[#7A8078]">Recent Requisitions</p></div>
+            <DataTable columns={["Ref No.", "Date", "Meal", "Boarders", "Status"]} rows={pending.map(r => [
+              <span className="font-['IBM_Plex_Mono'] text-xs">{r.ref}</span>,
+              r.date, r.meal,
+              <span className="font-['IBM_Plex_Mono']">{r.count}</span>,
+              <StatusTag variant={r.status === "APPROVED" ? "ok" : "warn"} label={r.status} />
+            ])} />
+          </div>
+        </div>
+        <div className="bg-white border border-[#DCD6C4] rounded-sm p-5">
+          {submitted ? <ValidationCallout type="success" message="Requisition submitted for Storekeeper approval. Goods will only be issued after approval." /> : (<>
+            <p className="text-[11px] uppercase tracking-widest font-semibold text-[#7A8078] mb-4">New Requisition</p>
+            <div className="mb-3">
+              <label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">Meal</label>
+              <select value={meal} onChange={e => setMeal(e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm">
+                {["Breakfast","Lunch","Supper"].map(m => <option key={m}>{m}</option>)}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-xs font-semibold uppercase text-[#7A8078] mb-1">No. of Boarders</label>
+              <input type="number" value={studentCount} onChange={e => setStudentCount(e.target.value)} className="w-full border border-[#DCD6C4] rounded-sm px-3 py-2 text-sm" />
+            </div>
+            <div className="bg-[#F9F8F6] border border-[#DCD6C4] rounded-sm p-3 mb-4 text-xs font-['IBM_Plex_Mono']">
+              <p className="font-semibold text-[#16241D] mb-1">Auto-calculated quantities:</p>
+              {meal === "Breakfast" && <><p>Maize: {(count * 0.15).toFixed(1)} KG</p><p>Sugar: {(count * 0.02).toFixed(1)} KG</p></>}
+              {meal === "Lunch" && <><p>Maize: {(count * 0.25).toFixed(1)} KG</p><p>Rice: {(count * 0.20).toFixed(1)} KG</p><p>Cooking Oil: {(count * 0.01).toFixed(1)} L</p></>}
+              {meal === "Supper" && <><p>Maize: {(count * 0.30).toFixed(1)} KG</p><p>Rice: {(count * 0.15).toFixed(1)} KG</p></>}
+            </div>
+            <button onClick={handleSubmit} disabled={submitting || !count} className="w-full bg-[#1F6F4A] text-white px-4 py-2 rounded-sm text-sm font-semibold disabled:opacity-50">{submitting ? "Submitting..." : "Submit Requisition"}</button>
+          </>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Stocktake Reconciliation (BR-INV-005) ─────────────────────
+function StocktakeReconciliation() {
+  const [counts, setCounts] = useState<Record<string, string>>({});
+  const [reasons, setReasons] = useState<Record<string, string>>({});
+  const [posted, setPosted] = useState(false);
+  const [posting, setPosting] = useState(false);
+
+  const session = { ref: "ST-A3F78B21", name: "Term 2 2026 Stocktake", date: "2026-08-21", status: "OPEN" };
+  const lines = [
+    { id: "l1", item: "Maize (White)", code: "FOOD-001", system: 320, unit: "KG", unit_cost: 55 },
+    { id: "l2", item: "Rice (Long Grain)", code: "FOOD-002", system: 120, unit: "KG", unit_cost: 110 },
+    { id: "l3", item: "Cooking Oil", code: "FOOD-003", system: 45, unit: "LITRES", unit_cost: 210 },
+    { id: "l4", item: "A4 Paper", code: "STAT-001", system: 14, unit: "REAMS", unit_cost: 550 },
+    { id: "l5", item: "Hydrochloric Acid", code: "CHEM-001", system: 3, unit: "BOTTLES", unit_cost: 2200 },
+  ];
+
+  const totalVariance = lines.reduce((sum, l) => {
+    const phys = parseFloat(counts[l.id] || String(l.system));
+    return sum + ((phys - l.system) * l.unit_cost);
+  }, 0);
+
+  const handlePost = async () => {
+    setPosting(true);
+    await new Promise(r => setTimeout(r, 1000));
+    // Real: await apiPost('/inventory/stocktake/post', { session_id, lines: [...] })
+    setPosted(true); setPosting(false);
+  };
+
+  if (posted) return (
+    <div>
+      <PageHeader title="Stocktake Reconciliation" subtitle="Term-end physical count — variances logged for audit (BR-INV-005)" />
+      <ValidationCallout type="success" message={`Stocktake ${session.ref} posted. Total variance: KES ${totalVariance.toLocaleString('en-KE', {minimumFractionDigits:2})}. Stock balances adjusted and audit log created.`} />
+    </div>
+  );
+
+  return (
+    <div>
+      <PageHeader title="Stocktake Reconciliation" subtitle={`${session.name} — ${session.date} · Enter physical counts to calculate variances (BR-INV-005)`} badge={session.ref} />
+      <div className="bg-white border border-[#DCD6C4] rounded-sm overflow-hidden mb-4">
+        <table className="w-full text-sm">
+          <thead className="bg-[#F9F8F6] border-b border-[#DCD6C4]">
+            <tr>{["Item","Code","Unit","System Count","Physical Count","Variance","Value (KES)","Reason"].map(h => (
+              <th key={h} className="text-left text-[10px] uppercase tracking-widest text-[#7A8078] font-semibold px-4 py-2.5">{h}</th>
+            ))}</tr>
+          </thead>
+          <tbody>
+            {lines.map(l => {
+              const phys = parseFloat(counts[l.id] || "");
+              const hasPhys = !isNaN(phys);
+              const variance = hasPhys ? phys - l.system : 0;
+              const varVal = variance * l.unit_cost;
+              return (
+                <tr key={l.id} className="border-b border-[#EDE8DA] hover:bg-[#F9F8F6]">
+                  <td className="px-4 py-2 font-semibold text-[#16241D]">{l.item}</td>
+                  <td className="px-4 py-2 font-['IBM_Plex_Mono'] text-xs text-[#7A8078]">{l.code}</td>
+                  <td className="px-4 py-2 text-xs text-[#7A8078]">{l.unit}</td>
+                  <td className="px-4 py-2 font-['IBM_Plex_Mono']">{l.system}</td>
+                  <td className="px-4 py-2"><input type="number" value={counts[l.id] || ""} onChange={e => setCounts(p => ({...p,[l.id]:e.target.value}))} className="w-20 border border-[#DCD6C4] rounded-sm px-2 py-1 text-sm font-['IBM_Plex_Mono']" placeholder={String(l.system)} /></td>
+                  <td className={`px-4 py-2 font-['IBM_Plex_Mono'] font-bold ${variance < 0 ? 'text-[#9C3B2E]' : variance > 0 ? 'text-[#1F6F4A]' : 'text-[#7A8078]'}`}>{hasPhys ? (variance >= 0 ? '+' : '') + variance.toFixed(1) : '—'}</td>
+                  <td className={`px-4 py-2 font-['IBM_Plex_Mono'] text-xs ${varVal < 0 ? 'text-[#9C3B2E]' : varVal > 0 ? 'text-[#1F6F4A]' : 'text-[#7A8078]'}`}>{hasPhys ? `${varVal < 0 ? '-' : ''}KES ${Math.abs(varVal).toLocaleString()}` : '—'}</td>
+                  <td className="px-4 py-2"><input value={reasons[l.id] || ""} onChange={e => setReasons(p => ({...p,[l.id]:e.target.value}))} className="w-28 border border-[#DCD6C4] rounded-sm px-2 py-1 text-xs" placeholder="Reason..." /></td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot className="bg-[#F9F8F6] border-t-2 border-[#DCD6C4]">
+            <tr>
+              <td colSpan={6} className="px-4 py-3 text-xs font-semibold uppercase text-[#7A8078]">Total Variance Value</td>
+              <td className={`px-4 py-3 font-['IBM_Plex_Mono'] font-bold text-lg ${totalVariance < 0 ? 'text-[#9C3B2E]' : totalVariance > 0 ? 'text-[#1F6F4A]' : 'text-[#16241D]'}`}>
+                {totalVariance < 0 ? '-' : ''}KES {Math.abs(totalVariance).toLocaleString('en-KE', {minimumFractionDigits:2})}
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      {totalVariance < 0 && (
+        <div className="bg-[#F7E6E2] border border-[#9C3B2E] rounded-sm p-3 mb-4 text-sm text-[#9C3B2E] font-['IBM_Plex_Sans']">
+          ⚠ Negative variance of KES {Math.abs(totalVariance).toLocaleString('en-KE', {minimumFractionDigits:2})} detected. This may indicate inventory shrinkage or theft. Variance will be logged in the immutable audit trail.
+        </div>
+      )}
+      <button onClick={handlePost} disabled={posting || Object.keys(counts).length === 0} className="bg-[#9C3B2E] text-white px-6 py-2 rounded-sm text-sm font-semibold disabled:opacity-50 hover:bg-[#7a2f24]">
+        {posting ? "Posting variances..." : "Post Stocktake & Adjust Balances"}
+      </button>
     </div>
   );
 }

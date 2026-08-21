@@ -344,3 +344,175 @@ class DepreciationEntry(Base):
         Index("idx_depreciation_school", "school_id"),
         Index("idx_depreciation_period", "depreciation_year", "depreciation_month"),
     )
+
+
+# ============================================================================
+# GOODS ISSUE NOTE (GIN) — BR-INV-003
+# ============================================================================
+
+class GINStatus(str, Enum):
+    PENDING    = "PENDING"
+    APPROVED   = "APPROVED"
+    ISSUED     = "ISSUED"
+    CANCELLED  = "CANCELLED"
+
+
+class GoodsIssueNote(Base):
+    """
+    Goods Issue Note — mandatory before any stock deduction (BR-INV-003).
+    100% traceability of stock usage. No GIN = no deduction.
+    """
+    __tablename__ = "goods_issue_notes"
+
+    id           = Column(PG_UUID(as_uuid=True), primary_key=True, default=UUID)
+    school_id    = Column(PG_UUID(as_uuid=True), nullable=False, index=True)
+    gin_number   = Column(String(50), nullable=False, unique=True, index=True)
+    warehouse_id = Column(PG_UUID(as_uuid=True), ForeignKey("warehouses.id"), nullable=False, index=True)
+    issued_to_department = Column(String(100), nullable=False)
+    requested_by_staff_id = Column(PG_UUID(as_uuid=True), nullable=False)
+    issued_by_staff_id    = Column(PG_UUID(as_uuid=True), nullable=True)
+    status       = Column(String(20), default=GINStatus.PENDING.value, nullable=False, index=True)
+    notes        = Column(Text, nullable=True)
+    created_at   = Column(DateTime, default=datetime.utcnow)
+    issued_at    = Column(DateTime, nullable=True)
+
+    items = relationship("GINItem", back_populates="gin", cascade="all, delete-orphan")
+
+
+class GINItem(Base):
+    """Line items within a GIN."""
+    __tablename__ = "gin_items"
+
+    id         = Column(PG_UUID(as_uuid=True), primary_key=True, default=UUID)
+    school_id  = Column(PG_UUID(as_uuid=True), nullable=False)
+    gin_id     = Column(PG_UUID(as_uuid=True), ForeignKey("goods_issue_notes.id", ondelete="CASCADE"), nullable=False, index=True)
+    item_id    = Column(PG_UUID(as_uuid=True), ForeignKey("inventory_items.id"), nullable=False, index=True)
+    qty_requested = Column(Numeric(15, 2), nullable=False)
+    qty_issued    = Column(Numeric(15, 2), nullable=True)
+
+    gin  = relationship("GoodsIssueNote", back_populates="items")
+
+
+# ============================================================================
+# KITCHEN DAILY REQUISITION — BR-INV-004
+# ============================================================================
+
+class KitchenRequisitionStatus(str, Enum):
+    PENDING  = "PENDING"
+    APPROVED = "APPROVED"
+    ISSUED   = "ISSUED"
+    REJECTED = "REJECTED"
+
+
+class KitchenRequisition(Base):
+    """
+    Daily food-store requisition submitted by Kitchen, approved before GIN (BR-INV-004).
+    Ensures food consumption matches student count. Over-issuing is prevented.
+    """
+    __tablename__ = "kitchen_requisitions"
+
+    id           = Column(PG_UUID(as_uuid=True), primary_key=True, default=UUID)
+    school_id    = Column(PG_UUID(as_uuid=True), nullable=False, index=True)
+    req_number   = Column(String(50), nullable=False, unique=True, index=True)
+    requisition_date = Column(Date, nullable=False, index=True)
+    student_count    = Column(Integer, nullable=False, comment="Boarder count for the day — controls portion quantities")
+    submitted_by_staff_id = Column(PG_UUID(as_uuid=True), nullable=False)
+    approved_by_staff_id  = Column(PG_UUID(as_uuid=True), nullable=True)
+    status       = Column(String(20), default=KitchenRequisitionStatus.PENDING.value, nullable=False, index=True)
+    notes        = Column(Text, nullable=True)
+    created_at   = Column(DateTime, default=datetime.utcnow)
+    approved_at  = Column(DateTime, nullable=True)
+
+    items = relationship("KitchenRequisitionItem", back_populates="requisition", cascade="all, delete-orphan")
+
+
+class KitchenRequisitionItem(Base):
+    """Line items in a kitchen daily requisition."""
+    __tablename__ = "kitchen_requisition_items"
+
+    id         = Column(PG_UUID(as_uuid=True), primary_key=True, default=UUID)
+    school_id  = Column(PG_UUID(as_uuid=True), nullable=False)
+    req_id     = Column(PG_UUID(as_uuid=True), ForeignKey("kitchen_requisitions.id", ondelete="CASCADE"), nullable=False, index=True)
+    item_id    = Column(PG_UUID(as_uuid=True), ForeignKey("inventory_items.id"), nullable=False, index=True)
+    qty_requested = Column(Numeric(15, 2), nullable=False)
+    unit_of_measure = Column(String(30), nullable=False)
+
+    requisition = relationship("KitchenRequisition", back_populates="items")
+
+
+# ============================================================================
+# STOCKTAKE / PHYSICAL COUNT — BR-INV-005
+# ============================================================================
+
+class StocktakeStatus(str, Enum):
+    OPEN       = "OPEN"
+    SUBMITTED  = "SUBMITTED"
+    POSTED     = "POSTED"          # Variances posted to GL
+
+
+class StocktakeSession(Base):
+    """
+    Periodic physical stocktake session (BR-INV-005).
+    Records system count vs physical count; variances logged for audit.
+    CRITICAL: Posting this reconciliation adjusts StockBalance and
+    creates a GL journal entry for shrinkage/surplus.
+    """
+    __tablename__ = "stocktake_sessions"
+
+    id          = Column(PG_UUID(as_uuid=True), primary_key=True, default=UUID)
+    school_id   = Column(PG_UUID(as_uuid=True), nullable=False, index=True)
+    session_ref = Column(String(50), nullable=False, unique=True, index=True)
+    session_name = Column(String(150), nullable=False, comment="e.g., 'Term 2 2026 Stocktake'")
+    count_date  = Column(Date, nullable=False)
+    status      = Column(String(20), default=StocktakeStatus.OPEN.value, nullable=False, index=True)
+    conducted_by_staff_id = Column(PG_UUID(as_uuid=True), nullable=False)
+    reviewed_by_staff_id  = Column(PG_UUID(as_uuid=True), nullable=True)
+    total_variance_value  = Column(Numeric(15, 2), default=0, comment="KES value of all variances")
+    notes       = Column(Text, nullable=True)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+    posted_at   = Column(DateTime, nullable=True)
+
+    lines = relationship("StocktakeLine", back_populates="session", cascade="all, delete-orphan")
+
+
+class StocktakeLine(Base):
+    """
+    One line per inventory item in a stocktake session.
+    Captures system_count vs physical_count; variance is auto-calculated.
+    """
+    __tablename__ = "stocktake_lines"
+
+    id         = Column(PG_UUID(as_uuid=True), primary_key=True, default=UUID)
+    school_id  = Column(PG_UUID(as_uuid=True), nullable=False)
+    session_id = Column(PG_UUID(as_uuid=True), ForeignKey("stocktake_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
+    item_id    = Column(PG_UUID(as_uuid=True), ForeignKey("inventory_items.id"), nullable=False, index=True)
+    system_count  = Column(Numeric(15, 2), nullable=False, comment="Stock balance per system before count")
+    physical_count = Column(Numeric(15, 2), nullable=True, comment="Actual count by storekeeper")
+    variance      = Column(Numeric(15, 2), nullable=True, comment="physical_count - system_count (negative = loss)")
+    unit_cost     = Column(Numeric(15, 2), nullable=False)
+    variance_value = Column(Numeric(15, 2), nullable=True, comment="variance * unit_cost")
+    variance_reason = Column(Text, nullable=True, comment="Auditor's explanation of variance")
+
+    session = relationship("StocktakeSession", back_populates="lines")
+
+
+# ============================================================================
+# REORDER ALERT — BR-INV-002
+# ============================================================================
+
+class ReorderAlert(Base):
+    """
+    Auto-generated alert when StockBalance falls below InventoryItem.reorder_level.
+    Triggers procurement notification (BR-INV-002).
+    """
+    __tablename__ = "reorder_alerts"
+
+    id          = Column(PG_UUID(as_uuid=True), primary_key=True, default=UUID)
+    school_id   = Column(PG_UUID(as_uuid=True), nullable=False, index=True)
+    item_id     = Column(PG_UUID(as_uuid=True), ForeignKey("inventory_items.id"), nullable=False, index=True)
+    triggered_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    qty_on_hand  = Column(Numeric(15, 2), nullable=False, comment="Stock level that triggered alert")
+    reorder_level = Column(Numeric(15, 2), nullable=False, comment="Threshold at time of alert")
+    is_resolved  = Column(Boolean, default=False, nullable=False, index=True)
+    resolved_at  = Column(DateTime, nullable=True)
+    procurement_ref = Column(String(100), nullable=True, comment="PR/LPO number raised in response")
